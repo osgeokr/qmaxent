@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/qmaxent" >
+        <file>icon.png</file>
+    </qresource>
+</RCC>

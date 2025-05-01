@@ -1,0 +1,47 @@
+# This file contains metadata for your plugin.
+
+# This file should be included when you package your plugin.# Mandatory items:
+
+[general]
+name=QMaxent
+qgisMinimumVersion=3.0
+description=This plugin allows users to build species distribution models (SDMs) directly within QGIS using the MaxEnt (Maximum Entropy) approach.
+version=0.1
+author=Byeong-Hyeok Yu
+email=bhyu@knps.or.kr
+
+about=This plugin enables species distribution modeling (SDM) within QGIS using the MaxEnt (Maximum Entropy) algorithm. It allows users to load species presence data and environmental rasters, automatically generate background points, and extract covariates to train predictive models. The plugin visualizes model outputs as raster layers in QGIS and supports evaluation tools such as ROC curves and variable importance plots, making ecological modeling more accessible and integrated with spatial workflows.
+
+tracker=https://github.com/osgeokr/qmaxent/issues
+repository=https://github.com/osgeokr/qmaxent
+# End of mandatory metadata
+
+# Recommended items:
+
+hasProcessingProvider=no
+# Uncomment the following line and add your changelog:
+# changelog=
+
+# Tags are comma separated with spaces allowed
+tags=python, qgis, maxent, sdm, ecology
+
+homepage=https://github.com/osgeokr/qmaxent
+category=Plugins
+icon=icon.png
+# experimental flag
+experimental=False
+
+# deprecated flag (applies to the whole plugin, not just a single version)
+deprecated=False
+
+# Since QGIS 3.8, a comma separated list of plugins to be installed
+# (or upgraded) can be specified.
+# Check the documentation for more information.
+# plugin_dependencies=
+
+Category of the plugin: Raster, Vector, Database or Web
+# category=
+
+# If the plugin can run on QGIS Server.
+server=False
+
