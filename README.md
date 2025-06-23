@@ -19,6 +19,24 @@ Instead of switching between external tools, QMaxent integrates the Maxent model
 
 Download the plugin and install it through **Plugins > Manage and Install Plugins > Install from ZIP**.
 
+> **Important:**  
+> QMaxent requires the `scikit-learn` package to be available in the **QGIS Python environment**.  
+>  
+> If you see an error like `ModuleNotFoundError: No module named 'sklearn'`, please install it as follows:
+>
+> 1. Open **QGIS**
+> 2. Go to **Plugins > Python Console**
+> 3. Paste and run the following code:
+>
+> ```python
+> import sys
+> import subprocess
+> subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'scikit-learn'])
+> ```
+>
+> This will install `scikit-learn` into the QGIS environment.  
+> If installation fails, ensure you have an active internet connection and sufficient permissions.
+
 ## 📝 License
 
 This project is licensed under the **MIT License**.
