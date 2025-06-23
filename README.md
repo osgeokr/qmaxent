@@ -20,22 +20,32 @@ Instead of switching between external tools, QMaxent integrates the Maxent model
 Download the plugin and install it through **Plugins > Manage and Install Plugins > Install from ZIP**.
 
 > **Important:**  
-> QMaxent requires the `scikit-learn` package to be available in the **QGIS Python environment**.  
+> QMaxent requires the `scikit-learn` package to be installed in the **QGIS Python environment**.  
 >  
-> If you see an error like `ModuleNotFoundError: No module named 'sklearn'`, please install it as follows:
+> If you encounter an error such as `ModuleNotFoundError: No module named 'sklearn'`, please install it using the following steps:
 >
-> 1. Open **QGIS**
-> 2. Go to **Plugins > Python Console**
-> 3. Paste and run the following code:
+> ### 🛠 Install `scikit-learn` via OSGeo4W Shell (Recommended)
 >
-> ```python
-> import sys
-> import subprocess
-> subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'scikit-learn'])
+> 1. Close QGIS if it's open.
+> 2. Open the **OSGeo4W Shell** (installed with QGIS; search for it in the Start Menu).
+> 3. Run the following command (replace the path with your actual Python version if different):
+>
+> ```bash
+> python3 -m pip install scikit-learn
 > ```
 >
-> This will install `scikit-learn` into the QGIS environment.  
-> If installation fails, ensure you have an active internet connection and sufficient permissions.
+> You should see a message like `Successfully installed scikit-learn ...` when complete.
+>
+> ✅ Now, reopen QGIS and the plugin should work without import errors.
+>
+> If `python3` is not recognized, try:
+>
+> ```bash
+> py3_env
+> python -m pip install scikit-learn
+> ```
+>
+> ℹ️ These commands install the package directly into the Python environment used by QGIS.
 
 ## 📝 License
 
