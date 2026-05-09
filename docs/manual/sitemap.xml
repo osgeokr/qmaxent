@@ -8,11 +8,32 @@
         <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/"/>
     </url>
     <url>
-        <loc>https://osgeokr.github.io/qmaxent/manual/data-preparation/</loc>
+        <loc>https://osgeokr.github.io/qmaxent/manual/analysis-dock/</loc>
         <lastmod>2026-05-09</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/data-preparation/"/>
-        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/data-preparation/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/analysis-dock/"/>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/analysis-dock/"/>
+    </url>
+    <url>
+        <loc>https://osgeokr.github.io/qmaxent/manual/data-tab/</loc>
+        <lastmod>2026-05-09</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/data-tab/"/>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/data-tab/"/>
+    </url>
+    <url>
+        <loc>https://osgeokr.github.io/qmaxent/manual/dependencies/</loc>
+        <lastmod>2026-05-09</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/dependencies/"/>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/dependencies/"/>
+    </url>
+    <url>
+        <loc>https://osgeokr.github.io/qmaxent/manual/example-datasets/</loc>
+        <lastmod>2026-05-09</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/example-datasets/"/>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/example-datasets/"/>
     </url>
     <url>
         <loc>https://osgeokr.github.io/qmaxent/manual/exporting-results/</loc>
@@ -43,18 +64,18 @@
         <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/introduction/"/>
     </url>
     <url>
-        <loc>https://osgeokr.github.io/qmaxent/manual/model-configuration/</loc>
+        <loc>https://osgeokr.github.io/qmaxent/manual/methodological-background/</loc>
         <lastmod>2026-05-09</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/model-configuration/"/>
-        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/model-configuration/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/methodological-background/"/>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/methodological-background/"/>
     </url>
     <url>
-        <loc>https://osgeokr.github.io/qmaxent/manual/model-evaluation/</loc>
+        <loc>https://osgeokr.github.io/qmaxent/manual/parameters-tab/</loc>
         <lastmod>2026-05-09</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/model-evaluation/"/>
-        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/model-evaluation/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/parameters-tab/"/>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/parameters-tab/"/>
     </url>
     <url>
         <loc>https://osgeokr.github.io/qmaxent/manual/priority-sites/</loc>
@@ -78,6 +99,13 @@
         <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/references/"/>
     </url>
     <url>
+        <loc>https://osgeokr.github.io/qmaxent/manual/results-tab/</loc>
+        <lastmod>2026-05-09</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/results-tab/"/>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/results-tab/"/>
+    </url>
+    <url>
         <loc>https://osgeokr.github.io/qmaxent/manual/saving-models/</loc>
         <lastmod>2026-05-09</lastmod>
         <changefreq>daily</changefreq>
@@ -85,18 +113,11 @@
         <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/saving-models/"/>
     </url>
     <url>
-        <loc>https://osgeokr.github.io/qmaxent/manual/spatial-cross-validation/</loc>
+        <loc>https://osgeokr.github.io/qmaxent/manual/training-tab/</loc>
         <lastmod>2026-05-09</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/spatial-cross-validation/"/>
-        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/spatial-cross-validation/"/>
-    </url>
-    <url>
-        <loc>https://osgeokr.github.io/qmaxent/manual/spatial-projection/</loc>
-        <lastmod>2026-05-09</lastmod>
-        <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/spatial-projection/"/>
-        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/spatial-projection/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/training-tab/"/>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/training-tab/"/>
     </url>
     <url>
         <loc>https://osgeokr.github.io/qmaxent/manual/examples/</loc>
@@ -134,11 +155,32 @@
         <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/"/>
     </url>
     <url>
-        <loc>https://osgeokr.github.io/qmaxent/manual/ko/data-preparation/</loc>
+        <loc>https://osgeokr.github.io/qmaxent/manual/ko/analysis-dock/</loc>
         <lastmod>2026-05-09</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/data-preparation/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/data-preparation/"/>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/analysis-dock/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/analysis-dock/"/>
+    </url>
+    <url>
+        <loc>https://osgeokr.github.io/qmaxent/manual/ko/data-tab/</loc>
+        <lastmod>2026-05-09</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/data-tab/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/data-tab/"/>
+    </url>
+    <url>
+        <loc>https://osgeokr.github.io/qmaxent/manual/ko/dependencies/</loc>
+        <lastmod>2026-05-09</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/dependencies/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/dependencies/"/>
+    </url>
+    <url>
+        <loc>https://osgeokr.github.io/qmaxent/manual/ko/example-datasets/</loc>
+        <lastmod>2026-05-09</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/example-datasets/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/example-datasets/"/>
     </url>
     <url>
         <loc>https://osgeokr.github.io/qmaxent/manual/ko/exporting-results/</loc>
@@ -169,18 +211,18 @@
         <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/introduction/"/>
     </url>
     <url>
-        <loc>https://osgeokr.github.io/qmaxent/manual/ko/model-configuration/</loc>
+        <loc>https://osgeokr.github.io/qmaxent/manual/ko/methodological-background/</loc>
         <lastmod>2026-05-09</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/model-configuration/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/model-configuration/"/>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/methodological-background/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/methodological-background/"/>
     </url>
     <url>
-        <loc>https://osgeokr.github.io/qmaxent/manual/ko/model-evaluation/</loc>
+        <loc>https://osgeokr.github.io/qmaxent/manual/ko/parameters-tab/</loc>
         <lastmod>2026-05-09</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/model-evaluation/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/model-evaluation/"/>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/parameters-tab/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/parameters-tab/"/>
     </url>
     <url>
         <loc>https://osgeokr.github.io/qmaxent/manual/ko/priority-sites/</loc>
@@ -204,6 +246,13 @@
         <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/references/"/>
     </url>
     <url>
+        <loc>https://osgeokr.github.io/qmaxent/manual/ko/results-tab/</loc>
+        <lastmod>2026-05-09</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/results-tab/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/results-tab/"/>
+    </url>
+    <url>
         <loc>https://osgeokr.github.io/qmaxent/manual/ko/saving-models/</loc>
         <lastmod>2026-05-09</lastmod>
         <changefreq>daily</changefreq>
@@ -211,18 +260,11 @@
         <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/saving-models/"/>
     </url>
     <url>
-        <loc>https://osgeokr.github.io/qmaxent/manual/ko/spatial-cross-validation/</loc>
+        <loc>https://osgeokr.github.io/qmaxent/manual/ko/training-tab/</loc>
         <lastmod>2026-05-09</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/spatial-cross-validation/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/spatial-cross-validation/"/>
-    </url>
-    <url>
-        <loc>https://osgeokr.github.io/qmaxent/manual/ko/spatial-projection/</loc>
-        <lastmod>2026-05-09</lastmod>
-        <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/spatial-projection/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/spatial-projection/"/>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/training-tab/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/training-tab/"/>
     </url>
     <url>
         <loc>https://osgeokr.github.io/qmaxent/manual/ko/examples/</loc>
