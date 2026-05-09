@@ -76,22 +76,25 @@ plugins:
           site_name: QMaxent 매뉴얼
           nav_translations:
             Home: 홈
+            Getting started: 시작하기
             Introduction: 소개
             Installation: 설치
+            Dependencies: 의존성 관리
+            Example datasets: 예제 데이터
             Quick start: 빠른 시작
-            Data preparation: 데이터 준비
-            Model configuration: 모델 설정
-            Spatial cross-validation: 공간 교차검증
-            Model evaluation: 모델 평가
-            Spatial projection: 공간 투영
-            Priority sites: 우선조사 후보지
+            User guide: 사용 가이드
+            The Analysis dock: Analysis 도크
+            "① Data tab": "① 데이터 탭"
+            "② Parameters tab": "② 파라미터 탭"
+            "③ Training tab": "③ 학습 탭"
+            "④ Results tab": "④ 결과 탭"
+            "⑤ Priority Sites for Survey": "⑤ 우선조사 후보지"
             Saving and reusing models: 모델 저장 및 재사용
             Exporting results: 결과 내보내기
-            Worked examples: 실전 예제
+            Examples: 실전 예제
             Overview: 개요
-            "Bradypus variegatus": "Bradypus variegatus (입문)"
-            "Ariolimax (raster harmonization)": "Ariolimax (래스터 조화화)"
-            "Pitta nympha (comparison study)": "Pitta nympha (비교 연구)"
+            Reference: 참고
+            Methodological background: 방법론 해설
             References: 참고문헌
             FAQ: 자주 묻는 질문
 
@@ -136,21 +139,27 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Introduction: introduction.md
-  - Installation: installation.md
-  - Quick start: quick-start.md
-  - Data preparation: data-preparation.md
-  - Model configuration: model-configuration.md
-  - Spatial cross-validation: spatial-cross-validation.md
-  - Model evaluation: model-evaluation.md
-  - Spatial projection: spatial-projection.md
-  - Priority sites: priority-sites.md
-  - Saving and reusing models: saving-models.md
-  - Exporting results: exporting-results.md
-  - Worked examples:
+  - Getting started:
+      - Introduction: introduction.md
+      - Installation: installation.md
+      - Dependencies: dependencies.md
+      - Example datasets: example-datasets.md
+      - Quick start: quick-start.md
+  - User guide:
+      - The Analysis dock: analysis-dock.md
+      - "① Data tab": data-tab.md
+      - "② Parameters tab": parameters-tab.md
+      - "③ Training tab": training-tab.md
+      - "④ Results tab": results-tab.md
+      - "⑤ Priority Sites for Survey": priority-sites.md
+      - Saving and reusing models: saving-models.md
+      - Exporting results: exporting-results.md
+  - Examples:
       - Overview: examples/index.md
       - "Bradypus variegatus": examples/bradypus.md
-      - "Ariolimax (raster harmonization)": examples/ariolimax.md
-      - "Pitta nympha (comparison study)": examples/pitta-nympha.md
-  - References: references.md
-  - FAQ: faq.md
+      - "Ariolimax": examples/ariolimax.md
+      - "Pitta nympha": examples/pitta-nympha.md
+  - Reference:
+      - Methodological background: methodological-background.md
+      - References: references.md
+      - FAQ: faq.md
