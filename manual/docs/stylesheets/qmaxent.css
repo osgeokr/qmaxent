@@ -1,0 +1,44 @@
+/* QMaxent brand palette — derived from the project logo */
+
+:root {
+  --md-primary-fg-color:        #3A7E94;   /* teal */
+  --md-primary-fg-color--light:  #5A9EAF;
+  --md-primary-fg-color--dark:   #275C70;
+  --md-accent-fg-color:           #E68A2C;  /* orange */
+  --md-accent-fg-color--transparent: rgba(230, 138, 44, 0.10);
+
+  --md-typeset-a-color:          #275C70;
+}
+
+/* Slate (dark) scheme: tweak so brand colors stay legible */
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color:         #5A9EAF;
+  --md-primary-fg-color--light:  #7AB7C3;
+  --md-primary-fg-color--dark:   #3A7E94;
+  --md-accent-fg-color:          #F0A559;
+  --md-typeset-a-color:          #7AB7C3;
+}
+
+/* Subtle warm tint reminiscent of the cream landing page */
+[data-md-color-scheme="default"] {
+  --md-default-bg-color:         #FBF7E8;
+  --md-default-fg-color--lightest: #F5EFDC;
+}
+
+/* Tighten admonitions — used heavily in academic docs */
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: 8px;
+  border-left-width: 4px;
+}
+
+/* Code block readability */
+.md-typeset pre > code {
+  font-size: 0.86rem;
+}
+
+/* Tables — center horizontally and add subtle border */
+.md-typeset table:not([class]) {
+  border-radius: 6px;
+  overflow: hidden;
+}
