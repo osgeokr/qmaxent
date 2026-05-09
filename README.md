@@ -70,13 +70,33 @@ covariate ordering at projection time.
 
 ## Citation
 
-If you use QMaxent in your research, please cite:
+If you use QMaxent in your research, please cite the software (a
+SoftwareX paper is in preparation and will replace this citation once
+published):
 
-> Yu, B.-H. (manuscript in preparation). *QMaxent: a QGIS plugin for
-> Maxent species distribution modeling.* SoftwareX.
+**APA 7th**
 
-A `CITATION.cff` file is provided for automatic citation export from
-GitHub.
+> Yu, B.-H. (2026). *QMaxent: a QGIS plugin for Maxent species
+> distribution modeling* (Version 0.1.0) [Computer software].
+> https://github.com/osgeokr/qmaxent
+
+**BibTeX**
+
+```bibtex
+@software{Yu_QMaxent_2026,
+  author  = {Yu, Byeong-Hyeok},
+  title   = {{QMaxent: a QGIS plugin for Maxent species distribution modeling}},
+  version = {0.1.0},
+  date    = {2026-05-09},
+  url     = {https://github.com/osgeokr/qmaxent},
+  license = {MIT}
+}
+```
+
+The canonical source is [`CITATION.cff`](CITATION.cff). GitHub exposes
+it via the "Cite this repository" sidebar widget, and the project
+website renders the same metadata dynamically — update `CITATION.cff`
+and every citation view follows.
 
 ## Methodological references
 
