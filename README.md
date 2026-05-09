@@ -70,9 +70,8 @@ covariate ordering at projection time.
 
 ## Citation
 
-If you use QMaxent in your research, please cite the software (a
-SoftwareX paper is in preparation and will replace this citation once
-published):
+If you use QMaxent in your research, please cite the software using
+the metadata below:
 
 **APA 7th**
 

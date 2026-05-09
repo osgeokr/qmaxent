@@ -23,7 +23,6 @@
 <meta property="og:locale" content="en_US" />
 <meta property="og:locale:alternate" content="ko_KR" />
 
-<!-- Twitter / X -->
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="QMaxent — Maxent SDM in QGIS" />
 <meta name="twitter:description" content="Train, evaluate, and project Maxent species distribution models without leaving QGIS." />
@@ -129,6 +128,23 @@ body[data-lang="ko"] [data-i18n-ko] { display: revert; }
 body[data-lang="en"] li[data-i18n-en], body[data-lang="ko"] li[data-i18n-ko] { display: list-item; }
 body[data-lang="en"] div[data-i18n-en], body[data-lang="ko"] div[data-i18n-ko],
 body[data-lang="en"] section[data-i18n-en], body[data-lang="ko"] section[data-i18n-ko] { display: block; }
+
+/* ---------- Mobile (<=720px): keep brand + lang toggle + GitHub on one tidy row ---------- */
+@media (max-width: 720px) {
+  .container { padding: 0 1rem; }
+  .nav-inner { gap: .55rem; padding: .55rem 0; }
+  .nav-spacer { display: none; }
+  .brand img { width: 24px; height: 24px; }
+  .brand span { font-size: .98rem; }
+  .lang-toggle { flex-shrink: 0; }
+  .lang-toggle button { padding: .3rem .65rem; font-size: .82rem; }
+  .nav .gh { flex-shrink: 0; padding: .35rem .7rem; font-size: .85rem; }
+}
+@media (max-width: 380px) {
+  .lang-toggle button { padding: .28rem .55rem; font-size: .78rem; }
+  .nav .gh { padding: .32rem .6rem; font-size: .8rem; }
+  .brand span { font-size: .92rem; }
+}
 </style>
 </head>
 <body data-lang="en">
@@ -226,8 +242,8 @@ body[data-lang="en"] section[data-i18n-en], body[data-lang="ko"] section[data-i1
   <section id="cite">
     <h2 class="y"><span data-i18n-en>Citation</span><span data-i18n-ko>인용</span></h2>
     <p>
-      <span data-i18n-en>A SoftwareX paper is in preparation. Until it is published, please cite QMaxent as software using the metadata below — generated live from <a href="https://github.com/osgeokr/qmaxent/blob/main/CITATION.cff"><code>CITATION.cff</code></a> at the repo root.</span>
-      <span data-i18n-ko>SoftwareX 논문은 준비 중이며, 출판 전까지는 아래 소프트웨어 인용 형식을 사용해 주세요. 정보는 저장소 루트의 <a href="https://github.com/osgeokr/qmaxent/blob/main/CITATION.cff"><code>CITATION.cff</code></a> 에서 실시간으로 가져옵니다.</span>
+      <span data-i18n-en>If you use QMaxent in your research, please cite the software using the metadata below — generated live from <a href="https://github.com/osgeokr/qmaxent/blob/main/CITATION.cff"><code>CITATION.cff</code></a> at the repo root.</span>
+      <span data-i18n-ko>QMaxent를 연구에 사용하셨다면 아래 소프트웨어 인용 형식을 사용해 주세요. 정보는 저장소 루트의 <a href="https://github.com/osgeokr/qmaxent/blob/main/CITATION.cff"><code>CITATION.cff</code></a> 에서 실시간으로 가져옵니다.</span>
     </p>
     <div class="cite-block">
       <div class="cite-tabs" role="tablist" aria-label="Citation format">
@@ -430,8 +446,8 @@ body[data-lang="en"] section[data-i18n-en], body[data-lang="ko"] section[data-i1
     var apaEl = document.getElementById("cite-apa");
     var bibEl = document.getElementById("cite-bib");
     apaEl.classList.remove("skel"); bibEl.classList.remove("skel");
-    apaEl.innerHTML = 'Yu, B.-H. (2026). <em>QMaxent: a QGIS plugin for Maxent species distribution modeling</em> (Version 0.1.0) [Computer software]. <a href="https://github.com/osgeokr/qmaxent" target="_blank" rel="noopener">https://github.com/osgeokr/qmaxent</a>';
-    bibEl.textContent = "@software{Yu_QMaxent_2026,\n  author  = {Yu, Byeong-Hyeok},\n  title   = {{QMaxent: a QGIS plugin for Maxent species distribution modeling}},\n  version = {0.1.0},\n  date    = {2026-05-09},\n  url     = {https://github.com/osgeokr/qmaxent},\n  license = {MIT}\n}";
+    apaEl.innerHTML = 'Yu, B.-H. (2026). <em>QMaxent: a QGIS plugin for Maxent species distribution modeling</em> (Version 0.1.1) [Computer software]. <a href="https://github.com/osgeokr/qmaxent" target="_blank" rel="noopener">https://github.com/osgeokr/qmaxent</a>';
+    bibEl.textContent = "@software{Yu_QMaxent_2026,\n  author  = {Yu, Byeong-Hyeok},\n  title   = {{QMaxent: a QGIS plugin for Maxent species distribution modeling}},\n  version = {0.1.1},\n  date    = {2026-05-09},\n  url     = {https://github.com/osgeokr/qmaxent},\n  license = {MIT}\n}";
     if (window.console) console.warn("CITATION.cff fetch failed; using fallback.", err);
   }
   fetch(RAW_URL, { cache: "no-cache" })

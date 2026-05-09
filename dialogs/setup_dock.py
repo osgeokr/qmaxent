@@ -56,10 +56,10 @@ class SetupDockWidget(QDockWidget):
         plugin_info.setTextInteractionFlags(Qt.TextBrowserInteraction)
         ag.addWidget(plugin_info)
 
-        # Note: Citation block is intentionally omitted until the SoftwareX
-        # paper is accepted and assigned a DOI. The CITATION.cff file in
-        # the repository root provides programmatic citation metadata in
-        # the meantime (GitHub's "Cite this repository" button reads it).
+        # Note: Citation block is intentionally omitted from the UI; the
+        # CITATION.cff file in the repository root provides programmatic
+        # citation metadata (GitHub's "Cite this repository" button reads
+        # it, and the project website renders it dynamically).
 
         # (2) Dependencies
         info_text = QLabel(tr(

@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "If you use QMaxent in your research, please cite the software as below. A SoftwareX paper is in preparation; once published it will be added here as a preferred-citation."
+message: "If you use QMaxent in your research, please cite the software using the metadata below."
 title: "QMaxent: a QGIS plugin for Maxent species distribution modeling"
 type: software
 authors:
