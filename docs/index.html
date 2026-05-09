@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QMaxent — Species Distribution Modeling with Maxent in QGIS</title>
+<meta name="description" content="QMaxent is a QGIS plugin for Maxent species distribution modeling, integrating the elapid Python library directly into the GIS desktop." />
+
+<link rel="icon" type="image/png" href="assets/logo.png" />
+<link rel="apple-touch-icon" href="assets/logo.png" />
+
+<!-- Open Graph -->
+<meta property="og:title" content="QMaxent — Maxent SDM in QGIS" />
+<meta property="og:description" content="Train, evaluate, and project Maxent species distribution models without leaving QGIS." />
+<meta property="og:image" content="assets/logo.png" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://osgeokr.github.io/qmaxent/" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+<style>
+:root {
+  /* Palette derived from the QMaxent logo */
+  --cream:        #F5EFDC;
+  --cream-soft:   #FBF7E8;
+  --ink:          #1F4147;   /* dark teal — text & headings */
+  --ink-soft:     #3A5A60;
+  --teal:         #3A7E94;   /* primary — Q outline */
+  --teal-deep:    #275C70;
+  --green:        #8BBF54;   /* snake / accent */
+  --green-deep:   #5E8C36;
+  --yellow:       #E8C730;
+  --orange:       #E68A2C;
+  --line:         rgba(31,65,71,.14);
+  --shadow:       0 8px 24px rgba(31,65,71,.10), 0 2px 6px rgba(31,65,71,.06);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: "Inter", "Noto Sans KR", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(1200px 600px at 85% -10%, rgba(232,199,48,.18), transparent 60%),
+    radial-gradient(900px 500px at -10% 30%, rgba(58,126,148,.16), transparent 60%),
+    radial-gradient(700px 400px at 110% 80%, rgba(230,138,44,.14), transparent 60%),
+    var(--cream);
+  line-height: 1.6;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+:lang(ko) body, body[data-lang="ko"] {
+  font-family: "Noto Sans KR", "Inter", system-ui, sans-serif;
+}
+a { color: var(--teal-deep); text-decoration: none; }
+a:hover { color: var(--orange); text-decoration: underline; }
+code, pre, kbd { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+hr { border: 0; border-top: 1px solid var(--line); margin: 3rem 0; }
+
+/* ---------- Layout ---------- */
+.container { max-width: 1080px; margin: 0 auto; padding: 0 1.25rem; }
+
+/* ---------- Header / Nav ---------- */
+.nav {
+  position: sticky; top: 0; z-index: 50;
+  backdrop-filter: saturate(180%) blur(10px);
+  background: rgba(245,239,220,.78);
+  border-bottom: 1px solid var(--line);
+}
+.nav-inner {
+  display: flex; align-items: center; gap: 1rem;
+  padding: .75rem 0;
+}
+.brand { display: flex; align-items: center; gap: .6rem; font-weight: 700; color: var(--ink); }
+.brand img { width: 28px; height: 28px; border-radius: 6px; }
+.nav a.link { color: var(--ink-soft); font-weight: 500; padding: .35rem .6rem; border-radius: 6px; }
+.nav a.link:hover { background: rgba(58,126,148,.10); color: var(--teal-deep); text-decoration: none; }
+.nav-spacer { flex: 1; }
+.lang-toggle {
+  display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; background: var(--cream-soft);
+}
+.lang-toggle button {
+  font: inherit; cursor: pointer; border: 0; background: transparent;
+  padding: .35rem .8rem; color: var(--ink-soft); font-weight: 600;
+}
+.lang-toggle button.active { background: var(--teal); color: white; }
+.nav .gh {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .4rem .8rem; border-radius: 999px;
+  background: var(--ink); color: white; font-weight: 600;
+}
+.nav .gh:hover { background: var(--teal-deep); text-decoration: none; }
+
+/* ---------- Hero ---------- */
+.hero {
+  display: grid; grid-template-columns: 1.1fr 1fr; gap: 3rem;
+  align-items: center; padding: 4.5rem 0 3rem;
+}
+@media (max-width: 820px) { .hero { grid-template-columns: 1fr; padding-top: 2.5rem; gap: 2rem; } }
+
+.hero h1 {
+  font-size: clamp(2.1rem, 4.6vw, 3.2rem); line-height: 1.12;
+  margin: .25rem 0 1rem; letter-spacing: -0.02em; color: var(--ink);
+}
+.hero h1 .accent {
+  background: linear-gradient(90deg, var(--teal) 0%, var(--green) 50%, var(--orange) 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero p.lede { font-size: 1.13rem; color: var(--ink-soft); max-width: 36rem; }
+.hero .badges { margin-top: .75rem; display: flex; gap: .4rem; flex-wrap: wrap; }
+.badge {
+  display: inline-block; padding: .2rem .55rem; border-radius: 999px;
+  font-size: .78rem; font-weight: 600; border: 1px solid var(--line);
+  background: var(--cream-soft); color: var(--ink-soft);
+}
+.badge.green { color: var(--green-deep); border-color: rgba(94,140,54,.35); background: rgba(139,191,84,.12); }
+.badge.teal  { color: var(--teal-deep); border-color: rgba(39,92,112,.35); background: rgba(58,126,148,.12); }
+.badge.orange{ color: #A8530F; border-color: rgba(230,138,44,.4); background: rgba(230,138,44,.12); }
+
+.cta { margin-top: 1.6rem; display: flex; flex-wrap: wrap; gap: .7rem; }
+.btn {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .75rem 1.1rem; border-radius: 10px; font-weight: 600;
+  border: 1px solid transparent; cursor: pointer; transition: transform .08s ease;
+}
+.btn:hover { transform: translateY(-1px); text-decoration: none; }
+.btn.primary { background: var(--ink); color: white; }
+.btn.primary:hover { background: var(--teal-deep); }
+.btn.secondary { background: var(--cream-soft); color: var(--ink); border-color: var(--line); }
+.btn.secondary:hover { border-color: var(--teal); color: var(--teal-deep); }
+
+/* ---------- Logo card ---------- */
+.logo-card {
+  position: relative; padding: 2rem; border-radius: 24px;
+  background: linear-gradient(160deg, var(--cream-soft) 0%, #fff 100%);
+  border: 1px solid var(--line); box-shadow: var(--shadow);
+  display: flex; align-items: center; justify-content: center;
+}
+.logo-card::before {
+  content: ""; position: absolute; inset: -2px; border-radius: 26px;
+  background: conic-gradient(from 200deg, var(--teal), var(--green), var(--yellow), var(--orange), var(--teal));
+  filter: blur(22px); opacity: .35; z-index: -1;
+}
+.logo-card img {
+  width: 100%; max-width: 340px; height: auto;
+  border-radius: 18px;
+  box-shadow: 0 14px 40px rgba(31,65,71,.18);
+}
+
+/* ---------- Sections ---------- */
+section { padding: 3rem 0; }
+section h2 {
+  font-size: 1.7rem; letter-spacing: -0.01em;
+  margin: 0 0 1.25rem; display: flex; align-items: baseline; gap: .6rem;
+}
+section h2::before {
+  content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 3px;
+  background: var(--green); transform: translateY(-2px);
+}
+section h2.t::before { background: var(--teal); }
+section h2.y::before { background: var(--yellow); }
+section h2.o::before { background: var(--orange); }
+section p { color: var(--ink-soft); }
+
+/* Feature grid */
+.grid {
+  display: grid; gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+.card {
+  background: var(--cream-soft); border: 1px solid var(--line); border-radius: 14px;
+  padding: 1.1rem 1.2rem; transition: transform .12s ease, box-shadow .12s ease;
+}
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.card .ico {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 9px; font-size: 1.05rem;
+  background: rgba(58,126,148,.12); color: var(--teal-deep); margin-bottom: .55rem;
+}
+.card.g .ico { background: rgba(139,191,84,.16); color: var(--green-deep); }
+.card.y .ico { background: rgba(232,199,48,.18); color: #8B6F0E; }
+.card.o .ico { background: rgba(230,138,44,.16); color: #A8530F; }
+.card h3 { margin: .15rem 0 .35rem; font-size: 1.02rem; color: var(--ink); }
+.card p { margin: 0; font-size: .94rem; color: var(--ink-soft); }
+
+/* Code block */
+pre.code {
+  background: #1F2A2D; color: #E8EAEA; padding: 1rem 1.1rem; border-radius: 12px;
+  overflow-x: auto; font-size: .9rem; box-shadow: var(--shadow); margin: 1rem 0;
+}
+pre.code .c-c { color: #82A8B0; }   /* comment */
+pre.code .c-k { color: #F4C56B; }   /* keyword */
+pre.code .c-s { color: #B7D38C; }   /* string  */
+.callout {
+  border-left: 4px solid var(--orange);
+  background: rgba(230,138,44,.08); padding: .9rem 1.1rem; border-radius: 6px;
+  color: var(--ink-soft);
+}
+
+/* Quote */
+blockquote.cite {
+  margin: 0; padding: 1rem 1.2rem;
+  background: var(--cream-soft); border-left: 4px solid var(--teal);
+  border-radius: 6px; color: var(--ink);
+}
+
+/* Footer */
+footer {
+  margin-top: 4rem; padding: 2rem 0 3rem; border-top: 1px solid var(--line);
+  color: var(--ink-soft); font-size: .92rem;
+}
+footer .row { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+footer .row .grow { flex: 1; min-width: 200px; }
+
+/* Lang switching */
+[data-i18n-en], [data-i18n-ko] { display: none; }
+body[data-lang="en"] [data-i18n-en] { display: revert; }
+body[data-lang="ko"] [data-i18n-ko] { display: revert; }
+/* For lists/blocks, allow normal display */
+body[data-lang="en"] li[data-i18n-en],
+body[data-lang="ko"] li[data-i18n-ko] { display: list-item; }
+body[data-lang="en"] div[data-i18n-en],
+body[data-lang="ko"] div[data-i18n-ko],
+body[data-lang="en"] section[data-i18n-en],
+body[data-lang="ko"] section[data-i18n-ko] { display: block; }
+</style>
+</head>
+<body data-lang="en">
+
+<header class="nav">
+  <div class="container nav-inner">
+    <a href="#" class="brand">
+      <img src="assets/logo.png" alt="QMaxent logo" />
+      <span>QMaxent</span>
+    </a>
+    <nav class="nav-spacer">
+      <a class="link" href="#features"><span data-i18n-en>Features</span><span data-i18n-ko>주요 기능</span></a>
+      <a class="link" href="#install"><span data-i18n-en>Install</span><span data-i18n-ko>설치</span></a>
+      <a class="link" href="#quickstart"><span data-i18n-en>Quick start</span><span data-i18n-ko>빠른 시작</span></a>
+      <a class="link" href="#cite"><span data-i18n-en>Cite</span><span data-i18n-ko>인용</span></a>
+    </nav>
+    <div class="lang-toggle" role="group" aria-label="Language">
+      <button id="lang-en" class="active" type="button">EN</button>
+      <button id="lang-ko" type="button">한국어</button>
+    </div>
+    <a class="gh" href="https://github.com/osgeokr/qmaxent" target="_blank" rel="noopener">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+        <path d="M8 .2a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.33c-2.22.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.05-.49.05-.49.81.06 1.23.83 1.23.83.71 1.23 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.77-.2-3.64-.89-3.64-3.96 0-.88.31-1.59.83-2.15-.08-.2-.36-1.03.08-2.15 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.03 2.2-.82 2.2-.82.44 1.12.16 1.95.08 2.15.52.56.83 1.27.83 2.15 0 3.08-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 8 .2z"/>
+      </svg>
+      GitHub
+    </a>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div>
+      <div class="badges">
+        <span class="badge teal">QGIS 3.44+</span>
+        <span class="badge green">elapid · scikit-learn</span>
+        <span class="badge orange">MIT License</span>
+      </div>
+      <h1>
+        <span data-i18n-en>Maxent <span class="accent">species distribution modeling</span> — without leaving QGIS.</span>
+        <span data-i18n-ko>QGIS 안에서 끝내는 <span class="accent">Maxent 종 분포 모델링</span>.</span>
+      </h1>
+      <p class="lede">
+        <span data-i18n-en>QMaxent integrates the <a href="https://github.com/earth-chris/elapid" target="_blank" rel="noopener">elapid</a> Python library into QGIS to deliver the full Maxent SDM workflow — training, spatial cross-validation, jackknife importance, and projection — through a familiar bilingual interface.</span>
+        <span data-i18n-ko><a href="https://github.com/earth-chris/elapid" target="_blank" rel="noopener">elapid</a> Python 라이브러리를 QGIS에 통합해, 모델 학습부터 공간 교차검증, Jackknife 변수 중요도, 서식적합도 투영까지 Maxent SDM 전 과정을 한국어/영어 UI로 제공합니다.</span>
+      </p>
+      <div class="cta">
+        <a class="btn primary" href="https://github.com/osgeokr/qmaxent" target="_blank" rel="noopener">
+          <span data-i18n-en>View on GitHub</span><span data-i18n-ko>GitHub에서 보기</span>
+        </a>
+        <a class="btn secondary" href="#install">
+          <span data-i18n-en>Install guide</span><span data-i18n-ko>설치 안내</span>
+        </a>
+      </div>
+    </div>
+    <div class="logo-card">
+      <img src="assets/logo.png" alt="QMaxent — Q with grid pattern and elapid (snake) figure" />
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <h2 class="t"><span data-i18n-en>Features</span><span data-i18n-ko>주요 기능</span></h2>
+    <div class="grid">
+      <div class="card">
+        <div class="ico">M</div>
+        <h3><span data-i18n-en>Maxent modeling</span><span data-i18n-ko>Maxent 모델링</span></h3>
+        <p>
+          <span data-i18n-en>Linear, quadratic, hinge, product, threshold features with auto-selection by the documented maxnet rule.</span>
+          <span data-i18n-ko>Linear · Quadratic · Hinge · Product · Threshold 피처와 maxnet 자동 선택 규칙 지원.</span>
+        </p>
+      </div>
+      <div class="card g">
+        <div class="ico">CV</div>
+        <h3><span data-i18n-en>Spatial cross-validation</span><span data-i18n-ko>공간 교차검증</span></h3>
+        <p>
+          <span data-i18n-en>Geographic K-Fold, Checkerboard, Buffered Leave-One-Out with pooled AUC.</span>
+          <span data-i18n-ko>Geographic K-Fold, Checkerboard, Buffered LOO + pooled AUC 제공.</span>
+        </p>
+      </div>
+      <div class="card y">
+        <div class="ico">JK</div>
+        <h3><span data-i18n-en>Jackknife importance</span><span data-i18n-ko>Jackknife 중요도</span></h3>
+        <p>
+          <span data-i18n-en>Train + held-out test AUCs across folds, mirroring original Maxent output.</span>
+          <span data-i18n-ko>학습/검증 AUC를 fold별로 평균해 원본 Maxent와 동일한 형식으로 출력.</span>
+        </p>
+      </div>
+      <div class="card o">
+        <div class="ico">P</div>
+        <h3><span data-i18n-en>Projection</span><span data-i18n-ko>공간 투영</span></h3>
+        <p>
+          <span data-i18n-en>Cloglog / logistic / raw transforms with auto-styled habitat suitability layer.</span>
+          <span data-i18n-ko>Cloglog · Logistic · Raw 변환을 적용해 자동 스타일된 서식적합도 래스터 출력.</span>
+        </p>
+      </div>
+      <div class="card">
+        <div class="ico">PS</div>
+        <h3><span data-i18n-en>Priority sites</span><span data-i18n-ko>우선조사 후보지</span></h3>
+        <p>
+          <span data-i18n-en>Discovery and validation modes (MTP / T10 / MaxSSS / Custom) with Nominatim reverse geocoding.</span>
+          <span data-i18n-ko>발견(Discovery)·검증(Validation) 모드와 MTP/T10/MaxSSS/Custom 임계값, Nominatim 역지오코딩 지원.</span>
+        </p>
+      </div>
+      <div class="card g">
+        <div class="ico">.pkl</div>
+        <h3><span data-i18n-en>Model save / load</span><span data-i18n-ko>모델 저장 / 불러오기</span></h3>
+        <p>
+          <span data-i18n-en>Reload .pkl with a guided variable-mapping dialog that prevents silent ordering errors.</span>
+          <span data-i18n-ko>.pkl 재사용 시 변수 매핑 대화상자로 래스터 순서 오류를 사전 차단.</span>
+        </p>
+      </div>
+      <div class="card y">
+        <div class="ico">XL</div>
+        <h3><span data-i18n-en>Publication-ready exports</span><span data-i18n-ko>논문용 결과 내보내기</span></h3>
+        <p>
+          <span data-i18n-en>Multi-sheet styled XLSX (Times New Roman) for direct paste into manuscript supplements.</span>
+          <span data-i18n-ko>Times New Roman 서식의 다중 시트 XLSX — 보충자료에 그대로 첨부 가능.</span>
+        </p>
+      </div>
+      <div class="card o">
+        <div class="ico">한/EN</div>
+        <h3><span data-i18n-en>Bilingual UI</span><span data-i18n-ko>이중 언어 UI</span></h3>
+        <p>
+          <span data-i18n-en>English source strings with full Korean translations.</span>
+          <span data-i18n-ko>영문 원본 + 한국어 번역 완비.</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSTALL -->
+  <section id="install">
+    <h2 class="o"><span data-i18n-en>Installation</span><span data-i18n-ko>설치</span></h2>
+    <p>
+      <span data-i18n-en>QMaxent runs on QGIS 3.44 or later. The plugin installs Python dependencies into an isolated per-plugin virtual environment, so it does not modify your system Python or QGIS install.</span>
+      <span data-i18n-ko>QGIS 3.44 이상에서 동작합니다. Python 의존성은 플러그인 전용 가상환경에 설치되므로 시스템 Python이나 QGIS 환경에 영향을 주지 않습니다.</span>
+    </p>
+    <ol>
+      <li>
+        <span data-i18n-en>In QGIS: <strong>Plugins → Manage and Install Plugins</strong> → search for <em>QMaxent</em> → <strong>Install Plugin</strong>.</span>
+        <span data-i18n-ko>QGIS에서 <strong>플러그인 → 플러그인 관리 및 설치</strong>를 열고 <em>QMaxent</em>를 검색하여 <strong>설치</strong>하세요.</span>
+      </li>
+      <li>
+        <span data-i18n-en>Open <strong>Plugins → QMaxent → QMaxent Dependencies</strong> and click <strong>Install / Update Dependencies</strong>.</span>
+        <span data-i18n-ko><strong>플러그인 → QMaxent → QMaxent Dependencies</strong>를 열고 <strong>Install / Update Dependencies</strong>를 클릭합니다.</span>
+      </li>
+      <li>
+        <span data-i18n-en>The first install downloads <code>elapid</code>, <code>rasterio</code>, <code>geopandas</code>, <code>scikit-learn</code> and related packages (≈ 300–500 MB).</span>
+        <span data-i18n-ko>최초 설치 시 <code>elapid</code>, <code>rasterio</code>, <code>geopandas</code>, <code>scikit-learn</code> 등 약 300–500 MB의 패키지를 다운로드합니다.</span>
+      </li>
+    </ol>
+    <div class="callout">
+      <strong>⚠ <span data-i18n-en>Security note on .pkl files.</span><span data-i18n-ko>.pkl 파일 보안 안내.</span></strong>
+      <span data-i18n-en> Loading a malicious pickle file can execute arbitrary code. Only load .pkl files that you (or a trusted collaborator) produced with QMaxent.</span>
+      <span data-i18n-ko> 신뢰할 수 없는 .pkl 파일은 임의 코드 실행 위험이 있으므로, 본인 또는 신뢰할 수 있는 협력자가 생성한 파일만 불러오세요.</span>
+    </div>
+  </section>
+
+  <!-- QUICKSTART -->
+  <section id="quickstart">
+    <h2><span data-i18n-en>Quick start</span><span data-i18n-ko>빠른 시작</span></h2>
+    <ol>
+      <li><span data-i18n-en>Open <strong>Plugins → QMaxent → QMaxent Analysis</strong>.</span><span data-i18n-ko><strong>플러그인 → QMaxent → QMaxent Analysis</strong>를 엽니다.</span></li>
+      <li><span data-i18n-en><strong>① Data</strong>: select a presence-point layer and add environmental rasters.</span><span data-i18n-ko><strong>① Data</strong>: 출현 지점 레이어와 환경 변수 래스터를 추가합니다.</span></li>
+      <li><span data-i18n-en><strong>② Parameters</strong>: choose feature types, regularization, spatial CV, and output paths.</span><span data-i18n-ko><strong>② Parameters</strong>: 피처 유형, 정규화, 공간 교차검증 방식, 출력 경로를 설정합니다.</span></li>
+      <li><span data-i18n-en>Click <strong>▶ Run Maxent</strong> — progress is shown in the <strong>③ Training</strong> tab.</span><span data-i18n-ko><strong>▶ Run Maxent</strong>를 클릭하면 <strong>③ Training</strong> 탭에 진행률이 표시됩니다.</span></li>
+      <li><span data-i18n-en><strong>④ Results</strong>: inspect ROC, response curves, jackknife — then run spatial projection.</span><span data-i18n-ko><strong>④ Results</strong>: ROC · 반응곡선 · Jackknife를 확인한 뒤 공간 투영을 실행합니다.</span></li>
+    </ol>
+  </section>
+
+  <!-- CITATION -->
+  <section id="cite">
+    <h2 class="y"><span data-i18n-en>Citation</span><span data-i18n-ko>인용</span></h2>
+    <p>
+      <span data-i18n-en>If you use QMaxent in your research, please cite:</span>
+      <span data-i18n-ko>연구에 QMaxent를 사용하셨다면 다음과 같이 인용해 주세요:</span>
+    </p>
+    <blockquote class="cite">
+      Yu, B.-H. (manuscript in preparation). <em>QMaxent: a QGIS plugin for Maxent species distribution modeling.</em> SoftwareX.
+    </blockquote>
+    <p>
+      <span data-i18n-en>A <a href="https://github.com/osgeokr/qmaxent/blob/main/CITATION.cff"><code>CITATION.cff</code></a> file is provided for automatic citation export from GitHub.</span>
+      <span data-i18n-ko>GitHub에서 자동 인용 정보를 추출할 수 있도록 <a href="https://github.com/osgeokr/qmaxent/blob/main/CITATION.cff"><code>CITATION.cff</code></a> 파일을 함께 제공합니다.</span>
+    </p>
+  </section>
+
+  <!-- ISSUES -->
+  <section id="issues">
+    <h2 class="t"><span data-i18n-en>Issues &amp; contributions</span><span data-i18n-ko>이슈 및 기여</span></h2>
+    <p>
+      <span data-i18n-en>Bug reports and feature requests are welcome at the <a href="https://github.com/osgeokr/qmaxent/issues">issue tracker</a>. Pull requests are equally welcome — please open an issue first to discuss larger changes.</span>
+      <span data-i18n-ko>버그 리포트와 기능 제안은 <a href="https://github.com/osgeokr/qmaxent/issues">이슈 트래커</a>에서 환영합니다. Pull Request도 환영하며, 큰 변경은 사전 이슈로 논의 후 진행해 주세요.</span>
+    </p>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container row">
+    <div class="grow">
+      <strong>QMaxent</strong> · MIT License · © 2026 Byeong-Hyeok Yu (<a href="mailto:bhyu@knps.or.kr">bhyu@knps.or.kr</a>)
+    </div>
+    <div>
+      <a href="https://github.com/osgeokr/qmaxent">GitHub</a> ·
+      <a href="https://github.com/osgeokr/qmaxent/issues">Issues</a> ·
+      <a href="https://github.com/osgeokr/qmaxent/blob/main/LICENSE">License</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const KEY = "qmaxent.lang";
+  const en = document.getElementById("lang-en");
+  const ko = document.getElementById("lang-ko");
+  function apply(lang) {
+    document.body.dataset.lang = lang;
+    document.documentElement.lang = lang;
+    en.classList.toggle("active", lang === "en");
+    ko.classList.toggle("active", lang === "ko");
+    try { localStorage.setItem(KEY, lang); } catch (_) {}
+  }
+  let initial = "en";
+  try { initial = localStorage.getItem(KEY) || (navigator.language && navigator.language.startsWith("ko") ? "ko" : "en"); } catch (_) {}
+  apply(initial);
+  en.addEventListener("click", () => apply("en"));
+  ko.addEventListener("click", () => apply("ko"));
+})();
+</script>
+</body>
+</html>

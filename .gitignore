@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# QGIS
+*.qgs~
+*.qgz~
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Plugin packaging
+*.zip
+
+# Outputs / model artifacts users may drop in repo by mistake
+*.pkl
+*.tif
+*.tiff
+*.gpkg
+*.sqlite
+
+# Jupyter / temp
+.ipynb_checkpoints/
+*.log

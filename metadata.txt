@@ -1,0 +1,60 @@
+[general]
+name=QMaxent
+qgisMinimumVersion=3.44
+qgisMaximumVersion=3.99
+description=Maxent species distribution modeling (SDM) in QGIS via the elapid Python library — full workflow from data preparation through post-prediction survey planning.
+version=0.1.0
+author=Byeong-Hyeok Yu
+email=bhyu@knps.or.kr
+about=QMaxent runs the full Maxent SDM workflow inside QGIS, integrating
+    the elapid Python library so the user never has to leave the GIS.
+
+    Modeling:
+    - Auto / Manual feature types (LQPHT) with the maxnet auto-rule
+    - Categorical variable support via one-hot encoding
+    - Optional distance-weight bias correction (Phillips 2009)
+
+    Data preparation:
+    - Check + Harmonize raster workflow (CRS, extent, resolution)
+    - One-click example datasets — Bradypus and Ariolimax
+
+    Evaluation:
+    - Cross-validation: Geographic K-Fold (default), Random K-Fold,
+      Checkerboard, Buffered LOO
+    - Jackknife variable importance averaged across CV folds
+      (train + held-out test AUCs)
+    - ROC and per-variable response curves
+
+    Projection:
+    - Cloglog / logistic / raw output transforms
+    - Auto-styled habitat-suitability layer added to the project
+    - Save / load (.pkl) with guided variable-mapping dialog
+
+    Priority Sites for Survey:
+    - Discovery mode: random or top-N sampling within a high-suitability
+      band (auto-set to raster max × 0.9), with spacing constraints
+      relative to existing presences and between candidate sites
+    - Validation mode: stratified sampling across four suitability
+      quartiles (Rhoden et al. 2017), with MTP / T10 / MaxSSS / Custom
+      threshold methods defining the lower bound
+    - OpenStreetMap Nominatim reverse geocoding (no API key)
+
+    Results export:
+    - Multi-sheet styled XLSX (Times New Roman, academic-paper
+      Supplementary Table convention) covering experimental setup,
+      variable inventory, cross-validation, jackknife importance,
+      and Priority Sites thresholds — ready to paste into a
+      manuscript supplement.
+
+    Bilingual UI (English / Korean). Dependencies install into a
+    per-plugin virtual environment that does not affect QGIS.
+tracker=https://github.com/osgeokr/qmaxent/issues
+repository=https://github.com/osgeokr/qmaxent
+tags=species distribution model,maxent,sdm,ecology,biogeography,habitat suitability,spatial cross-validation,jackknife,priority sites,conservation,raster,vector,korean
+homepage=https://github.com/osgeokr/qmaxent
+category=Analysis
+icon=icons/icon.png
+experimental=True
+deprecated=False
+hasProcessingProvider=False
+changelog=0.1.0 - Initial release.

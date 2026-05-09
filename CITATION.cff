@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: "If you use QMaxent in your research, please cite both the software and the SoftwareX paper (when published) listed under preferred-citation."
+title: "QMaxent: a QGIS plugin for Maxent species distribution modeling"
+type: software
+authors:
+  - family-names: Yu
+    given-names: Byeong-Hyeok
+    email: bhyu@knps.or.kr
+version: 0.1.0
+license: MIT
+repository-code: "https://github.com/osgeokr/qmaxent"
+url: "https://github.com/osgeokr/qmaxent"
+keywords:
+  - species distribution model
+  - maxent
+  - SDM
+  - QGIS
+  - ecology
+  - biogeography
+abstract: >
+  QMaxent integrates the elapid Python library into QGIS to provide
+  Maxent-style species distribution modeling. It supports model training,
+  spatial projection, spatial cross-validation (Geographic K-Fold,
+  Checkerboard, Buffered Leave-One-Out), and jackknife variable
+  importance analysis directly within QGIS.
+preferred-citation:
+  type: article
+  title: "QMaxent: a QGIS plugin for Maxent species distribution modeling"
+  authors:
+    - family-names: Yu
+      given-names: Byeong-Hyeok
+      email: bhyu@knps.or.kr
+  journal: "SoftwareX"
+  year: 2026
+  notes: "manuscript in preparation"

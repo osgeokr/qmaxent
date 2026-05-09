@@ -1,0 +1,8 @@
+title: QMaxent
+description: Species Distribution Modeling with Maxent in QGIS
+theme: null
+plugins: []
+include:
+  - assets
+exclude:
+  - README.md
