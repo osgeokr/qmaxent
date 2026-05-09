@@ -1,0 +1,7 @@
+# MkDocs Material theme overrides
+
+This directory is referenced by `mkdocs.yml` (`theme.custom_dir: overrides`) so
+that custom partial templates can be dropped in later — for example a custom
+`main.html`, header, footer, or 404 page.
+
+Currently empty; the `.gitkeep` file ensures git tracks the directory.
