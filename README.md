@@ -77,7 +77,7 @@ published):
 **APA 7th**
 
 > Yu, B.-H. (2026). *QMaxent: a QGIS plugin for Maxent species
-> distribution modeling* (Version 0.1.0) [Computer software].
+> distribution modeling* (Version 0.1.1) [Computer software].
 > https://github.com/osgeokr/qmaxent
 
 **BibTeX**
@@ -86,7 +86,7 @@ published):
 @software{Yu_QMaxent_2026,
   author  = {Yu, Byeong-Hyeok},
   title   = {{QMaxent: a QGIS plugin for Maxent species distribution modeling}},
-  version = {0.1.0},
+  version = {0.1.1},
   date    = {2026-05-09},
   url     = {https://github.com/osgeokr/qmaxent},
   license = {MIT}

@@ -368,11 +368,22 @@ def reverse_geocode_one(lat: float, lon: float,
         "zoom": "14",         # ~ city / town level
     })
     url = f"{NOMINATIM_URL}?{qs}"
+    # Defence in depth: urllib.request.urlopen accepts file:// and other
+    # local schemes by default. NOMINATIM_URL is a hardcoded https URL,
+    # but we validate the scheme explicitly so that a future change (or
+    # any unexpected substitution) cannot turn this into a local-file
+    # read. Bandit B310.
+    if not url.lower().startswith(("http://", "https://")):
+        raise ValueError(
+            f"Refusing to fetch non-HTTP(S) URL: {url!r}"
+        )
     req = urllib.request.Request(
         url, headers={"User-Agent": NOMINATIM_USER_AGENT}
     )
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as r:
+        # Bandit B310: scheme is validated immediately above to be
+        # http(s) only, so file:// / ftp:// abuse is impossible here.
+        with urllib.request.urlopen(req, timeout=timeout) as r:  # nosec B310
             data = json.loads(r.read().decode("utf-8"))
     except Exception:
         return {"country": "", "province": "", "city_county": "",

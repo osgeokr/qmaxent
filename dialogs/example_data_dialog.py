@@ -190,6 +190,15 @@ class _DownloadWorker(QThread):
                         return
                     url = f"{self._base_url}/{fname}"
                     dst = os.path.join(self._dst_dir, fname)
+                    # Defence in depth: urllib.request.urlopen permits
+                    # file:// and other local schemes. Our base URLs are
+                    # hardcoded https constants, but we still gate the
+                    # scheme here so this can never become a local-file
+                    # read if an upstream constant changes. Bandit B310.
+                    if not url.lower().startswith(("http://", "https://")):
+                        raise ValueError(
+                            f"Refusing to download non-HTTP(S) URL: {url!r}"
+                        )
                     # Use a User-Agent because some hosts (notably the
                     # raw.githubusercontent.com CDN) reject default
                     # urllib clients.
@@ -197,8 +206,11 @@ class _DownloadWorker(QThread):
                         url,
                         headers={"User-Agent": "qmaxent/0.1.0"},
                     )
-                    with urllib.request.urlopen(req, timeout=30) as r, \
-                         open(dst, "wb") as f:
+                    # Bandit B310: scheme is validated immediately
+                    # above to be http(s) only, so file:// / ftp://
+                    # abuse is impossible here.
+                    resp = urllib.request.urlopen(req, timeout=30)  # nosec B310
+                    with resp as r, open(dst, "wb") as f:
                         while True:
                             if self._cancel:
                                 self.finished.emit(False, "Cancelled", [])
