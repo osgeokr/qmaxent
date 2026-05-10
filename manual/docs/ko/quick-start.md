@@ -123,5 +123,5 @@ Spatial Projection 하위 탭은 학습된 모델을 전체 환경 변수 래스
 - **학습된 모델을 나중에 재사용** → [모델 저장 및 재사용](saving-models.md)
 - **결과를 논문으로 정리** → [결과 내보내기](exporting-results.md)
 - **기본값의 근거를 이해** → [방법론 해설](methodological-background.md)
-- **더 깊이 있는 사례 분석** → [실전 예제](examples/index.md) 가 Bradypus,
-    Ariolimax, Pitta nympha를 차례대로 다룹니다.
+- **더 깊이 있는 사례 분석** → [실전 예제](examples/index.md) 가 Bradypus, Ariolimax,
+    Pitta nympha를 차례대로 다룹니다.

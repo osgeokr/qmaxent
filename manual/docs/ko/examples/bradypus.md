@@ -185,5 +185,5 @@ result as QGIS layer** 켠 상태에서 **▶ Run Spatial Projection** 클릭:
 - **발표된 연구와 같은 워크플로 비교**: [Pitta nympha 예제](pitta-nympha.md) 는
     발표된 Java MaxEnt 분석을 QMaxent에서 재현하고 두 파이프라인이 일치/차이를
     보이는 지점을 논의합니다.
-- **더 깊은 이론**: [방법론 해설](../methodological-background.md) 이 본 투어에서
+- **더 깊이 있는 이론**: [방법론 해설](../methodological-background.md) 이 본 투어에서
     수용한 각 기본값이 왜 올바른 선택인지 설명합니다.

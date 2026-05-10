@@ -54,5 +54,4 @@ flowchart LR
     style C fill:#FBF7E8,stroke:#3A7E94
     style E fill:#FBF7E8,stroke:#5E8C36
 ```
-
 다음 다섯 장에서 각 탭을 차례로 다룹니다.
