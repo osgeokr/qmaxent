@@ -572,15 +572,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#remove-environment" class="md-nav__link">
-    <span class="md-ellipsis">
-      Remove Environment
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#what-is-installed" class="md-nav__link">
     <span class="md-ellipsis">
       What is installed
@@ -590,9 +581,27 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#remove-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Remove Environment
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#troubleshooting" class="md-nav__link">
     <span class="md-ellipsis">
       Troubleshooting
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-note-on-the-virtual-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Security note on the virtual environment
     </span>
   </a>
   
@@ -1166,15 +1175,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#remove-environment" class="md-nav__link">
-    <span class="md-ellipsis">
-      Remove Environment
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#what-is-installed" class="md-nav__link">
     <span class="md-ellipsis">
       What is installed
@@ -1184,9 +1184,27 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#remove-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Remove Environment
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#troubleshooting" class="md-nav__link">
     <span class="md-ellipsis">
       Troubleshooting
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-note-on-the-virtual-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Security note on the virtual environment
     </span>
   </a>
   
@@ -1211,19 +1229,107 @@
 
 
 <h1 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Permanent link">&para;</a></h1>
-<p>QMaxent installs its Python dependencies into an isolated, per-plugin virtual environment so they do not affect QGIS itself or your system Python. This chapter walks through the <strong>Plugins → QMaxent → QMaxent Dependencies</strong> dialog.</p>
+<p>QMaxent's modeling engine — the <a href="https://github.com/earth-chris/elapid">elapid</a>
+Python library and its companions (<a href="https://rasterio.readthedocs.io/">rasterio</a>,
+<a href="https://geopandas.org/">geopandas</a>, <a href="https://scikit-learn.org/">scikit-learn</a>,
+<a href="https://matplotlib.org/">matplotlib</a>) — does not ship with QGIS. The first
+time you use the plugin, you install these dependencies into an <strong>isolated,
+per-plugin virtual environment</strong> so they do not affect your system Python or
+QGIS itself.</p>
+<p>This is a one-time, ~5-minute setup.</p>
 <h2 id="opening-the-dependencies-dialog">Opening the Dependencies dialog<a class="headerlink" href="#opening-the-dependencies-dialog" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>Choose <strong>Plugins → QMaxent → QMaxent Dependencies</strong>.</p>
+<p><img alt="QMaxent Dependencies dialog before install showing Status: Dependencies not installed" src="../images/ui/dialog-dependencies.png" /></p>
+<p>The dialog reports the current state of the QMaxent virtual environment, the
+plugin version, and a summary of what will be installed.</p>
 <h2 id="environment-status-panel">Environment Status panel<a class="headerlink" href="#environment-status-panel" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>The status banner at the top tells you exactly what to do:</p>
+<table>
+<thead>
+<tr>
+<th>Banner</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>✗ <strong>Dependencies not installed</strong></td>
+<td>First-time setup needed (the case above)</td>
+</tr>
+<tr>
+<td>✓ <strong>QMaxent environment ready</strong></td>
+<td>Everything is installed and ready to model</td>
+</tr>
+<tr>
+<td>⚠ <strong>Update available</strong></td>
+<td>New version of one or more dependencies recommended</td>
+</tr>
+</tbody>
+</table>
 <h2 id="install-update-dependencies">Install / Update Dependencies<a class="headerlink" href="#install-update-dependencies" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
-<h2 id="remove-environment">Remove Environment<a class="headerlink" href="#remove-environment" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>Click <strong>Install / Update Dependencies</strong>. The plugin downloads the packages from
+<a href="https://pypi.org">PyPI</a> into the path shown at the bottom of the dialog
+(default: <code>~/.qgis_qmaxent</code> on macOS/Linux, <code>%USERPROFILE%\.qgis_qmaxent</code>
+on Windows). Total download is approximately <strong>300–500 MB</strong> depending on your
+platform; allow 3–8 minutes on a typical broadband connection.</p>
+<p>When the installer finishes, the status banner turns green:</p>
+<p><img alt="QMaxent Dependencies dialog after install showing Status: ✓ QMaxent environment ready" src="../images/ui/dialog-dependencies-installed.png" /></p>
+<p>You can now close the dialog and open <strong>QMaxent Analysis</strong> — the modeling
+workflow is unlocked.</p>
 <h2 id="what-is-installed">What is installed<a class="headerlink" href="#what-is-installed" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>QMaxent installs the following packages and their transitive dependencies:</p>
+<ul>
+<li><strong><a href="https://github.com/earth-chris/elapid">elapid</a></strong> — the Maxent engine
+    (maxnet algorithm, spatial cross-validation, projection)</li>
+<li><strong><a href="https://rasterio.readthedocs.io/">rasterio</a></strong> — raster I/O</li>
+<li><strong><a href="https://geopandas.org/">geopandas</a></strong> — vector I/O for presence points</li>
+<li><strong><a href="https://scikit-learn.org/">scikit-learn</a></strong> — cross-validation, ROC, AUC</li>
+<li><strong><a href="https://scipy.org/">scipy</a></strong> + <strong><a href="https://numpy.org/">numpy</a></strong> — numerical core</li>
+<li><strong><a href="https://matplotlib.org/">matplotlib</a></strong> — response curves, ROC, jackknife plots</li>
+</ul>
+<p>These are pinned to versions that QMaxent has been tested against; the
+plugin's release notes record which versions ship with each release.</p>
+<h2 id="remove-environment">Remove Environment<a class="headerlink" href="#remove-environment" title="Permanent link">&para;</a></h2>
+<p>Use <strong>Remove Environment</strong> to delete the entire QMaxent virtual environment
+from disk. You might do this to:</p>
+<ul>
+<li>Free disk space if you no longer need QMaxent</li>
+<li>Force a fresh re-install when something is broken</li>
+<li>Switch to a different QMaxent version that pins different package versions</li>
+</ul>
+<p>After removal, the status banner returns to <em>Dependencies not installed</em> and
+<strong>Install / Update Dependencies</strong> becomes available again.</p>
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<details class="warning">
+<summary>Installation fails with a network or SSL error</summary>
+<p>Most often this is a corporate proxy or firewall blocking
+<a href="https://pypi.org">PyPI</a>. Ask your administrator to allow <code>pypi.org</code> and
+<code>files.pythonhosted.org</code>. The installer respects QGIS's proxy settings,
+so configuring those in <strong>Settings → Options → Network</strong> usually fixes it.</p>
+</details>
+<details class="warning">
+<summary>Disk space exhausted during install</summary>
+<p>The installer needs roughly twice the final size as scratch space while
+extracting wheels. Free at least 1 GB on the drive that holds your home
+directory before retrying.</p>
+</details>
+<details class="warning">
+<summary>“No module named …” after a successful install</summary>
+<p>Restart QGIS once. Python's import cache occasionally needs a clean
+process to pick up the new environment.</p>
+</details>
+<details class="warning">
+<summary>Plugin starts but Run Maxent button is disabled</summary>
+<p>Open the <strong>Dependencies</strong> dialog and confirm the status is green. If it
+is, restart QGIS; if it is not, click <strong>Install / Update Dependencies</strong>
+again.</p>
+</details>
+<h2 id="security-note-on-the-virtual-environment">Security note on the virtual environment<a class="headerlink" href="#security-note-on-the-virtual-environment" title="Permanent link">&para;</a></h2>
+<p>QMaxent's environment is created with the standard Python <code>venv</code> module and
+populated only from PyPI. The plugin does not execute arbitrary code from
+remote sources at runtime. Saved-model files (<code>.pkl</code>) are a separate concern;
+see <a href="../saving-models/">Saving and reusing models</a> for the security note on
+loading pickle files from untrusted sources.</p>
 
 
 

@@ -1211,19 +1211,90 @@
 
 
 <h1 id="3">③ 학습 탭<a class="headerlink" href="#3" title="Permanent link">&para;</a></h1>
-<p><strong>▶ Run Maxent</strong> 버튼을 클릭하면 ③ 학습 탭이 활성화됩니다. 진행률 바는 폴드별 진행 상황을, 그 아래 로그는 모델이 수행 중인 작업을 기록합니다 — 느린 실행, 거대한 래스터, 수렴 문제를 진단할 때 유용합니다.</p>
+<p>도크 하단의 <strong>▶ Run Maxent</strong> 를 클릭하면 학습 탭으로 포커스가 이동합니다. 진행률
+바가 폴드별 진행을, 그 아래 로그 패널이 모델이 수행 중인 작업을 실시간으로 기록합니다 —
+느린 실행, 거대한 래스터, 수렴 문제를 진단할 때 유용합니다.</p>
+<p><img alt="대기 상태의 학습 탭" src="../../images/ui/dock-3-training-waiting.png" /></p>
 <h2 id="run">Run 클릭 시 일어나는 일<a class="headerlink" href="#run" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>QMaxent가 다음 파이프라인을 실행합니다 — 각 단계가 로그에 상태 줄을 작성합니다:</p>
+<pre class="mermaid"><code>flowchart TD
+    A["배경 지점 표본 추출"] --&gt; B["래스터 공변량 추출&lt;br/&gt;(presence + background)"]
+    B --&gt; C["maxnet 자동 규칙 적용&lt;br/&gt;(또는 수동 피처 선택)"]
+    C --&gt; D["전체 Maxent 모델 적합&lt;br/&gt;(전체 데이터)"]
+    D --&gt; E["모델 저장 (.pkl)"]
+    D --&gt; F["학습 ROC / AUC 계산"]
+    F --&gt; G{"공간 CV&lt;br/&gt;방법?"}
+    G --&gt;|Geographic K-Fold| H["폴드 구성, 폴드별 적합,&lt;br/&gt;보류 점수 수집"]
+    G --&gt;|Checkerboard / Random / Buffered LOO| H
+    G --&gt;|None| I[CV 생략]
+    H --&gt; J["Jackknife 중요도 계산&lt;br/&gt;(활성화 시)"]
+    I --&gt; J
+    J --&gt; K["결과 XLSX 작성"]</code></pre>
+<p>전체 파이프라인이 일반적인 데이터셋(약 100개 출현 지점, 10개 래스터, 10,000개
+배경 지점)에서 모던 노트북 기준 <strong>15–60초</strong> 안에 완료됩니다. 더 큰 데이터셋은
+출현 지점 수에 대략 선형으로 확장됩니다.</p>
 <h2 id="_1">진행률 바<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>상단 바가 전체 파이프라인 진행을 보고합니다(0–100%). 주요 마일스톤 — 전체 모델
+적합, 각 CV 폴드, Jackknife 패스 — 가 측정 가능한 정도로 바를 진행시키므로 한눈에
+실행이 정상인지 알 수 있습니다.</p>
 <h2 id="_2">학습 로그<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>진행률 바 아래 로그 패널이 모든 단계를 기록합니다. Bradypus 실행이 성공적으로
+끝난 후의 모습:</p>
+<p><img alt="100% 완료된 학습 탭과 전체 로그: 116 presence, 9,997 background, train AUC=0.9562, CV AUC=0.7581 ± 0.0920, 변수별 jackknife" src="../../images/ui/dock-3-training-completed.png" /></p>
+<p>로그를 위에서 아래로 읽으세요 — 실행에서 일어난 일의 가장 완전한 기록입니다.
+스크린샷에서:</p>
+<ul>
+<li><code>→ 10,000 background points sampled</code> — 표본 추출 완료</li>
+<li><code>→ Presence: 116, Background: 9,997</code> — 최종 개수 (NaN 셀 때문에 요청보다 약간 적음)</li>
+<li><code>→ Feature types: ['linear', 'quadratic', 'product', 'hinge', 'threshold']</code>
+    — 자동 규칙이 n=116에 대해 모든 LQPHT 선택</li>
+<li><code>→ Training AUC = 0.9562</code></li>
+<li>폴드별 CV AUC (5개 폴드, 0.59 – 0.86 범위)</li>
+<li><code>→ CV AUC = 0.7581 ± 0.0920</code> — 폴드 평균 ± 표준편차</li>
+<li>Jackknife 블록: 9개 변수 각각의 <code>only_tr / only_te / without_tr / without_te</code></li>
+<li><code>→ Results XLSX saved: …</code> — 최종 산출물 위치</li>
+</ul>
+<p>같은 핵심 수치(<code>train AUC=0.9562</code>, <code>CV AUC=0.7581</code>)가 도크의 영구 상태바에 그대로
+표시되어 탭을 전환해도 계속 보입니다.</p>
 <h2 id="_3">자주 보는 경고와 의미<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<table>
+<thead>
+<tr>
+<th>로그 메시지</th>
+<th>의미</th>
+<th>대응</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Some background points overlap presences (n=…)</code></td>
+<td><em>Add presences to background</em> 켰을 때의 정상 결과. 카운트일 뿐 오류가 아님.</td>
+<td>n이 매우 크지 않으면 무시</td>
+</tr>
+<tr>
+<td><code>Categorical variable has only one level in fold k</code></td>
+<td>한 CV 폴드의 범주형 래스터에 변동이 없음</td>
+<td>더 거친 범주 또는 다른 CV 방법</td>
+</tr>
+<tr>
+<td><code>Failed to converge after 200 iterations</code></td>
+<td>수치 문제, 보통 공선 변수 때문</td>
+<td>가장 공선인 쌍을 제거 (XLSX의 상관 행렬 활용)</td>
+</tr>
+<tr>
+<td><code>Some rasters have NaN cells inside the study extent</code></td>
+<td>누락 셀이 제외됨</td>
+<td>연구 영역 마스크가 의도한 대로인지 확인</td>
+</tr>
+</tbody>
+</table>
 <h2 id="_4">실행 취소<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>QGIS 작업 관리자(QGIS 메인 윈도우 하단)에 QMaxent 학습 작업이 표시됩니다.
+<strong>Cancel</strong> 버튼으로 중단하세요. 부분 출력은 작성되지 않습니다.</p>
 <h2 id="clear-log">Clear log 버튼<a class="headerlink" href="#clear-log" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>패널 하단의 <strong>Clear log</strong> 버튼은 로그 텍스트를 지웁니다. 저장된 <code>.pkl</code> 과 XLSX는
+영향받지 않습니다. 다음 실험 전에 깨끗한 화면을 원하는 다중 실행 세션을 위한 편의
+기능입니다.</p>
 
 
 

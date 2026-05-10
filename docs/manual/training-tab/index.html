@@ -1211,19 +1211,98 @@
 
 
 <h1 id="3-training-tab">③ Training tab<a class="headerlink" href="#3-training-tab" title="Permanent link">&para;</a></h1>
-<p>When you click <strong>▶ Run Maxent</strong>, control switches to the Training tab. A progress bar shows fold-by-fold progress; the log below records what the model is doing — useful for diagnosing slow runs, oversized rasters, or convergence issues.</p>
+<p>When you click <strong>▶ Run Maxent</strong> at the bottom of the dock, focus shifts to
+the Training tab. A progress bar shows fold-by-fold progress and a log
+panel records what the model is doing in real time — useful for diagnosing
+slow runs, oversized rasters, or convergence issues.</p>
+<p><img alt="Training tab in its initial waiting state" src="../images/ui/dock-3-training-waiting.png" /></p>
 <h2 id="what-happens-when-you-click-run">What happens when you click Run<a class="headerlink" href="#what-happens-when-you-click-run" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>QMaxent runs the following pipeline; each step writes a status line to the
+log:</p>
+<pre class="mermaid"><code>flowchart TD
+    A["Sample background points"] --&gt; B["Extract raster covariates&lt;br/&gt;(presence + background)"]
+    B --&gt; C["Apply maxnet auto-rule&lt;br/&gt;(or your manual feature choice)"]
+    C --&gt; D["Fit full Maxent model&lt;br/&gt;(all data)"]
+    D --&gt; E["Save model (.pkl)"]
+    D --&gt; F["Compute training ROC / AUC"]
+    F --&gt; G{"Spatial CV&lt;br/&gt;method?"}
+    G --&gt;|Geographic K-Fold| H["Build folds, fit per-fold,&lt;br/&gt;collect held-out scores"]
+    G --&gt;|Checkerboard / Random / Buffered LOO| H
+    G --&gt;|None| I[Skip CV]
+    H --&gt; J["Compute jackknife importance&lt;br/&gt;across folds (if enabled)"]
+    I --&gt; J
+    J --&gt; K["Write results XLSX"]</code></pre>
+<p>The whole pipeline typically completes in <strong>15–60 seconds</strong> on a modern
+laptop for a moderately sized dataset (~100 presences, 10 rasters, 10,000
+background points). Larger datasets scale roughly linearly with presence
+count.</p>
 <h2 id="progress-bar">Progress bar<a class="headerlink" href="#progress-bar" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>The bar at the top reports overall pipeline progress (0–100 %). Major
+milestones — full-model fit, each CV fold, jackknife pass — each advance
+the bar a measurable amount, so you can tell at a glance whether the run is
+healthy.</p>
 <h2 id="training-log">Training log<a class="headerlink" href="#training-log" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>Below the progress bar, the log panel records every step. After a successful
+Bradypus run it looks like this:</p>
+<p><img alt="Training tab at 100% with full log: 116 presences, 9,997 background, train AUC = 0.9562, CV AUC = 0.7581 ± 0.0920, jackknife per variable" src="../images/ui/dock-3-training-completed.png" /></p>
+<p>Read the log top-down — it is the most complete record of what happened in
+the run. From the screenshot:</p>
+<ul>
+<li><code>→ 10,000 background points sampled</code> — sampling completed</li>
+<li><code>→ Presence: 116, Background: 9,997</code> — final counts (slightly under the
+    request because of NaN cells)</li>
+<li><code>→ Feature types: ['linear', 'quadratic', 'product', 'hinge', 'threshold']</code>
+    — the auto-rule chose all five LQPHT for n = 116</li>
+<li><code>→ Training AUC = 0.9562</code></li>
+<li>Per-fold CV AUCs (5 folds, ranging 0.59 – 0.86)</li>
+<li><code>→ CV AUC = 0.7581 ± 0.0920</code> — mean ± standard deviation across folds</li>
+<li>Jackknife block: <code>only_tr / only_te / without_tr / without_te</code> for each of
+    the 9 variables</li>
+<li><code>→ Results XLSX saved: …</code> — final artifact location</li>
+</ul>
+<p>The same headline numbers (<code>train AUC=0.9562</code>, <code>CV AUC=0.7581</code>) are echoed
+in the dock's permanent status bar so they remain visible after you switch
+tabs.</p>
 <h2 id="common-warnings-and-what-they-mean">Common warnings and what they mean<a class="headerlink" href="#common-warnings-and-what-they-mean" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<table>
+<thead>
+<tr>
+<th>Log message</th>
+<th>Meaning</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Some background points overlap presences (n=…)</code></td>
+<td>Expected with <em>Add presences to background</em> on. Just a count, not an error.</td>
+<td>Ignore unless n is very large</td>
+</tr>
+<tr>
+<td><code>Categorical variable has only one level in fold k</code></td>
+<td>One CV fold ended up with no variation in a categorical raster</td>
+<td>Use a coarser categorical scheme, or switch CV method</td>
+</tr>
+<tr>
+<td><code>Failed to converge after 200 iterations</code></td>
+<td>Numerical issue, usually caused by collinear variables</td>
+<td>Drop the most collinear pair (correlation matrix in the XLSX helps)</td>
+</tr>
+<tr>
+<td><code>Some rasters have NaN cells inside the study extent</code></td>
+<td>Missing-data cells were excluded</td>
+<td>Confirm your study area mask is intentional</td>
+</tr>
+</tbody>
+</table>
 <h2 id="cancelling-a-run">Cancelling a run<a class="headerlink" href="#cancelling-a-run" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>The QGIS task manager (bottom of the QGIS main window) lists the QMaxent
+training task. Use its <strong>Cancel</strong> button to abort. Partial outputs are not
+written.</p>
 <h2 id="clear-log-button">Clear log button<a class="headerlink" href="#clear-log-button" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>The <strong>Clear log</strong> button at the bottom of the panel wipes the log text. The
+saved <code>.pkl</code> and XLSX are not affected. This is just a convenience for
+multi-run sessions where you want a clean slate before the next experiment.</p>
 
 
 

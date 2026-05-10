@@ -664,18 +664,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#layout-at-a-glance" class="md-nav__link">
+  <a href="#the-five-tabs-at-a-glance" class="md-nav__link">
     <span class="md-ellipsis">
-      Layout at a glance
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-five-tabs" class="md-nav__link">
-    <span class="md-ellipsis">
-      The five tabs
+      The five tabs at a glance
     </span>
   </a>
   
@@ -684,7 +675,7 @@
         <li class="md-nav__item">
   <a href="#status-bar-and-run-buttons" class="md-nav__link">
     <span class="md-ellipsis">
-      Status bar and run buttons
+      Status bar and Run buttons
     </span>
   </a>
   
@@ -694,6 +685,15 @@
   <a href="#loading-an-existing-model" class="md-nav__link">
     <span class="md-ellipsis">
       Loading an existing model
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a-typical-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      A typical workflow
     </span>
   </a>
   
@@ -1139,18 +1139,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#layout-at-a-glance" class="md-nav__link">
+  <a href="#the-five-tabs-at-a-glance" class="md-nav__link">
     <span class="md-ellipsis">
-      Layout at a glance
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-five-tabs" class="md-nav__link">
-    <span class="md-ellipsis">
-      The five tabs
+      The five tabs at a glance
     </span>
   </a>
   
@@ -1159,7 +1150,7 @@
         <li class="md-nav__item">
   <a href="#status-bar-and-run-buttons" class="md-nav__link">
     <span class="md-ellipsis">
-      Status bar and run buttons
+      Status bar and Run buttons
     </span>
   </a>
   
@@ -1169,6 +1160,15 @@
   <a href="#loading-an-existing-model" class="md-nav__link">
     <span class="md-ellipsis">
       Loading an existing model
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a-typical-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      A typical workflow
     </span>
   </a>
   
@@ -1193,17 +1193,82 @@
 
 
 <h1 id="the-analysis-dock">The Analysis dock<a class="headerlink" href="#the-analysis-dock" title="Permanent link">&para;</a></h1>
-<p>The QMaxent Analysis dock is the heart of the plugin — it organises the entire SDM workflow into five numbered tabs that you progress through in order. This chapter is a quick tour of the layout before each tab gets its own detailed chapter.</p>
+<p>The QMaxent Analysis dock is the heart of the plugin. It organises the entire
+SDM workflow into <strong>five numbered tabs</strong> that you progress through in order,
+left to right. This chapter is a quick tour of the layout; each tab then has
+its own detailed chapter.</p>
 <h2 id="opening-the-dock">Opening the dock<a class="headerlink" href="#opening-the-dock" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
-<h2 id="layout-at-a-glance">Layout at a glance<a class="headerlink" href="#layout-at-a-glance" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
-<h2 id="the-five-tabs">The five tabs<a class="headerlink" href="#the-five-tabs" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
-<h2 id="status-bar-and-run-buttons">Status bar and run buttons<a class="headerlink" href="#status-bar-and-run-buttons" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>Choose <strong>Plugins → QMaxent → QMaxent Analysis</strong>. The dock opens on the right
+side of the QGIS main window by default and can be detached, floated, or
+re-docked using the standard QGIS panel handles.</p>
+<p><img alt="Analysis dock — empty Data tab, showing the five-tab structure" src="../images/ui/dock-1-data-empty.png" /></p>
+<h2 id="the-five-tabs-at-a-glance">The five tabs at a glance<a class="headerlink" href="#the-five-tabs-at-a-glance" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Tab</th>
+<th>What you do here</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>①</td>
+<td><strong>Data</strong></td>
+<td>Choose the species (presence-point layer) and environmental rasters; check that everything aligns</td>
+</tr>
+<tr>
+<td>②</td>
+<td><strong>Parameters</strong></td>
+<td>Pick Maxent feature types, regularization, spatial cross-validation method, and output paths</td>
+</tr>
+<tr>
+<td>③</td>
+<td><strong>Training</strong></td>
+<td>Watch the model fit; read the log for AUC, jackknife results, and any warnings</td>
+</tr>
+<tr>
+<td>④</td>
+<td><strong>Results</strong></td>
+<td>Inspect response curves, jackknife variable importance, and run spatial projection</td>
+</tr>
+<tr>
+<td>⑤</td>
+<td><strong>Priority Sites for Survey</strong></td>
+<td>Generate field-ready candidate sites from a trained model</td>
+</tr>
+</tbody>
+</table>
+<p>The numbered prefix is intentional — it signals the order. You cannot use
+the <strong>Results</strong> tab before <strong>Training</strong> has completed, and <strong>Priority Sites</strong>
+needs a finished projection raster.</p>
+<h2 id="status-bar-and-run-buttons">Status bar and Run buttons<a class="headerlink" href="#status-bar-and-run-buttons" title="Permanent link">&para;</a></h2>
+<p>Two elements stay fixed regardless of which tab is active:</p>
+<ul>
+<li>The <strong>status bar</strong> at the bottom-left summarises the current model state
+    (e.g. <code>presence=116 background=10,113 train AUC=0.9562 CV AUC=0.7581</code>).
+    Empty before training; populated after.</li>
+<li>The big <strong>▶ Run Maxent</strong> button at the bottom-right kicks off the full
+    training+evaluation pipeline. Clicking it switches focus to the Training
+    tab automatically.</li>
+</ul>
 <h2 id="loading-an-existing-model">Loading an existing model<a class="headerlink" href="#loading-an-existing-model" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>Sometimes you want to reuse a model you trained earlier rather than start
+from scratch. The <strong>Load existing model (.pkl)…</strong> button at the top right of
+the <strong>Data</strong> tab opens a dialog that re-hydrates a saved Maxent model and
+asks you to map each model variable to a current QGIS raster layer. See
+<a href="../saving-models/">Saving and reusing models</a> for the full workflow and the
+security note on pickle files.</p>
+<h2 id="a-typical-workflow">A typical workflow<a class="headerlink" href="#a-typical-workflow" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart LR
+    A[① Data] --&gt; B[② Parameters]
+    B --&gt; C[③ Training]
+    C --&gt; D[④ Results]
+    D --&gt;|Spatial Projection| E[Habitat-suitability raster]
+    E --&gt; F[⑤ Priority Sites for Survey]
+    style C fill:#FBF7E8,stroke:#3A7E94
+    style E fill:#FBF7E8,stroke:#5E8C36</code></pre>
+<p>The next five chapters take each tab in turn.</p>
 
 
 

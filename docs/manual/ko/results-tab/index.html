@@ -754,30 +754,78 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Jackknife 중요도">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#roc" class="md-nav__link">
+    <span class="md-ellipsis">
+      ROC 패널 (좌측)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jackknife_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Jackknife 패널 (우측)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
+  <a href="#spatial-projection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Spatial Projection
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Spatial Projection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
-      공간 투영
+      출력 변환
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#cloglog-logistic-raw" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#auto-load-result-as-qgis-layer" class="md-nav__link">
     <span class="md-ellipsis">
-      출력 변환 (cloglog / logistic / raw)
+      Auto-load result as QGIS layer
     </span>
   </a>
   
 </li>
+        
+          <li class="md-nav__item">
+  <a href="#save-analysis-charts-as-png" class="md-nav__link">
+    <span class="md-ellipsis">
+      Save analysis charts as PNG
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#png" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
-      분석 차트 PNG 저장
+      메모리와 성능
     </span>
   </a>
   
@@ -1145,30 +1193,78 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Jackknife 중요도">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#roc" class="md-nav__link">
+    <span class="md-ellipsis">
+      ROC 패널 (좌측)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jackknife_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Jackknife 패널 (우측)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
+  <a href="#spatial-projection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Spatial Projection
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Spatial Projection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
-      공간 투영
+      출력 변환
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#cloglog-logistic-raw" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#auto-load-result-as-qgis-layer" class="md-nav__link">
     <span class="md-ellipsis">
-      출력 변환 (cloglog / logistic / raw)
+      Auto-load result as QGIS layer
     </span>
   </a>
   
 </li>
+        
+          <li class="md-nav__item">
+  <a href="#save-analysis-charts-as-png" class="md-nav__link">
+    <span class="md-ellipsis">
+      Save analysis charts as PNG
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#png" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
-      분석 차트 PNG 저장
+      메모리와 성능
     </span>
   </a>
   
@@ -1193,17 +1289,123 @@
 
 
 <h1 id="4">④ 결과 탭<a class="headerlink" href="#4" title="Permanent link">&para;</a></h1>
-<p>학습이 성공적으로 완료되면 ④ 결과 탭의 세 하위 탭이 활성화됩니다: <strong>Response Curves</strong>(각 변수가 예측 적합도에 어떻게 영향을 미치는지), <strong>Jackknife Importance</strong>(가장 중요한 변수), <strong>Spatial Projection</strong>(예측을 GeoTIFF로 출력하고 스타일된 QGIS 레이어로 불러오기).</p>
+<p>성공적인 실행 후 결과 탭의 세 하위 탭이 활성화됩니다:</p>
+<table>
+<thead>
+<tr>
+<th>하위 탭</th>
+<th>표시 내용</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Response Curves</strong></td>
+<td>각 변수가 데이터 범위에서 예측 적합도를 어떻게 형성하는지</td>
+</tr>
+<tr>
+<td><strong>Jackknife Importance</strong></td>
+<td>어떤 변수가 가장 중요한지, ROC와 함께</td>
+</tr>
+<tr>
+<td><strong>Spatial Projection</strong></td>
+<td>예측을 GeoTIFF로 작성하고 스타일링된 QGIS 레이어로 불러오기</td>
+</tr>
+</tbody>
+</table>
 <h2 id="response-curves">Response Curves<a class="headerlink" href="#response-curves" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>상단 드롭다운에서 변수를 하나 선택하세요. QMaxent가 변수의 실제 학습 범위(음영
+영역)에 걸쳐 예측 cloglog 적합도를 그리며, 평균을 수직 기준선으로 표시합니다:</p>
+<p><img alt="학습 범위에 걸친 bio1의 예측 cloglog 적합도 반응곡선" src="../../images/ui/dock-4-response-curve-bio1.png" /></p>
+<p>반응곡선 읽는 법:</p>
+<ul>
+<li><strong>Y축</strong> — cloglog 적합도 확률(0–1)</li>
+<li><strong>X축</strong> — 변수의 원래 단위 값. 음영 "Training range" 영역이 모델이 실제로 본
+    데이터 범위 — 이 영역 밖으로 곡선이 연장되면 외삽이며 신중하게 해석해야 합니다
+    (<a href="../methodological-background/">방법론 해설</a> 논의 참고)</li>
+<li><strong>날카로운 봉우리나 계단</strong> 은 보통 hinge 또는 threshold 피처 — 부드러운 곡선은
+    linear와 quadratic 피처에서 옴</li>
+<li><strong>변수별 해석</strong>: 곡선은 다른 모든 변수를 평균으로 고정한 채 한 변수에 대한 부분
+    반응을 보여줌 — 생태학적 해석에 사용하고, 예측에는 사용하지 마세요.</li>
+</ul>
+<p>드롭다운에서 자유롭게 변수를 전환하세요 — 모델을 재실행하지 않고 그래프가 다시
+그려집니다.</p>
 <h2 id="jackknife">Jackknife 중요도<a class="headerlink" href="#jackknife" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
-<h2 id="_1">공간 투영<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
-<h2 id="cloglog-logistic-raw">출력 변환 (cloglog / logistic / raw)<a class="headerlink" href="#cloglog-logistic-raw" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
-<h2 id="png">분석 차트 PNG 저장<a class="headerlink" href="#png" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>Jackknife 하위 탭은 플러그인에서 가장 정보 밀도가 높은 화면입니다 — ROC 분석
+(학습과 폴드별 CV)을 변수 중요도 막대와 함께 한 사이드-바이-사이드 그림에 결합:</p>
+<p><img alt="9개 Bradypus 변수의 ROC 곡선과 Jackknife 변수 중요도" src="../../images/ui/dock-4-jackknife-bars.png" /></p>
+<h3 id="roc">ROC 패널 (좌측)<a class="headerlink" href="#roc" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Training ROC</strong> (실선): 표본 내 적합. 항상 낙관적.</li>
+<li><strong>Mean CV ROC</strong> (점선): 모든 CV 폴드의 평균. 이것이 모델의 핵심 성능 추정.</li>
+<li><strong>Per-fold ROC</strong> (희미한 선): 각 공간 CV 폴드의 ROC. 분산은 모델이 공간 부분
+    표본에 걸쳐 얼마나 안정적인지 시각화.</li>
+<li><strong>Random</strong> (대각선): 무작위 기준선.</li>
+</ul>
+<p>Bradypus 예제는 train AUC 0.956과 CV AUC 0.758을 보여줍니다 — 모델이 진짜 신호를
+학습했고 심각한 과적합이 아님을 시사하는 전형적이고 건강한 격차입니다.</p>
+<h3 id="jackknife_1">Jackknife 패널 (우측)<a class="headerlink" href="#jackknife_1" title="Permanent link">&para;</a></h3>
+<p>각 변수에 두 개의 막대:</p>
+<ul>
+<li><strong>With only variable</strong> (어두움): <em>이 변수만</em> 가진 모델의 예측 성능. 높음 = 변수가
+    강한 단변량 신호 보유.</li>
+<li><strong>Without variable</strong> (밝음): <em>이 변수 없이</em> 모델의 성능. (전체 모델 AUC 대비)
+    낮음 = 변수가 다른 변수와 중복되지 않는 고유 정보 보유.</li>
+</ul>
+<p><strong>어두움이 높고 밝음에 눈에 띄는 하락을 만드는</strong> 변수는 명백히 중요합니다. 어두움이
+높지만 밝음이 거의 변하지 않는 변수는 다른 변수와 중복(상관 가능성 높음). 각 막대의
+검증/학습 분할은 같은 화면에 표시 — 값 라벨은 CV 폴드의 보류 검증 AUC.</p>
+<h2 id="spatial-projection">Spatial Projection<a class="headerlink" href="#spatial-projection" title="Permanent link">&para;</a></h2>
+<p>이 하위 탭은 학습된 모델을 전체 래스터 스택에 적용해 연속 서식적합도 표면을
+생성합니다.</p>
+<p><img alt="실행 후 Spatial Projection 하위 탭 — 출력 GeoTIFF 경로 표시" src="../../images/ui/dock-4-projection-done.png" /></p>
+<h3 id="_1">출력 변환<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>변환</th>
+<th>범위</th>
+<th>해석</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>cloglog</strong> <em>(기본)</em></td>
+<td>0–1</td>
+<td>평균 출현율에서의 출현 확률 (Phillips et al. 2017)</td>
+</tr>
+<tr>
+<td><strong>logistic</strong></td>
+<td>0–1</td>
+<td>이전 logistic 변환 — 하위 호환성용</td>
+</tr>
+<tr>
+<td><strong>raw</strong></td>
+<td>무제한</td>
+<td>상대 출현율 — 연구 영역 전체 합이 1</td>
+</tr>
+</tbody>
+</table>
+<p><code>cloglog</code> 가 거의 모든 연구의 권장 기본값입니다 — 적절한 확률적 해석을 가지며,
+상대 출현율과 선형으로 스케일하고, 현대 Maxent 문헌이 보고하는 형식입니다.</p>
+<h3 id="auto-load-result-as-qgis-layer">Auto-load result as QGIS layer<a class="headerlink" href="#auto-load-result-as-qgis-layer" title="Permanent link">&para;</a></h3>
+<p>기본값으로 켜져 있으며, 결과 GeoTIFF가 작성되는 즉시 QGIS 프로젝트에 추가되어
+자동 적용된 흰색-초록 연속 색상으로 스타일됩니다. Bradypus의 결과:</p>
+<p><img alt="중남미 전역의 Bradypus 서식적합도 지도, 흰색=낮음, 초록=높음" src="../../images/maps/quickstart-final-suitability.png" /></p>
+<p>이후 레이어의 <strong>Symbology</strong> 패널에서 색상을 재정의할 수 있습니다 — QMaxent의 자동
+스타일링은 합리적인 기본값일 뿐입니다.</p>
+<h3 id="save-analysis-charts-as-png">Save analysis charts as PNG<a class="headerlink" href="#save-analysis-charts-as-png" title="Permanent link">&para;</a></h3>
+<p>체크하면 QMaxent가 Response Curves, ROC, Jackknife 그래프의 고해상도 PNG 사본도
+GeoTIFF 옆에 작성합니다. 이 그림들은 발표 가능한 수준이며 본 탭에 보이는 것과
+일치합니다 — 원고 그림 직접 붙여넣기용 크기(300 dpi)로 저장됩니다.</p>
+<h2 id="_2">메모리와 성능<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>공간 투영은 각 래스터 셀을 셀 단위로 읽어 모델을 적용합니다. 매우 큰 래스터(30 m
+해상도의 대륙 규모)는 투영 단계가 실행 시간을 지배합니다. 두 가지 팁:</p>
+<ul>
+<li><strong>연구 범위로 미리 타일링</strong> — QGIS의 <code>Clip raster by extent</code> 또는 <code>Warp</code> 알고리즘
+    사용</li>
+<li><strong>해상도 거칠게</strong> — 30 m 기후 래스터는 거의 의미 없음. 250 m–1 km가 보통 SDM에
+    충분하고 훨씬 빠름.</li>
+</ul>
 
 
 
