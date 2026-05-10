@@ -7,8 +7,8 @@ authors:
     given-names: Byeong-Hyeok
     email: bhyu@knps.or.kr
     affiliation: Korea National Park Service
-version: 0.1.1
-date-released: 2026-05-09
+version: 0.1.2
+date-released: 2026-05-10
 license: MIT
 repository-code: "https://github.com/osgeokr/qmaxent"
 url: "https://osgeokr.github.io/qmaxent/"

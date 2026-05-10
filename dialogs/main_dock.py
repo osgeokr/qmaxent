@@ -853,8 +853,8 @@ class QMaxentMainDock(QDockWidget):
     # Results are reverse-geocoded via OpenStreetMap Nominatim and
     # added to QGIS as a styled vector layer.
     #
-    # All academic decisions exposed here are documented in the project's
-    # README and methodological references (see CITATION.cff).
+    # All academic decisions exposed here are referenced in the SoftwareX
+    # paper's "Software description" section, sub-section 2.3.
 
     def _build_priority_tab(self) -> QWidget:
         w = QWidget(); v = QVBoxLayout(w)
@@ -2838,11 +2838,18 @@ class QMaxentMainDock(QDockWidget):
 
         for i, (path, name) in enumerate(zip(raster_paths, feature_names)):
             try:
+                is_categorical = i in cat_set
                 with rasterio.open(path) as src:
                     h, w = src.height, src.width
-                    if h * w > TARGET_PIXELS:
-                        # Downsample to target resolution. We use
-                        # ceil so we never read 0×0 for tiny rasters.
+                    if not is_categorical and h * w > TARGET_PIXELS:
+                        # Downsample for the extrapolation check on
+                        # continuous variables — extrapolation is a
+                        # fraction-of-pixels measure so a stratified
+                        # subsample is fine. Categorical rasters MUST
+                        # be read at full resolution: downsampling can
+                        # silently drop rare codes that nonetheless
+                        # appear at full resolution and would crash the
+                        # projection mid-run.
                         factor = max(1, int(np.sqrt(h * w / TARGET_PIXELS)))
                         out_h, out_w = max(1, h // factor), max(1, w // factor)
                         arr = src.read(1, out_shape=(out_h, out_w))
@@ -2882,73 +2889,140 @@ class QMaxentMainDock(QDockWidget):
         return extrap_pct, unknown_cats
 
     def _show_preflight_dialog(self, extrap_pct, unknown_cats):
-        """Present preflight findings; return True if the user wants to
-        proceed, False if they cancel (or if categorical unknowns force
-        a refusal).
+        """Present preflight findings in a single unified dialog.
 
-        Two distinct outcomes:
-          • Categorical unknown codes → REFUSE. The projection would
-            crash mid-run with a cryptic OneHotEncoder ValueError;
-            blocking up front saves the user 30+ seconds and gives
-            them an actionable message.
-          • Continuous extrapolation > 10% on any variable → WARN.
-            The user can still proceed (some users explicitly want
-            extrapolated maps for hypothesis generation), but they
-            see the per-variable percentages first.
+        Two outcomes can be reported, individually or together:
+          • Categorical unknown codes → masked to NoData by
+            ``_mask_unknown_categorical_codes``. Informational only.
+          • Continuous extrapolation > 10% on any variable → asks
+            for explicit confirmation, since extrapolated predictions
+            can be unreliable (Elith et al. 2010).
 
-        Returns True only if there are no fatal issues AND either
-          (a) no warnings, or
-          (b) the user explicitly clicked "Yes proceed".
+        Returns True unless the user cancels.
         """
         from qgis.PyQt.QtWidgets import QMessageBox
-
-        if unknown_cats:
-            details = "\n".join(
-                f"  • {name}: codes {codes} not present in training data"
-                for name, codes in sorted(unknown_cats.items())
-            )
-            QMessageBox.critical(
-                self,
-                tr("Projection blocked: unknown categorical codes"),
-                tr(
-                    "The new rasters contain categorical codes that "
-                    "the model has never seen during training, so "
-                    "the projection cannot run — elapid's encoder "
-                    "would reject them mid-projection.\n\n"
-                    "{details}\n\n"
-                    "To proceed: either clip the projection extent "
-                    "to remove those areas, or retrain the model on "
-                    "a region that includes those categories."
-                ).format(details=details),
-            )
-            return False
 
         EXTRAP_THRESHOLD = 10.0
         over = {
             n: p for n, p in extrap_pct.items() if p >= EXTRAP_THRESHOLD
         }
+        if not unknown_cats and not over:
+            return True
+
+        sections = []
+        if unknown_cats:
+            details = "\n".join(
+                f"  • {name}: codes {codes} not present in training data"
+                for name, codes in sorted(unknown_cats.items())
+            )
+            sections.append(
+                tr(
+                    "Categorical codes unseen in training will be "
+                    "masked to NoData in the output (transparent "
+                    "pixels):\n\n{details}"
+                ).format(details=details)
+            )
         if over:
             details = "\n".join(
                 f"  • {name}: {pct:.1f}% of pixels outside training range"
                 for name, pct in sorted(over.items(), key=lambda kv: -kv[1])
             )
+            sections.append(
+                tr(
+                    "Continuous variables extending beyond the model's "
+                    "training range — predictions there may be unreliable "
+                    "(Elith et al. 2010):\n\n{details}"
+                ).format(details=details)
+            )
+
+        body = "\n\n———\n\n".join(sections)
+
+        if over:
             reply = QMessageBox.warning(
                 self,
-                tr("Environmental extrapolation"),
-                tr(
-                    "Some new rasters extend beyond the model's "
-                    "training ranges. Predictions outside the "
-                    "training envelope are extrapolations and may "
-                    "be unreliable (Elith et al. 2010).\n\n"
-                    "{details}\n\n"
-                    "Proceed with the projection anyway?"
-                ).format(details=details),
+                tr("Projection preflight"),
+                body + "\n\n" + tr("Proceed with the projection anyway?"),
                 QMessageBox.Yes | QMessageBox.Cancel,
                 QMessageBox.Cancel,
             )
             return reply == QMessageBox.Yes
 
+        QMessageBox.information(
+            self,
+            tr("Projection preflight"),
+            body + "\n\n" + tr(
+                "The projection will continue. Masked pixels appear "
+                "as transparent / no-data in the output map."
+            ),
+        )
         return True
+
+    def _mask_unknown_categorical_codes(
+        self, raster_paths, unknown_cats, feature_names
+    ):
+        """Write temp copies of categorical rasters where codes the
+        model never saw during training are replaced with NoData.
+
+        Returns a new ``raster_paths`` list. Rasters with no unseen
+        codes pass through unchanged.
+        """
+        import os
+        import tempfile
+        import numpy as np
+        import rasterio
+
+        if not unknown_cats:
+            return raster_paths
+
+        new_paths = list(raster_paths)
+        tmpdir = tempfile.gettempdir()
+
+        for i, (path, name) in enumerate(zip(raster_paths, feature_names)):
+            unseen = unknown_cats.get(name)
+            if not unseen:
+                continue
+            try:
+                with rasterio.open(path) as src:
+                    profile = src.profile.copy()
+                    arr = src.read(1)
+                    nodata = src.nodata
+                if nodata is None:
+                    if np.issubdtype(arr.dtype, np.integer):
+                        info = np.iinfo(arr.dtype)
+                        nodata = (
+                            -9999 if info.min <= -9999 <= info.max
+                            else int(info.min)
+                        )
+                    else:
+                        nodata = float("nan")
+                mask = np.isin(arr, list(unseen))
+                if not mask.any():
+                    continue
+                arr_out = arr.copy()
+                arr_out[mask] = nodata
+                profile.update(nodata=nodata)
+                safe = "".join(
+                    c if c.isalnum() else "_" for c in str(name)
+                )
+                out_path = os.path.join(
+                    tmpdir, f"qmaxent_masked_{safe}.tif"
+                )
+                with rasterio.open(out_path, "w", **profile) as dst:
+                    dst.write(arr_out, 1)
+                new_paths[i] = out_path
+                QgsMessageLog.logMessage(
+                    f"QMaxent: masked {int(mask.sum())} pixels in "
+                    f"{name} (unseen codes {sorted(unseen)}) "
+                    f"→ {out_path}",
+                    "QMaxent", Qgis.Info,
+                )
+            except Exception as e:
+                QgsMessageLog.logMessage(
+                    f"QMaxent: failed to mask unknown codes in "
+                    f"{name}: {e}", "QMaxent", Qgis.Warning,
+                )
+
+        return new_paths
 
     def _project_model(self):
         if self._model is None:
@@ -3007,6 +3081,14 @@ class QMaxentMainDock(QDockWidget):
             if not self._show_preflight_dialog(extrap_pct, unknown_cats):
                 self._proj_status.setText(tr("Projection cancelled."))
                 return
+
+            # v0.1.2 — auto-mask training-unseen categorical codes to
+            # NoData so the projection runs across the full extent
+            # rather than refusing outright.
+            if unknown_cats:
+                raster_paths = self._mask_unknown_categorical_codes(
+                    raster_paths, unknown_cats, feature_names
+                )
 
         self._proj_btn.setEnabled(False)
         self._proj_progress.setValue(0); self._proj_progress.show()

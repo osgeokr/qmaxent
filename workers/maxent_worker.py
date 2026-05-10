@@ -1268,9 +1268,9 @@ class MaxentWorker(QThread):
                 f"without_te={without_test_auc:.4f}"
             )
             if only_skip_reason:
-                self.log.emit(f"     ⚠ {only_skip_reason}")
+                self.log.emit(f"     {only_skip_reason}")
             if without_skip_reason:
-                self.log.emit(f"     ⚠ {without_skip_reason}")
+                self.log.emit(f"     {without_skip_reason}")
 
         return results, full_train_auc, full_test_auc
 
