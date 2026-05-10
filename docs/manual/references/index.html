@@ -1040,6 +1040,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#plugin-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Plugin architecture
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#cross-validation-and-model-evaluation" class="md-nav__link">
     <span class="md-ellipsis">
       Cross-validation and model evaluation
@@ -1175,6 +1184,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#plugin-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Plugin architecture
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#cross-validation-and-model-evaluation" class="md-nav__link">
     <span class="md-ellipsis">
       Cross-validation and model evaluation
@@ -1253,7 +1271,7 @@ groups the works the plugin draws on by topic, with a one-line annotation on
 how each reference is used inside QMaxent. The plugin source code carries
 inline citations to these works in the relevant modules
 (<code>workers/maxent_worker.py</code>, <code>bridge/elapid_bridge.py</code>,
-<code>bridge/priority_sites.py</code>).</p>
+<code>bridge/priority_sites.py</code>, <code>core/venv_manager.py</code>).</p>
 <h2 id="maxent-core-methodology">Maxent — core methodology<a class="headerlink" href="#maxent-core-methodology" title="Permanent link">&para;</a></h2>
 <p><strong>Phillips, S. J., Anderson, R. P., &amp; Schapire, R. E. (2006).</strong> Maximum
 entropy modeling of species geographic distributions. <em>Ecological
@@ -1291,6 +1309,16 @@ delegates to.</em></p>
 <em>Nature</em>, 585, 357–362.
 <em>The array library underlying elapid, scikit-learn, and the QMaxent
 raster-extraction layer.</em></p>
+<h2 id="plugin-architecture">Plugin architecture<a class="headerlink" href="#plugin-architecture" title="Permanent link">&para;</a></h2>
+<p><strong>Wu, Q. (2026).</strong> GeoAI: A Python package for integrating artificial
+intelligence with geospatial data analysis and visualization. <em>Journal
+of Open Source Software</em>, 11(118), 9605.
+<a href="https://doi.org/10.21105/joss.09605">https://doi.org/10.21105/joss.09605</a>
+<em>The QGIS plugin from which QMaxent's dependency-installation workflow
+in <code>core/venv_manager.py</code> was adapted — in particular the
+<code>_get_qgis_python()</code> pattern that resolves the real Python interpreter
+on Windows (where <code>sys.executable</code> points to <code>qgis-bin.exe</code>) and the
+subprocess pipe handling used during <code>pip install</code>.</em></p>
 <h2 id="cross-validation-and-model-evaluation">Cross-validation and model evaluation<a class="headerlink" href="#cross-validation-and-model-evaluation" title="Permanent link">&para;</a></h2>
 <p><strong>Roberts, D. R., et al. (2017).</strong> Cross-validation strategies for data
 with temporal, spatial, hierarchical, or phylogenetic structure.
