@@ -802,9 +802,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#multi-sheet-xlsx-export" class="md-nav__link">
+  <a href="#output-folder-layout" class="md-nav__link">
     <span class="md-ellipsis">
-      Multi-sheet XLSX export
+      Output folder layout
     </span>
   </a>
   
@@ -817,12 +817,72 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Sheet-by-sheet description">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#table-1-experimental-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Table 1 — Experimental setup
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#table-2-predictor-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      Table 2 — Predictor variables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#table-3-cross-validation-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      Table 3 — Cross-validation results
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#table-4-jackknife-variable-importance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Table 4 — Jackknife variable importance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional-table-5-priority-sites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Optional Table 5 — Priority sites
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
   <a href="#customizing-the-export" class="md-nav__link">
     <span class="md-ellipsis">
       Customizing the export
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#citing-the-workbook" class="md-nav__link">
+    <span class="md-ellipsis">
+      Citing the workbook
     </span>
   </a>
   
@@ -1112,9 +1172,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#multi-sheet-xlsx-export" class="md-nav__link">
+  <a href="#output-folder-layout" class="md-nav__link">
     <span class="md-ellipsis">
-      Multi-sheet XLSX export
+      Output folder layout
     </span>
   </a>
   
@@ -1127,12 +1187,72 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Sheet-by-sheet description">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#table-1-experimental-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Table 1 — Experimental setup
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#table-2-predictor-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      Table 2 — Predictor variables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#table-3-cross-validation-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      Table 3 — Cross-validation results
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#table-4-jackknife-variable-importance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Table 4 — Jackknife variable importance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional-table-5-priority-sites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Optional Table 5 — Priority sites
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
   <a href="#customizing-the-export" class="md-nav__link">
     <span class="md-ellipsis">
       Customizing the export
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#citing-the-workbook" class="md-nav__link">
+    <span class="md-ellipsis">
+      Citing the workbook
     </span>
   </a>
   
@@ -1157,13 +1277,136 @@
 
 
 <h1 id="exporting-results">Exporting results<a class="headerlink" href="#exporting-results" title="Permanent link">&para;</a></h1>
-<p>Generating publication-ready XLSX supplements, with sheets covering experimental setup, variable inventory, cross-validation, jackknife, and priority sites.</p>
-<h2 id="multi-sheet-xlsx-export">Multi-sheet XLSX export<a class="headerlink" href="#multi-sheet-xlsx-export" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>Every QMaxent training run writes a <strong>multi-sheet XLSX workbook</strong> alongside
+the <code>.pkl</code> model. The workbook is intentionally formatted to read as a
+<strong>Supplementary Table block</strong> for an academic manuscript: Times New Roman,
+table-numbered headings, row footers explaining how each metric was
+computed. You can paste sheets directly into a paper's appendix.</p>
+<h2 id="output-folder-layout">Output folder layout<a class="headerlink" href="#output-folder-layout" title="Permanent link">&para;</a></h2>
+<p>After a training run that also produced a spatial projection and the
+<code>Save analysis charts as PNG</code> checkbox was on, the output folder looks
+like this:</p>
+<p><img alt="QMaxent output folder showing model.pkl, prediction.tif, results.xlsx, priority_sites.gpkg, and the three saved analysis charts as PNG" src="../images/results/output-folder.png" /></p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Produced by</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>model.pkl</code></td>
+<td>Training</td>
+<td>Reload later via <em>Load existing model (.pkl)…</em></td>
+</tr>
+<tr>
+<td><code>prediction.tif</code></td>
+<td>Spatial projection</td>
+<td>Habitat-suitability raster</td>
+</tr>
+<tr>
+<td><code>prediction.tif.aux</code></td>
+<td>Spatial projection</td>
+<td>QGIS auxiliary metadata</td>
+</tr>
+<tr>
+<td><code>results.xlsx</code></td>
+<td>Training</td>
+<td>Multi-sheet supplementary table</td>
+</tr>
+<tr>
+<td><code>priority_sites.gpkg</code></td>
+<td>Priority Sites tab</td>
+<td>Field-ready candidate points</td>
+</tr>
+<tr>
+<td><code>prediction_roc.png</code></td>
+<td>Spatial projection</td>
+<td>ROC curve (300 dpi)</td>
+</tr>
+<tr>
+<td><code>prediction_jackknife.png</code></td>
+<td>Spatial projection</td>
+<td>Jackknife bars (300 dpi)</td>
+</tr>
+<tr>
+<td><code>prediction_response_curves.png</code></td>
+<td>Spatial projection</td>
+<td>All response curves (300 dpi)</td>
+</tr>
+</tbody>
+</table>
 <h2 id="sheet-by-sheet-description">Sheet-by-sheet description<a class="headerlink" href="#sheet-by-sheet-description" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>The XLSX has four to five sheets depending on which features you ran.
+The screenshots below are from a Pitta nympha run — the <em>format</em> is
+identical for every dataset; only the values change.</p>
+<h3 id="table-1-experimental-setup">Table 1 — Experimental setup<a class="headerlink" href="#table-1-experimental-setup" title="Permanent link">&para;</a></h3>
+<p>A one-page record of the full run configuration. Reviewers can verify
+seed, variable count, regularization, CV scheme, and training/CV AUCs
+at a glance.</p>
+<p><img alt="Table 1 — Experimental setup, training data, and run-level metrics" src="../images/results/xlsx-1-experimental-setup.png" /></p>
+<p>This sheet is the single best artefact for <strong>methods-section
+reproducibility</strong>. Cite it as your "Table S1" and a reader can
+re-execute the analysis bit-identically.</p>
+<h3 id="table-2-predictor-variables">Table 2 — Predictor variables<a class="headerlink" href="#table-2-predictor-variables" title="Permanent link">&para;</a></h3>
+<p>Lists every environmental variable, its type (<code>continuous</code> /
+<code>categorical</code>), and its training-data range. For continuous variables
+the range is <code>[min, max]</code>; for categorical, the discrete set of levels
+encountered during training.</p>
+<p><img alt="Table 2 — Predictor variables, types, and training-data range" src="../images/results/xlsx-2-predictor-variables.png" /></p>
+<p>Use this sheet to document <strong>extrapolation scope</strong>: any prediction
+applied to environmental values outside these ranges is by definition
+extrapolation and should be flagged in your results discussion.</p>
+<h3 id="table-3-cross-validation-results">Table 3 — Cross-validation results<a class="headerlink" href="#table-3-cross-validation-results" title="Permanent link">&para;</a></h3>
+<p>Per-fold held-out AUC and the across-fold mean ± standard deviation —
+the headline performance estimate.</p>
+<p><img alt="Table 3 — Cross-validation results (Random K-Fold)" src="../images/results/xlsx-3-cv-results.png" /></p>
+<p>Folds with degenerate test sets (e.g. all-positive after spatial
+partitioning) are reported as <code>NaN</code> and excluded from the mean. This
+matches the way the original Maxent literature handles the rare cases
+where a fold cannot produce a valid AUC.</p>
+<h3 id="table-4-jackknife-variable-importance">Table 4 — Jackknife variable importance<a class="headerlink" href="#table-4-jackknife-variable-importance" title="Permanent link">&para;</a></h3>
+<p>For each variable, four AUCs (only-train, only-test, without-train,
+without-test), plus a "Train AUC drop" and "Test AUC drop" column to
+make the contribution magnitudes scannable. Variables are sorted by
+<em>descending Test AUC drop</em> so the most uniquely-informative variables
+are at the top.</p>
+<p><img alt="Table 4 — Jackknife variable importance" src="../images/results/xlsx-4-jackknife.png" /></p>
+<p>The footer note explains the drop columns:
+<em>Drop = full-model AUC − without-variable AUC; larger drops indicate
+variables whose unique contribution is harder to recover from the others.</em></p>
+<h3 id="optional-table-5-priority-sites">Optional Table 5 — Priority sites<a class="headerlink" href="#optional-table-5-priority-sites" title="Permanent link">&para;</a></h3>
+<p>If you ran the <strong>Priority Sites for Survey</strong> tab, the same workbook
+gains a fifth sheet with one row per candidate location. The columns
+include <code>lat</code>, <code>lon</code>, <code>suitability</code>, and — when reverse geocoding was
+enabled — <code>country</code>, <code>province</code>, <code>city_county</code>, <code>district</code>, and the
+human-readable <code>display_name</code>. The format is the same one QMaxent uses
+inside the GeoPackage:</p>
+<p><img alt="Priority Sites attribute table — 20 candidates with Korean reverse-geocoded administrative addresses" src="../images/results/attribute-table-priority-sites.png" /></p>
 <h2 id="customizing-the-export">Customizing the export<a class="headerlink" href="#customizing-the-export" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>The default file path on the <strong>② Parameters</strong> tab is
+<code>&lt;home&gt;/qmaxent_output/results.xlsx</code>. Change it to anywhere writable;
+relative paths are resolved against the current QGIS project folder.</p>
+<p>To <strong>stop the XLSX from being written</strong> (rare — usually faster to ignore
+the file than to disable it), simply clear the path field. QMaxent will
+skip the export and emit a notice in the training log.</p>
+<p>The PNG analysis charts are controlled by the <strong>Save analysis charts
+as PNG</strong> checkbox on the <strong>④ Results → Spatial Projection</strong> sub-tab.
+With it ticked, three additional PNGs are written next to the GeoTIFF
+at the moment you run projection. They are sized for <strong>direct paste
+into a single-column manuscript figure</strong> (300 dpi, ~1.6 MB each).</p>
+<h2 id="citing-the-workbook">Citing the workbook<a class="headerlink" href="#citing-the-workbook" title="Permanent link">&para;</a></h2>
+<p>The XLSX was designed to be cited the way published supplementary
+tables are cited:</p>
+<blockquote>
+<p>Yu, B.-H. (2026). QMaxent results workbook for <em><species></em>
+[Supplementary table]. https://github.com/osgeokr/qmaxent</p>
+</blockquote>
+<p>If your model is reproducible (fixed seed + same input rasters) you
+can also distribute the <code>model.pkl</code> alongside the XLSX so reviewers
+can re-load the model and inspect predictions independently.</p>
 
 
 

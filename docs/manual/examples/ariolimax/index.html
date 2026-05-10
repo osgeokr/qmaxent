@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#ariolimax-raster-harmonization" class="md-skip">
+        <a href="#ariolimax" class="md-skip">
           Skip to content
         </a>
       
@@ -930,18 +930,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#running-check-raster-consistency" class="md-nav__link">
+  <a href="#running-harmonize-to-folder" class="md-nav__link">
     <span class="md-ellipsis">
-      Running Check Raster Consistency
+      Running Harmonize to Folder…
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#running-harmonize-rasters" class="md-nav__link">
+  <a href="#running-the-model" class="md-nav__link">
     <span class="md-ellipsis">
-      Running Harmonize Rasters
+      Running the model
     </span>
   </a>
   
@@ -951,6 +951,24 @@
   <a href="#comparing-models-with-and-without-harmonization" class="md-nav__link">
     <span class="md-ellipsis">
       Comparing models with and without harmonization
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#priority-sites-for-survey" class="md-nav__link">
+    <span class="md-ellipsis">
+      Priority sites for survey
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-this-example-demonstrates" class="md-nav__link">
+    <span class="md-ellipsis">
+      What this example demonstrates
     </span>
   </a>
   
@@ -1148,18 +1166,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#running-check-raster-consistency" class="md-nav__link">
+  <a href="#running-harmonize-to-folder" class="md-nav__link">
     <span class="md-ellipsis">
-      Running Check Raster Consistency
+      Running Harmonize to Folder…
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#running-harmonize-rasters" class="md-nav__link">
+  <a href="#running-the-model" class="md-nav__link">
     <span class="md-ellipsis">
-      Running Harmonize Rasters
+      Running the model
     </span>
   </a>
   
@@ -1169,6 +1187,24 @@
   <a href="#comparing-models-with-and-without-harmonization" class="md-nav__link">
     <span class="md-ellipsis">
       Comparing models with and without harmonization
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#priority-sites-for-survey" class="md-nav__link">
+    <span class="md-ellipsis">
+      Priority sites for survey
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-this-example-demonstrates" class="md-nav__link">
+    <span class="md-ellipsis">
+      What this example demonstrates
     </span>
   </a>
   
@@ -1192,18 +1228,102 @@
   
 
 
-<h1 id="ariolimax-raster-harmonization">Ariolimax — Raster harmonization<a class="headerlink" href="#ariolimax-raster-harmonization" title="Permanent link">&para;</a></h1>
-<p>Pacific banana slug data illustrating what happens when environmental rasters do not share a common CRS, extent, and resolution — and how QMaxent's Check + Harmonize workflow resolves it.</p>
+<h1 id="ariolimax">Ariolimax<a class="headerlink" href="#ariolimax" title="Permanent link">&para;</a></h1>
+<p>The Pacific banana slug <em>Ariolimax columbianus</em> is the second worked example.
+Its purpose is different from Bradypus's feature tour — this dataset is
+deliberately <em>messy</em>: the supplied environmental rasters do <strong>not</strong> share a
+common CRS, extent, or resolution. The example walks through QMaxent's
+<strong>Check Raster Consistency</strong> preflight and <strong>Harmonize to Folder…</strong> workflow,
+showing the failure mode you would otherwise hit silently and the one-click
+fix that makes the data Maxent-ready.</p>
 <h2 id="dataset">Dataset<a class="headerlink" href="#dataset" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>The Ariolimax dataset is the default that ships with
+<a href="https://github.com/earth-chris/elapid">elapid</a>. After running
+<strong>Plugins → QMaxent → Download Example Dataset → Ariolimax</strong>, the layers
+appear on the QGIS canvas spanning California's coastal range. Presence
+points are coloured blue:</p>
+<p><img alt="Ariolimax presence points overlaid on environmental rasters across coastal California" src="../../images/maps/ariolimax-canvas-mismatched.png" /></p>
+<p>Visually the data already looks unified. The raster tiles, however, were
+authored by different remote-sensing pipelines and inherit different
+projections and resolutions — exactly the situation that breaks Maxent
+silently.</p>
 <h2 id="the-mismatch-problem">The mismatch problem<a class="headerlink" href="#the-mismatch-problem" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
-<h2 id="running-check-raster-consistency">Running Check Raster Consistency<a class="headerlink" href="#running-check-raster-consistency" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
-<h2 id="running-harmonize-rasters">Running Harmonize Rasters<a class="headerlink" href="#running-harmonize-rasters" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>Open <strong>Plugins → QMaxent → QMaxent Analysis</strong>. On <strong>① Data</strong>, choose the
+<code>ariolimax-ca</code> presence layer (3,732 points), then <strong>Add from project</strong> to
+register every loaded raster. Click <strong>Check Raster Consistency</strong>:</p>
+<p><img alt="Data tab with Ariolimax loaded and Check Raster Consistency reporting Grid mismatch — CRS, extent, resolution differ across rasters" src="../../images/ui/dock-1-data-mismatch.png" /></p>
+<p>The status line turns amber and reports:</p>
+<blockquote>
+<p>⚠ Grid mismatch — CRS, extent, resolution differ across rasters.
+Click "Harmonize to Folder…" to align.</p>
+</blockquote>
+<p>Crucially, <strong>the Run Maxent button is not blocked</strong> — Maxent itself would
+still produce numbers. Those numbers, however, would be silently wrong:
+covariates would be sampled from the cells <em>nominally</em> underneath each
+presence point but actually belonging to misaligned rasters. This is the
+single most common silent-failure mode in operational SDM and the entire
+reason this preflight exists.</p>
+<h2 id="running-harmonize-to-folder">Running Harmonize to Folder…<a class="headerlink" href="#running-harmonize-to-folder" title="Permanent link">&para;</a></h2>
+<p>A new button appears next to <strong>Check Raster Consistency</strong> as soon as a
+mismatch is detected: <strong>Harmonize to Folder…</strong>. Click it and choose an
+output directory. QMaxent picks the <strong>highest-resolution</strong> raster as the
+reference grid, reprojects every other raster to that grid using
+<a href="https://gdal.org/programs/gdalwarp.html"><code>gdalwarp</code></a> under the hood
+(nearest-neighbour for categoricals, bilinear for continuous), and writes
+new GeoTIFFs into the chosen folder. The new files are auto-loaded into
+the project and the old ones are removed from the QMaxent raster list.</p>
+<p>The Data tab refreshes to show the harmonized stack:</p>
+<p><img alt="Data tab with the harmonized stack — files prefixed 00_, 01_, … and Check Raster Consistency reporting All 6 rasters share grid (CRS:32610, 1000×1000)" src="../../images/ui/dock-1-data-harmonized.png" /></p>
+<p>The status line is now green:</p>
+<blockquote>
+<p>✓ All 6 rasters share grid (CRS: EPSG:32610, resolution: 1000 × 1000).</p>
+</blockquote>
+<p>Note the file-name convention: harmonized rasters get a <code>00_</code>, <code>01_</code>, …
+prefix that locks their order. This survives a <code>.qgz</code> save+reload cycle —
+the model variable order is part of the model's identity, and the prefix
+makes that order visible at file-system level too.</p>
+<h2 id="running-the-model">Running the model<a class="headerlink" href="#running-the-model" title="Permanent link">&para;</a></h2>
+<p>With the stack harmonized, the rest of the workflow is identical to
+<a href="../bradypus/">Bradypus</a>. Accept the defaults on <strong>② Parameters</strong>, click
+<strong>▶ Run Maxent</strong>, and let the training complete. The 5-fold ROC curve
+shows healthy separation between training and CV performance:</p>
+<p><img alt="ROC curve for Ariolimax — Training AUC 0.922, mean CV AUC 0.798" src="../../images/examples/ariolimax/roc.png" /></p>
+<p>The jackknife panel confirms which environmental variables carry the
+species' signal:</p>
+<p><img alt="Jackknife variable importance for Ariolimax — surface temperature stdv and leaf-area index mean dominate; cloud cover variables are weakest" src="../../images/examples/ariolimax/jackknife.png" /></p>
+<p><code>05_ca-surfacetemp-stdv</code> (variability of land-surface temperature) carries
+the strongest univariate signal — biologically sensible for an organism
+whose activity windows depend on cool, moist microclimates. The
+mean-temperature variable has lower stand-alone power but matters when
+removed (the <em>without</em> bar drops), which is the signature of a variable
+that contributes information not redundant with the others.</p>
+<p>The full set of marginal response curves shows the partial dependence of
+predicted suitability on each variable across its training range:</p>
+<p><img alt="Marginal response curves for the six Ariolimax variables" src="../../images/examples/ariolimax/response-curves.png" /></p>
 <h2 id="comparing-models-with-and-without-harmonization">Comparing models with and without harmonization<a class="headerlink" href="#comparing-models-with-and-without-harmonization" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>We strongly recommend running this once on the <em>unharmonized</em> stack as a
+teaching exercise. With Maxent's permissive raster handling you will get a
+finished model and a finished AUC, but the AUC will typically be 0.05–0.10
+higher than the harmonized run — <em>not because the model is better</em>, but
+because covariate misalignment introduces spurious patterns that the model
+fits to. The cross-validation gap (training vs. CV AUC) widens
+correspondingly. Always run <strong>Check Raster Consistency</strong> before drawing
+conclusions.</p>
+<h2 id="priority-sites-for-survey">Priority sites for survey<a class="headerlink" href="#priority-sites-for-survey" title="Permanent link">&para;</a></h2>
+<p>After projection, switch to <strong>⑤ Priority Sites for Survey</strong>, choose
+<strong>Discovery</strong> mode, and extract candidates. The sites land on the same
+coastal mountain ranges that the suitability map highlighted, and survey
+teams can take the resulting GeoPackage straight to the field:</p>
+<p><img alt="Priority sites for Ariolimax overlaid on the suitability map" src="../../images/examples/ariolimax/priority-sites.png" /></p>
+<h2 id="what-this-example-demonstrates">What this example demonstrates<a class="headerlink" href="#what-this-example-demonstrates" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>The silent-failure mode of Maxent</strong> when rasters disagree, and</li>
+<li><strong>QMaxent's preflight + harmonize tooling</strong> that turns a project-killing
+    mistake into a one-click fix.</li>
+</ol>
+<p>Carry the same habit into your own work: every time you assemble a new
+raster stack, run Check Raster Consistency <em>before</em> training. If it
+fails, harmonize first, train second.</p>
 
 
 

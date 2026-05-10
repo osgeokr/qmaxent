@@ -148,13 +148,6 @@
         <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/examples/pitta-nympha/"/>
     </url>
     <url>
-        <loc>https://osgeokr.github.io/qmaxent/manual/images/_inbox/</loc>
-        <lastmod>2026-05-10</lastmod>
-        <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/images/_inbox/"/>
-        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/images/_inbox/"/>
-    </url>
-    <url>
         <loc>https://osgeokr.github.io/qmaxent/manual/ko/</loc>
         <lastmod>2026-05-10</lastmod>
         <changefreq>daily</changefreq>
@@ -300,12 +293,5 @@
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/examples/pitta-nympha/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/examples/pitta-nympha/"/>
-    </url>
-    <url>
-        <loc>https://osgeokr.github.io/qmaxent/manual/ko/images/_inbox/</loc>
-        <lastmod>2026-05-10</lastmod>
-        <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="ko" href="https://osgeokr.github.io/qmaxent/manual/ko/images/_inbox/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://osgeokr.github.io/qmaxent/manual/images/_inbox/"/>
     </url>
 </urlset>
