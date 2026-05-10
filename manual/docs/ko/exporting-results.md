@@ -104,5 +104,4 @@ XLSX는 발표된 보충 표가 인용되는 방식으로 인용되도록 설계
 > [Supplementary table]. https://github.com/osgeokr/qmaxent
 
 모델이 재현 가능하다면 (고정 시드 + 동일 입력 래스터) `model.pkl` 을 XLSX와
-함께 배포해 reviewer가 모델을 다시 로드해 예측을 독립적으로 검사하게 할 수
-있습니다.
+함께 배 다시 로드해 예측을 독립적으로 검사하게 할 수 있습니다.

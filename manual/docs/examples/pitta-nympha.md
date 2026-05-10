@@ -39,7 +39,7 @@ to toggle.
 
 Loaded into QGIS with all rasters and the presence layer:
 
-![Pitta nympha occurrence overlaid on Geoje-si environmental rasters](canvas.png)
+![Pitta nympha occurrence overlaid on Geoje-si environmental rasters](../images/examples/pitta-nympha/canvas.png)
 
 ## Loading data into the Analysis dock
 
@@ -48,7 +48,7 @@ On **① Data**, the auto-detection works as advertised — `AGE` and
 **Check Raster Consistency** reports
 `✓ All 9 rasters share grid (CRS: EPSG:5186, resolution: 10 × 10)`:
 
-![Data tab with Pitta nympha — 47 presence points, 9 environmental rasters with AGE and SPECIES auto-marked categorical, all rasters share a common grid](data-tab.png)
+![Data tab with Pitta nympha — 47 presence points, 9 environmental rasters with AGE and SPECIES auto-marked categorical, all rasters share a common grid](../images/examples/pitta-nympha/data-tab.png)
 
 The status bar at the bottom of the dock reads
 `presence=47 background=6,980 train AUC=0.8735 CV AUC=0.7878` — those
@@ -59,7 +59,7 @@ final two numbers are populated after training (next section).
 On **② Parameters**, we configure QMaxent to mirror Lee et al. (2025)'s
 final model as closely as the toolset allows:
 
-![Parameters tab — Manual selection LQH (Linear Quadratic Hinge), Regularization multiplier 4.00, Random K-Fold k=4 with fixed seed 0, Jackknife enabled](parameters.png)
+![Parameters tab — Manual selection LQH (Linear Quadratic Hinge), Regularization multiplier 4.00, Random K-Fold k=4 with fixed seed 0, Jackknife enabled](../images/examples/pitta-nympha/parameters.png)
 
 | Setting | QMaxent | Paper |
 |---|---|---|
@@ -85,11 +85,11 @@ populates: **train AUC = 0.8735**, **CV AUC = 0.7878**.
 
 The ROC curve shows a familiar healthy gap between training and CV:
 
-![ROC curve for Pitta nympha — Training AUC 0.873, mean CV ROC AUC 0.788 across 4 folds](roc.png)
+![ROC curve for Pitta nympha — Training AUC 0.873, mean CV ROC AUC 0.788 across 4 folds](../images/examples/pitta-nympha/roc.png)
 
 The Jackknife variable importance plot orders the predictors:
 
-![Jackknife variable importance — ASPECT, TWI, SPECIES carry the strongest unique signal; CANOPY_COVER, SMI, DBH the weakest](jackknife.png)
+![Jackknife variable importance — ASPECT, TWI, SPECIES carry the strongest unique signal; CANOPY_COVER, SMI, DBH the weakest](../images/examples/pitta-nympha/jackknife.png)
 
 Side-by-side with the paper's Table 4:
 
@@ -119,7 +119,7 @@ slopes (ASPECT 200–300°)**, **gentle gradients (SLOPE < 30°)**, and **moist
 hollows (TWI peak at low values, dropping then climbing back)** — same
 qualitative pattern Lee et al. discuss in their Section 3.2:
 
-![Marginal response curves for the 9 Pitta nympha predictors](response-curves.png)
+![Marginal response curves for the 9 Pitta nympha predictors](../images/examples/pitta-nympha/response-curves.png)
 
 ## Spatial projection
 
@@ -127,12 +127,12 @@ Click **▶ Run Spatial Projection** on the Results tab. The new unified
 preflight dialog reports both the categorical codes that will be auto-
 masked to NoData and the SLOPE extrapolation:
 
-![Single combined preflight dialog with categorical-mask info and SLOPE extrapolation warning](../../images/ui/dialog-preflight-unified.png)
+![Single combined preflight dialog with categorical-mask info and SLOPE extrapolation warning](../images/ui/dialog-preflight-unified.png)
 
 After clicking **Yes**, the trained model is applied across all of
 Geoje-si and the resulting raster is auto-loaded into QGIS:
 
-![Predicted breeding habitat suitability for Pitta nympha across Geoje-si — high suitability concentrated in valley forests of Mt. Nojasan, Mt. Garasan, and Mt. Bukbyeongsan](suitability-map.png)
+![Predicted breeding habitat suitability for Pitta nympha across Geoje-si — high suitability concentrated in valley forests of Mt. Nojasan, Mt. Garasan, and Mt. Bukbyeongsan](../images/examples/pitta-nympha/suitability-map.png)
 
 The high-suitability core matches the locations Lee et al. report
 (Dongbu-myeon, Nambu-myeon, Yeoncho-myeon) — independent QMaxent
@@ -145,17 +145,17 @@ For Pitta nympha — a species at the threshold of detectability — the
 **Discovery** mode, **Top-N (highest first)**, **20** sites, **1 km**
 minimum distance from existing presences:
 
-![Priority Sites form — Discovery mode, Top-N, 20 sites, 1000 m / 500 m spacing](priority-form.png)
+![Priority Sites form — Discovery mode, Top-N, 20 sites, 1000 m / 500 m spacing](../images/examples/pitta-nympha/priority-form.png)
 
 After clicking **▶ Extract Priority Sites**, candidates are drawn from
 the highest-suitability cells and reverse-geocoded to Korean
 administrative names (옥산리 / 이목리 / 수양동 …):
 
-![Priority sites attribute table with Korean reverse-geocoded administrative addresses (province/city/district)](../../images/results/attribute-table-priority-sites.png)
+![Priority sites attribute table with Korean reverse-geocoded administrative addresses (province/city/district)](../images/results/attribute-table-priority-sites.png)
 
 The candidates appear on the map ready to take into the field:
 
-![20 priority sites overlaid on the Pitta nympha habitat-suitability map](priority-map.png)
+![20 priority sites overlaid on the Pitta nympha habitat-suitability map](../images/examples/pitta-nympha/priority-map.png)
 
 This output GeoPackage is what a follow-up acoustic-monitoring season
 would target — directly extending the methodology of Lee et al. (2025)
@@ -168,7 +168,7 @@ for re-projecting onto an updated raster or sharing with collaborators.
 **Load existing model (.pkl)…** in the Data tab opens a variable-mapping
 dialog that protects against silent ordering errors:
 
-![Map model variables to rasters dialog — all 9 variables auto-matched to QGIS layer names, SPECIES correctly tagged categorical](../../images/ui/dialog-load-existing-model.png)
+![Map model variables to rasters dialog — all 9 variables auto-matched to QGIS layer names, SPECIES correctly tagged categorical](../images/ui/dialog-load-existing-model.png)
 
 When variable names match between the saved model and the current QGIS
 project, mapping is automatic. When they differ, the dialog forces an

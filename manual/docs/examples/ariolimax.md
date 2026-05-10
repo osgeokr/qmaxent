@@ -74,12 +74,12 @@ With the stack harmonized, the rest of the workflow is identical to
 **▶ Run Maxent**, and let the training complete. The 5-fold ROC curve
 shows healthy separation between training and CV performance:
 
-![ROC curve for Ariolimax — Training AUC 0.922, mean CV AUC 0.798](roc.png)
+![ROC curve for Ariolimax — Training AUC 0.922, mean CV AUC 0.798](../images/examples/ariolimax/roc.png)
 
 The jackknife panel confirms which environmental variables carry the
 species' signal:
 
-![Jackknife variable importance for Ariolimax — surface temperature stdv and leaf-area index mean dominate; cloud cover variables are weakest](jackknife.png)
+![Jackknife variable importance for Ariolimax — surface temperature stdv and leaf-area index mean dominate; cloud cover variables are weakest](../images/examples/ariolimax/jackknife.png)
 
 `05_ca-surfacetemp-stdv` (variability of land-surface temperature) carries
 the strongest univariate signal — biologically sensible for an organism
@@ -91,7 +91,7 @@ that contributes information not redundant with the others.
 The full set of marginal response curves shows the partial dependence of
 predicted suitability on each variable across its training range:
 
-![Marginal response curves for the six Ariolimax variables](response-curves.png)
+![Marginal response curves for the six Ariolimax variables](../images/examples/ariolimax/response-curves.png)
 
 ## Comparing models with and without harmonization
 
@@ -111,7 +111,7 @@ After projection, switch to **⑤ Priority Sites for Survey**, choose
 coastal mountain ranges that the suitability map highlighted, and survey
 teams can take the resulting GeoPackage straight to the field:
 
-![Priority sites for Ariolimax overlaid on the suitability map](priority-sites.png)
+![Priority sites for Ariolimax overlaid on the suitability map](../images/examples/ariolimax/priority-sites.png)
 
 ## What this example demonstrates
 

@@ -61,6 +61,9 @@ extra:
       link: https://osgeokr.github.io/qmaxent/
       name: Project website
 
+exclude_docs: |
+  images/_inbox/
+
 plugins:
   - search
   - i18n:
