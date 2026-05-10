@@ -250,7 +250,7 @@ dialog.feedback-modal::backdrop { background: rgba(31,65,71,.45); backdrop-filte
       <a class="link" href="#install"><span data-i18n-en>Install</span><span data-i18n-ko>설치</span></a>
       <a class="link" href="manual/"><span data-i18n-en>Documentation</span><span data-i18n-ko>매뉴얼</span></a>
       <a class="link" href="#cite"><span data-i18n-en>Cite</span><span data-i18n-ko>인용</span></a>
-      <a class="link" href="#" data-fb-open><span data-i18n-en>Feedback</span><span data-i18n-ko>의견</span></a>
+      <a class="link" href="#feedback" data-fb-open><span data-i18n-en>Feedback</span><span data-i18n-ko>의견</span></a>
     </nav>
     <div class="lang-toggle" role="group" aria-label="Language">
       <button id="lang-en" class="active" type="button">EN</button>
@@ -806,6 +806,12 @@ dialog.feedback-modal::backdrop { background: rgba(31,65,71,.45); backdrop-filte
       dialog.setAttribute("open", "");
     }
     setStatus("", null);
+    // Reflect open state in the URL so it's shareable
+    try {
+      if (window.location.hash !== "#feedback") {
+        history.replaceState(null, "", "#feedback");
+      }
+    } catch (_) {}
     // Focus first input for accessibility
     setTimeout(function () {
       var first = form.querySelector("input:not([type=hidden]):not(.fb-honeypot), textarea");
@@ -819,6 +825,12 @@ dialog.feedback-modal::backdrop { background: rgba(31,65,71,.45); backdrop-filte
     } else {
       dialog.removeAttribute("open");
     }
+    // Clear the shareable hash when closed
+    try {
+      if (window.location.hash === "#feedback") {
+        history.replaceState(null, "", window.location.pathname + window.location.search);
+      }
+    } catch (_) {}
   }
 
   function setStatus(msg, kind) {
@@ -944,6 +956,15 @@ dialog.feedback-modal::backdrop { background: rgba(31,65,71,.45); backdrop-filte
         submitBtn.disabled = false;
       });
   });
+
+  // ---------- URL hash → auto-open modal (#feedback shortcut) ----------
+  function checkHash() {
+    if (window.location.hash === "#feedback" && !dialog.open) {
+      openModal();
+    }
+  }
+  checkHash();
+  window.addEventListener("hashchange", checkHash);
 })();
 </script>
 </body>
