@@ -6,7 +6,7 @@ groups the works the plugin draws on by topic, with a one-line annotation on
 how each reference is used inside QMaxent. The plugin source code carries
 inline citations to these works in the relevant modules
 (`workers/maxent_worker.py`, `bridge/elapid_bridge.py`,
-`bridge/priority_sites.py`).
+`bridge/priority_sites.py`, `core/venv_manager.py`).
 
 ## Maxent — core methodology
 
@@ -53,6 +53,18 @@ delegates to.*
 *Nature*, 585, 357–362.
 *The array library underlying elapid, scikit-learn, and the QMaxent
 raster-extraction layer.*
+
+## Plugin architecture
+
+**Wu, Q. (2026).** GeoAI: A Python package for integrating artificial
+intelligence with geospatial data analysis and visualization. *Journal
+of Open Source Software*, 11(118), 9605.
+<https://doi.org/10.21105/joss.09605>
+*The QGIS plugin from which QMaxent's dependency-installation workflow
+in `core/venv_manager.py` was adapted — in particular the
+`_get_qgis_python()` pattern that resolves the real Python interpreter
+on Windows (where `sys.executable` points to `qgis-bin.exe`) and the
+subprocess pipe handling used during `pip install`.*
 
 ## Cross-validation and model evaluation
 

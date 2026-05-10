@@ -80,7 +80,7 @@ code, pre, kbd { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Me
 .badge.teal { color: var(--teal-deep); border-color: rgba(39,92,112,.35); background: rgba(58,126,148,.12); }
 .badge.orange { color: #A8530F; border-color: rgba(230,138,44,.4); background: rgba(230,138,44,.12); }
 .cta { margin-top: 1.6rem; display: flex; flex-wrap: wrap; gap: .7rem; }
-.btn { display: inline-flex; align-items: center; gap: .5rem; padding: .75rem 1.1rem; border-radius: 10px; font-weight: 600; border: 1px solid transparent; cursor: pointer; transition: transform .08s ease; }
+.btn { display: inline-flex; align-items: center; gap: .5rem; padding: .75rem 1.1rem; border-radius: 10px; font: inherit; font-weight: 600; border: 1px solid transparent; cursor: pointer; transition: transform .08s ease; }
 .btn:hover { transform: translateY(-1px); text-decoration: none; }
 .btn.primary { background: var(--ink); color: white; }
 .btn.primary:hover { background: var(--teal-deep); }
@@ -129,6 +129,99 @@ body[data-lang="en"] li[data-i18n-en], body[data-lang="ko"] li[data-i18n-ko] { d
 body[data-lang="en"] div[data-i18n-en], body[data-lang="ko"] div[data-i18n-ko],
 body[data-lang="en"] section[data-i18n-en], body[data-lang="ko"] section[data-i18n-ko] { display: block; }
 
+/* ---------- Feedback button & modal ---------- */
+dialog.feedback-modal {
+  border: 0; border-radius: 16px; padding: 0;
+  max-width: 720px; width: calc(100% - 2rem);
+  max-height: 85vh;
+  background: var(--cream-soft); color: var(--ink);
+  box-shadow: 0 20px 60px rgba(31,65,71,.25), 0 4px 12px rgba(31,65,71,.10);
+  overflow: hidden;
+}
+dialog.feedback-modal::backdrop { background: rgba(31,65,71,.45); backdrop-filter: blur(2px); }
+.fb-header {
+  position: sticky; top: 0; z-index: 2;
+  display: flex; align-items: flex-start; gap: 1rem;
+  padding: 1.25rem 1.4rem 1rem;
+  background: var(--cream-soft);
+  border-bottom: 1px solid var(--line);
+}
+.fb-header-text { flex: 1; }
+.fb-header h2 { margin: 0 0 .25rem; font-size: 1.25rem; color: var(--ink); }
+.fb-header p { margin: 0; font-size: .9rem; color: var(--ink-soft); }
+.fb-close {
+  font: inherit; cursor: pointer; border: 0; background: transparent;
+  width: 32px; height: 32px; border-radius: 8px;
+  font-size: 1.4rem; line-height: 1; color: var(--ink-soft); flex-shrink: 0;
+}
+.fb-close:hover { background: rgba(31,65,71,.08); color: var(--ink); }
+.fb-body { overflow-y: auto; max-height: calc(85vh - 4.5rem); padding: 0 1.4rem 1.4rem; }
+.fb-section { border: 0; margin: 1.25rem 0 0; padding: 0; }
+.fb-section legend {
+  font-weight: 700; font-size: .82rem;
+  letter-spacing: .04em; text-transform: uppercase;
+  color: var(--teal-deep);
+  padding: .5rem 0;
+  border-bottom: 2px solid var(--teal);
+  margin-bottom: 1rem; width: 100%;
+}
+.fb-question { margin-bottom: 1.1rem; }
+.fb-q-label { display: block; font-weight: 600; margin-bottom: .5rem; color: var(--ink); font-size: .95rem; }
+.fb-q-label .req { color: var(--orange); margin-left: .15rem; }
+.fb-options { display: flex; flex-direction: column; gap: .35rem; }
+.fb-options.row { flex-direction: row; flex-wrap: wrap; gap: .5rem .9rem; }
+.fb-options label {
+  display: inline-flex; align-items: flex-start; gap: .5rem;
+  cursor: pointer; font-size: .94rem; color: var(--ink-soft);
+  padding: .25rem 0; line-height: 1.4;
+}
+.fb-options label:hover { color: var(--ink); }
+.fb-options input[type="radio"], .fb-options input[type="checkbox"] {
+  margin-top: .25rem; accent-color: var(--teal); cursor: pointer; flex-shrink: 0;
+}
+.fb-likert { display: flex; gap: .35rem; align-items: stretch; flex-wrap: wrap; }
+.fb-likert label {
+  flex-direction: column; align-items: center;
+  padding: .5rem .8rem;
+  border: 1px solid var(--line); border-radius: 10px;
+  background: white; min-width: 64px; text-align: center;
+  transition: all .12s ease;
+}
+.fb-likert label:hover { border-color: var(--teal); }
+.fb-likert label:has(input:checked) { background: var(--teal); color: white; border-color: var(--teal-deep); }
+.fb-likert input { display: none; }
+.fb-likert .num { font-weight: 700; font-size: 1rem; }
+.fb-likert .lab { font-size: .72rem; opacity: .8; margin-top: .15rem; }
+.fb-text, .fb-input {
+  width: 100%; font: inherit;
+  padding: .6rem .8rem;
+  border: 1px solid var(--line); border-radius: 8px;
+  background: white; color: var(--ink); resize: vertical;
+}
+.fb-text:focus, .fb-input:focus { outline: 2px solid var(--teal); outline-offset: 1px; border-color: var(--teal); }
+.fb-text { min-height: 4.5rem; }
+.fb-conditional { display: none; margin-top: .5rem; padding-left: 1.5rem; }
+.fb-conditional.show { display: block; }
+.fb-honeypot { position: absolute !important; left: -9999px !important; width: 1px !important; height: 1px !important; opacity: 0 !important; }
+.fb-actions {
+  display: flex; justify-content: flex-end; gap: .6rem;
+  margin-top: 1.5rem; padding-top: 1rem;
+  border-top: 1px solid var(--line); flex-wrap: wrap;
+}
+.fb-fallback { margin-top: .8rem; font-size: .85rem; color: var(--ink-soft); text-align: center; }
+.fb-status { margin-top: 1rem; padding: .8rem 1rem; border-radius: 8px; font-size: .92rem; }
+.fb-status.success { background: rgba(139,191,84,.18); border: 1px solid var(--green); color: var(--green-deep); }
+.fb-status.error { background: rgba(230,138,44,.15); border: 1px solid var(--orange); color: #A8530F; }
+.fb-status.loading { background: rgba(58,126,148,.10); border: 1px solid var(--teal); color: var(--teal-deep); }
+@media (max-width: 540px) {
+  dialog.feedback-modal { max-height: 92vh; }
+  .fb-header { padding: 1rem 1.1rem .8rem; }
+  .fb-body { padding: 0 1.1rem 1.1rem; max-height: calc(92vh - 4rem); }
+  .fb-likert label { min-width: 50px; padding: .4rem .55rem; }
+  .fb-actions { flex-direction: column-reverse; }
+  .fb-actions .btn { width: 100%; justify-content: center; }
+}
+
 /* ---------- Mobile (<=720px): keep brand + lang toggle + GitHub on one tidy row ---------- */
 @media (max-width: 720px) {
   .container { padding: 0 1rem; }
@@ -157,6 +250,7 @@ body[data-lang="en"] section[data-i18n-en], body[data-lang="ko"] section[data-i1
       <a class="link" href="#install"><span data-i18n-en>Install</span><span data-i18n-ko>설치</span></a>
       <a class="link" href="manual/"><span data-i18n-en>Documentation</span><span data-i18n-ko>매뉴얼</span></a>
       <a class="link" href="#cite"><span data-i18n-en>Cite</span><span data-i18n-ko>인용</span></a>
+      <a class="link" href="#" data-fb-open><span data-i18n-en>Feedback</span><span data-i18n-ko>의견</span></a>
     </nav>
     <div class="lang-toggle" role="group" aria-label="Language">
       <button id="lang-en" class="active" type="button">EN</button>
@@ -189,6 +283,7 @@ body[data-lang="en"] section[data-i18n-en], body[data-lang="ko"] section[data-i1
       <div class="cta">
         <a class="btn primary" href="manual/"><span data-i18n-en>Read the manual</span><span data-i18n-ko>매뉴얼 보기</span></a>
         <a class="btn secondary" href="https://github.com/osgeokr/qmaxent" target="_blank" rel="noopener"><span data-i18n-en>View on GitHub</span><span data-i18n-ko>GitHub에서 보기</span></a>
+        <button type="button" class="btn secondary" data-fb-open><span data-i18n-en>Share feedback</span><span data-i18n-ko>의견 보내기</span></button>
       </div>
     </div>
     <div class="logo-card">
@@ -268,6 +363,17 @@ body[data-lang="en"] section[data-i18n-en], body[data-lang="ko"] section[data-i1
     </div>
   </section>
 
+  <section id="feedback-cta" style="text-align:center;">
+    <h2 class="o"><span data-i18n-en>Help shape QMaxent</span><span data-i18n-ko>QMaxent의 방향에 함께해 주세요</span></h2>
+    <p>
+      <span data-i18n-en>Your feedback drives what gets added next. About 5 minutes.</span>
+      <span data-i18n-ko>여러분의 의견이 다음 기능을 결정합니다. 약 5분 소요.</span>
+    </p>
+    <div class="cta" style="justify-content:center;">
+      <button type="button" class="btn primary" data-fb-open><span data-i18n-en>Share feedback</span><span data-i18n-ko>의견 보내기</span></button>
+    </div>
+  </section>
+
   <section id="issues">
     <h2 class="t"><span data-i18n-en>Issues &amp; contributions</span><span data-i18n-ko>이슈 및 기여</span></h2>
     <p>
@@ -277,6 +383,216 @@ body[data-lang="en"] section[data-i18n-en], body[data-lang="ko"] section[data-i1
   </section>
 
 </main>
+
+<dialog id="feedback-dialog" class="feedback-modal" aria-labelledby="fb-title">
+  <div class="fb-header">
+    <div class="fb-header-text">
+      <h2 id="fb-title">
+        <span data-i18n-en>Share your feedback</span>
+        <span data-i18n-ko>의견을 들려주세요</span>
+      </h2>
+      <p>
+        <span data-i18n-en>About 5 minutes. All fields optional.</span>
+        <span data-i18n-ko>약 5분 소요. 모든 항목 선택 사항입니다.</span>
+      </p>
+    </div>
+    <button type="button" class="fb-close" data-fb-close aria-label="Close">&times;</button>
+  </div>
+
+  <div class="fb-body">
+    <form id="feedback-form" novalidate>
+      <input type="hidden" name="access_key" value="e3ac44fb-e9d0-46c9-8a4d-75c5e46e8bfe" />
+      <input type="hidden" name="subject" value="QMaxent Feedback" />
+      <input type="hidden" name="from_name" value="QMaxent Website" />
+      <input type="hidden" name="ui_language" id="fb-language" value="en" />
+      <input type="hidden" name="page_url" id="fb-page-url" value="" />
+      <input type="checkbox" name="botcheck" class="fb-honeypot" tabindex="-1" autocomplete="off" />
+
+      <fieldset class="fb-section">
+        <legend><span data-i18n-en>A. About you</span><span data-i18n-ko>A. 응답자 정보</span></legend>
+
+        <div class="fb-question">
+          <label class="fb-q-label">
+            <span data-i18n-en>1. Your role</span>
+            <span data-i18n-ko>1. 역할</span>
+          </label>
+          <div class="fb-options">
+            <label><input type="radio" name="role" value="Researcher" /><span><span data-i18n-en>Researcher</span><span data-i18n-ko>연구자</span></span></label>
+            <label><input type="radio" name="role" value="Practitioner / Manager" /><span><span data-i18n-en>Practitioner / manager</span><span data-i18n-ko>실무자·관리자</span></span></label>
+            <label><input type="radio" name="role" value="Student" /><span><span data-i18n-en>Student</span><span data-i18n-ko>학생</span></span></label>
+            <label><input type="radio" name="role" value="Consultant" /><span><span data-i18n-en>Consultant</span><span data-i18n-ko>컨설턴트</span></span></label>
+            <label><input type="radio" name="role" value="Other" /><span><span data-i18n-en>Other</span><span data-i18n-ko>기타</span></span></label>
+          </div>
+        </div>
+
+        <div class="fb-question">
+          <label class="fb-q-label">
+            <span data-i18n-en>2. Field of work</span>
+            <span data-i18n-ko>2. 분야</span>
+          </label>
+          <div class="fb-options">
+            <label><input type="radio" name="field" value="Conservation biology / Ecology" /><span><span data-i18n-en>Conservation biology / Ecology</span><span data-i18n-ko>보전생물학·생태학</span></span></label>
+            <label><input type="radio" name="field" value="Environmental planning / EIA" /><span><span data-i18n-en>Environmental planning / EIA</span><span data-i18n-ko>환경계획·평가</span></span></label>
+            <label><input type="radio" name="field" value="GIS / Remote sensing" /><span><span data-i18n-en>GIS / Remote sensing</span><span data-i18n-ko>GIS·원격탐사</span></span></label>
+            <label><input type="radio" name="field" value="Forestry / Fisheries / Agriculture" /><span><span data-i18n-en>Forestry / Fisheries / Agriculture</span><span data-i18n-ko>농림·수산</span></span></label>
+            <label><input type="radio" name="field" value="Other" /><span><span data-i18n-en>Other</span><span data-i18n-ko>기타</span></span></label>
+          </div>
+        </div>
+
+        <div class="fb-question">
+          <label class="fb-q-label">
+            <span data-i18n-en>3. How long have you used QMaxent?</span>
+            <span data-i18n-ko>3. QMaxent 사용 기간</span>
+          </label>
+          <div class="fb-options row">
+            <label><input type="radio" name="usage_period" value="Not yet" /><span><span data-i18n-en>Not yet</span><span data-i18n-ko>아직 사용 안 함</span></span></label>
+            <label><input type="radio" name="usage_period" value="< 1 month" /><span><span data-i18n-en>&lt; 1 month</span><span data-i18n-ko>1개월 미만</span></span></label>
+            <label><input type="radio" name="usage_period" value="1-6 months" /><span><span data-i18n-en>1–6 months</span><span data-i18n-ko>1~6개월</span></span></label>
+            <label><input type="radio" name="usage_period" value="6+ months" /><span><span data-i18n-en>6+ months</span><span data-i18n-ko>6개월 이상</span></span></label>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="fb-section">
+        <legend><span data-i18n-en>B. Satisfaction</span><span data-i18n-ko>B. 만족도</span></legend>
+
+        <div class="fb-question">
+          <label class="fb-q-label">
+            <span data-i18n-en>4. Overall satisfaction</span>
+            <span data-i18n-ko>4. 전반적 만족도</span>
+          </label>
+          <div class="fb-likert">
+            <label><input type="radio" name="satisfaction" value="1" /><span class="num">1</span><span class="lab" data-i18n-en>Poor</span><span class="lab" data-i18n-ko>매우 불만</span></label>
+            <label><input type="radio" name="satisfaction" value="2" /><span class="num">2</span><span class="lab" data-i18n-en>Fair</span><span class="lab" data-i18n-ko>불만</span></label>
+            <label><input type="radio" name="satisfaction" value="3" /><span class="num">3</span><span class="lab" data-i18n-en>OK</span><span class="lab" data-i18n-ko>보통</span></label>
+            <label><input type="radio" name="satisfaction" value="4" /><span class="num">4</span><span class="lab" data-i18n-en>Good</span><span class="lab" data-i18n-ko>만족</span></label>
+            <label><input type="radio" name="satisfaction" value="5" /><span class="num">5</span><span class="lab" data-i18n-en>Excellent</span><span class="lab" data-i18n-ko>매우 만족</span></label>
+          </div>
+        </div>
+
+        <div class="fb-question">
+          <label class="fb-q-label">
+            <span data-i18n-en>5. What do you like most? (select all that apply)</span>
+            <span data-i18n-ko>5. 가장 만족스러운 점 (해당 사항 모두)</span>
+          </label>
+          <div class="fb-options">
+            <label><input type="checkbox" name="liked" value="QGIS integration" /><span><span data-i18n-en>QGIS integration</span><span data-i18n-ko>QGIS 통합</span></span></label>
+            <label><input type="checkbox" name="liked" value="Reproducibility of Maxent results" /><span><span data-i18n-en>Reproducibility of Maxent results</span><span data-i18n-ko>Maxent 결과 재현성</span></span></label>
+            <label><input type="checkbox" name="liked" value="Documentation and examples" /><span><span data-i18n-en>Documentation and examples</span><span data-i18n-ko>매뉴얼과 예제</span></span></label>
+            <label><input type="checkbox" name="liked" value="Priority Sites workflow" /><span><span data-i18n-en>Priority Sites workflow</span><span data-i18n-ko>Priority Sites 워크플로</span></span></label>
+            <label><input type="checkbox" name="liked" value="Automatic dependency installation" /><span><span data-i18n-en>Automatic dependency installation</span><span data-i18n-ko>의존성 자동 설치</span></span></label>
+            <label><input type="checkbox" name="liked" value="Bilingual UI" /><span><span data-i18n-en>Bilingual UI (EN / KO)</span><span data-i18n-ko>이중 언어 UI (영/한)</span></span></label>
+            <label><input type="checkbox" name="liked" value="Model save / reuse" /><span><span data-i18n-en>Model save / reuse</span><span data-i18n-ko>모델 저장·재사용</span></span></label>
+            <label><input type="checkbox" name="liked" value="XLSX export for publications" /><span><span data-i18n-en>XLSX export for publications</span><span data-i18n-ko>논문용 XLSX 내보내기</span></span></label>
+          </div>
+        </div>
+
+      </fieldset>
+
+      <fieldset class="fb-section">
+        <legend><span data-i18n-en>C. Future direction</span><span data-i18n-ko>C. 향후 방향</span></legend>
+
+        <div class="fb-question">
+          <label class="fb-q-label">
+            <span data-i18n-en>6. Features you'd like added (select all that apply)</span>
+            <span data-i18n-ko>6. 추가되었으면 하는 기능 (해당 사항 모두)</span>
+          </label>
+          <div class="fb-options">
+            <label><input type="checkbox" name="wanted_features" value="Other algorithms (Random Forest, GBM, ensemble)" /><span><span data-i18n-en>Other algorithms (Random Forest, GBM, ensemble)</span><span data-i18n-ko>다른 알고리즘 (Random Forest, GBM, ensemble)</span></span></label>
+            <label><input type="checkbox" name="wanted_features" value="Climate scenario projection" /><span><span data-i18n-en>Climate scenario projection</span><span data-i18n-ko>기후 시나리오 투영</span></span></label>
+            <label><input type="checkbox" name="wanted_features" value="Automated variable selection (VIF, permutation)" /><span><span data-i18n-en>Automated variable selection (VIF, permutation)</span><span data-i18n-ko>변수 자동선택 (VIF·permutation)</span></span></label>
+            <label><input type="checkbox" name="wanted_features" value="Bayesian uncertainty estimation" /><span><span data-i18n-en>Bayesian uncertainty estimation</span><span data-i18n-ko>베이지안 불확실성 추정</span></span></label>
+            <label><input type="checkbox" name="wanted_features" value="Direct GBIF search" /><span><span data-i18n-en>Direct GBIF search</span><span data-i18n-ko>GBIF 직접 검색</span></span></label>
+            <label><input type="checkbox" name="wanted_features" value="QGIS Processing toolbox integration" /><span><span data-i18n-en>QGIS Processing toolbox integration</span><span data-i18n-ko>Processing 도구박스 통합</span></span></label>
+            <label><input type="checkbox" name="wanted_features" value="Model comparison dashboard" /><span><span data-i18n-en>Model comparison dashboard</span><span data-i18n-ko>모델 비교 대시보드</span></span></label>
+            <label><input type="checkbox" name="wanted_features" value="GPU / parallel acceleration" /><span><span data-i18n-en>GPU / parallel acceleration</span><span data-i18n-ko>GPU·병렬 가속</span></span></label>
+          </div>
+        </div>
+
+        <div class="fb-question">
+          <label class="fb-q-label">
+            <span data-i18n-en>7. Most useful data sources to support (select all)</span>
+            <span data-i18n-ko>7. 우선 제공되었으면 하는 데이터 소스 (해당 사항 모두)</span>
+          </label>
+          <div class="fb-options">
+            <label><input type="checkbox" name="data_sources" value="GBIF occurrence" /><span><span data-i18n-en>GBIF occurrence data</span><span data-i18n-ko>GBIF 출현자료</span></span></label>
+            <label><input type="checkbox" name="data_sources" value="WorldClim / CHELSA climate" /><span><span data-i18n-en>WorldClim / CHELSA climate</span><span data-i18n-ko>WorldClim·CHELSA 기후</span></span></label>
+            <label><input type="checkbox" name="data_sources" value="SoilGrids" /><span><span data-i18n-en>SoilGrids soil</span><span data-i18n-ko>SoilGrids 토양</span></span></label>
+            <label><input type="checkbox" name="data_sources" value="Copernicus / MODIS vegetation indices" /><span><span data-i18n-en>Copernicus / MODIS vegetation indices</span><span data-i18n-ko>Copernicus·MODIS 식생지수</span></span></label>
+            <label><input type="checkbox" name="data_sources" value="ESA WorldCover land cover" /><span><span data-i18n-en>ESA WorldCover land cover</span><span data-i18n-ko>ESA WorldCover 토지피복</span></span></label>
+            <label><input type="checkbox" name="data_sources" value="MERIT-DEM / SRTM topography" /><span><span data-i18n-en>MERIT-DEM / SRTM topography</span><span data-i18n-ko>MERIT-DEM·SRTM 지형</span></span></label>
+            <label><input type="checkbox" name="data_sources" value="Bio-ORACLE marine" /><span><span data-i18n-en>Bio-ORACLE marine</span><span data-i18n-ko>Bio-ORACLE 해양</span></span></label>
+            <label><input type="checkbox" name="data_sources" value="Korea EGIS environmental data" /><span><span data-i18n-en>Korea EGIS environmental data</span><span data-i18n-ko>한국 환경공간정보 (EGIS)</span></span></label>
+            <label><input type="checkbox" name="data_sources" value="Korea National Park GIS" /><span><span data-i18n-en>Korea National Park GIS</span><span data-i18n-ko>국립공원 GIS</span></span></label>
+          </div>
+        </div>
+
+        <div class="fb-question">
+          <label class="fb-q-label">
+            <span data-i18n-en>8. Desired downloader features (select all)</span>
+            <span data-i18n-ko>8. 다운로더 기능 — 어떤 항목이 추가되었으면 하나요? (해당 사항 모두)</span>
+          </label>
+          <div class="fb-options">
+            <label><input type="checkbox" name="downloader_features" value="ROI clipping" /><span><span data-i18n-en>ROI (area-of-interest) clipping</span><span data-i18n-ko>관심영역(ROI) 클리핑</span></span></label>
+            <label><input type="checkbox" name="downloader_features" value="Resolution / CRS unification" /><span><span data-i18n-en>Resolution / CRS unification</span><span data-i18n-ko>해상도·CRS 일괄 변환</span></span></label>
+            <label><input type="checkbox" name="downloader_features" value="Source / license metadata auto-attached" /><span><span data-i18n-en>Source / license metadata auto-attached</span><span data-i18n-ko>출처·라이선스 메타데이터 자동 첨부</span></span></label>
+            <label><input type="checkbox" name="downloader_features" value="Cache management" /><span><span data-i18n-en>Cache management</span><span data-i18n-ko>캐시 관리</span></span></label>
+            <label><input type="checkbox" name="downloader_features" value="Batch download manifest (.json)" /><span><span data-i18n-en>Batch download manifest (.json)</span><span data-i18n-ko>일괄 다운로드 매니페스트(.json)</span></span></label>
+            <label><input type="checkbox" name="downloader_features" value="Auto-generated source citations" /><span><span data-i18n-en>Auto-generated source citations</span><span data-i18n-ko>출처 인용문 자동 생성</span></span></label>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="fb-section">
+        <legend><span data-i18n-en>D. Wrap-up</span><span data-i18n-ko>D. 마무리</span></legend>
+
+        <div class="fb-question">
+          <label class="fb-q-label" for="fb-comments">
+            <span data-i18n-en>9. Open feedback</span>
+            <span data-i18n-ko>9. 자유 의견</span>
+          </label>
+          <textarea class="fb-text" id="fb-comments" name="open_feedback" rows="4"
+            data-i18n-placeholder-en="What needs improvement, your top priority feature, or anything else you'd like the QMaxent team to know."
+            data-i18n-placeholder-ko="개선이 필요한 점, 우선시되는 기능, 또는 그 외 전하고 싶은 의견을 자유롭게 적어주세요."></textarea>
+        </div>
+
+        <div class="fb-question">
+          <label class="fb-q-label">
+            <span data-i18n-en>10. Would you participate in a 15-minute follow-up interview?</span>
+            <span data-i18n-ko>10. 15분 사용자 인터뷰에 참여 가능하신가요?</span>
+          </label>
+          <div class="fb-options row">
+            <label><input type="radio" name="interview_ok" value="Yes" data-fb-show="email" /><span><span data-i18n-en>Yes</span><span data-i18n-ko>예</span></span></label>
+            <label><input type="radio" name="interview_ok" value="No" data-fb-show="" /><span><span data-i18n-en>No</span><span data-i18n-ko>아니오</span></span></label>
+          </div>
+          <div class="fb-conditional" id="fb-conditional-email">
+            <label class="fb-q-label" for="fb-email">
+              <span data-i18n-en>Contact email (only used to schedule the interview)</span>
+              <span data-i18n-ko>연락 이메일 (인터뷰 일정 조율 외 다른 용도로 사용하지 않습니다)</span>
+            </label>
+            <input type="email" class="fb-input" id="fb-email" name="contact_email"
+              data-i18n-placeholder-en="you@example.com"
+              data-i18n-placeholder-ko="you@example.com" />
+          </div>
+        </div>
+      </fieldset>
+
+      <div id="fb-status" class="fb-status" hidden></div>
+
+      <div class="fb-actions">
+        <button type="button" class="btn secondary" data-fb-close><span data-i18n-en>Cancel</span><span data-i18n-ko>취소</span></button>
+        <button type="submit" class="btn primary" id="fb-submit"><span data-i18n-en>Submit feedback</span><span data-i18n-ko>의견 제출</span></button>
+      </div>
+
+      <p class="fb-fallback">
+        <span data-i18n-en>Prefer GitHub? </span><span data-i18n-ko>GitHub를 선호하시나요? </span>
+        <a href="https://github.com/osgeokr/qmaxent/issues/new" target="_blank" rel="noopener">
+          <span data-i18n-en>Open an issue instead →</span><span data-i18n-ko>이슈로 직접 작성하기 →</span>
+        </a>
+      </p>
+    </form>
+  </div>
+</dialog>
 
 <footer>
   <div class="container row">
@@ -454,6 +770,180 @@ body[data-lang="en"] section[data-i18n-en], body[data-lang="ko"] section[data-i1
     .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
     .then(function (text) { render(parseCFF(text)); })
     .catch(fail);
+})();
+
+(function () {
+  // ---------- Feedback modal ----------
+  var dialog = document.getElementById("feedback-dialog");
+  var form = document.getElementById("feedback-form");
+  if (!dialog || !form) return;
+
+  var statusEl = document.getElementById("fb-status");
+  var submitBtn = document.getElementById("fb-submit");
+  var langField = document.getElementById("fb-language");
+  var pageUrlField = document.getElementById("fb-page-url");
+  var condEmail = document.getElementById("fb-conditional-email");
+
+  function tr(en, ko) {
+    return (document.body.dataset.lang === "ko" ? ko : en);
+  }
+
+  function applyPlaceholders() {
+    var lang = document.body.dataset.lang === "ko" ? "ko" : "en";
+    var key = "data-i18n-placeholder-" + lang;
+    Array.prototype.forEach.call(form.querySelectorAll("[" + key + "]"), function (el) {
+      el.placeholder = el.getAttribute(key);
+    });
+  }
+
+  function openModal() {
+    if (langField) langField.value = document.body.dataset.lang === "ko" ? "ko" : "en";
+    if (pageUrlField) pageUrlField.value = window.location.href;
+    applyPlaceholders();
+    if (typeof dialog.showModal === "function") {
+      dialog.showModal();
+    } else {
+      dialog.setAttribute("open", "");
+    }
+    setStatus("", null);
+    // Focus first input for accessibility
+    setTimeout(function () {
+      var first = form.querySelector("input:not([type=hidden]):not(.fb-honeypot), textarea");
+      if (first) first.focus();
+    }, 50);
+  }
+
+  function closeModal() {
+    if (typeof dialog.close === "function") {
+      dialog.close();
+    } else {
+      dialog.removeAttribute("open");
+    }
+  }
+
+  function setStatus(msg, kind) {
+    if (!msg) { statusEl.hidden = true; statusEl.textContent = ""; statusEl.className = "fb-status"; return; }
+    statusEl.hidden = false;
+    statusEl.textContent = msg;
+    statusEl.className = "fb-status " + (kind || "");
+  }
+
+  // Open triggers
+  Array.prototype.forEach.call(document.querySelectorAll("[data-fb-open]"), function (el) {
+    el.addEventListener("click", function (e) {
+      e.preventDefault();
+      openModal();
+    });
+  });
+
+  // Close triggers
+  Array.prototype.forEach.call(document.querySelectorAll("[data-fb-close]"), function (el) {
+    el.addEventListener("click", function (e) {
+      e.preventDefault();
+      closeModal();
+    });
+  });
+
+  // Click outside form to close (click on dialog backdrop area)
+  dialog.addEventListener("click", function (e) {
+    if (e.target === dialog) closeModal();
+  });
+
+  // Conditional email field for Q14
+  Array.prototype.forEach.call(form.querySelectorAll("[data-fb-show]"), function (el) {
+    el.addEventListener("change", function () {
+      var which = el.getAttribute("data-fb-show");
+      if (which === "email") condEmail.classList.add("show");
+      else condEmail.classList.remove("show");
+    });
+  });
+
+  // Update placeholders when language toggles
+  var enBtn = document.getElementById("lang-en");
+  var koBtn = document.getElementById("lang-ko");
+  if (enBtn) enBtn.addEventListener("click", applyPlaceholders);
+  if (koBtn) koBtn.addEventListener("click", applyPlaceholders);
+
+  // Submit handler — POST to Web3Forms
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    // Collect form data; combine multi-checkboxes into comma-joined strings
+    var fd = new FormData(form);
+    var data = {};
+    Array.prototype.forEach.call(form.elements, function (el) {
+      if (!el.name) return;
+      if (el.type === "checkbox" && el.classList.contains("fb-honeypot")) {
+        // include for spam-check: must be empty
+        data[el.name] = el.checked ? "true" : "";
+        return;
+      }
+      if (el.type === "checkbox") {
+        if (el.checked) {
+          if (Array.isArray(data[el.name])) data[el.name].push(el.value);
+          else if (data[el.name] != null) data[el.name] = [data[el.name], el.value];
+          else data[el.name] = el.value;
+        }
+        return;
+      }
+      if (el.type === "radio") {
+        if (el.checked) data[el.name] = el.value;
+        return;
+      }
+      if (el.tagName === "TEXTAREA" || el.tagName === "INPUT") {
+        if (el.value) data[el.name] = el.value;
+        return;
+      }
+    });
+
+    // Flatten arrays for clean email rendering
+    Object.keys(data).forEach(function (k) {
+      if (Array.isArray(data[k])) data[k] = data[k].join(", ");
+    });
+
+    // Friendly subject line
+    var langTag = data.ui_language === "ko" ? "KO" : "EN";
+    var roleTag = data.role ? " · " + data.role : "";
+    data.subject = "QMaxent Feedback (" + langTag + ")" + roleTag;
+
+    setStatus(tr("Sending…", "전송 중…"), "loading");
+    submitBtn.disabled = true;
+
+    fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify(data)
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
+      .then(function (res) {
+        if (res.ok && res.body && res.body.success) {
+          setStatus(tr(
+            "✓ Thank you! Your feedback has been sent.",
+            "✓ 감사합니다! 의견이 정상적으로 전송되었습니다."
+          ), "success");
+          form.reset();
+          if (condEmail) condEmail.classList.remove("show");
+          // Auto-close after a brief moment
+          setTimeout(closeModal, 2200);
+        } else {
+          var msg = (res.body && res.body.message) ? res.body.message : "Unknown error";
+          setStatus(tr(
+            "✗ Submission failed: " + msg + ". Please try again, or use the GitHub link below.",
+            "✗ 전송 실패: " + msg + ". 다시 시도하시거나 아래 GitHub 링크를 이용해 주세요."
+          ), "error");
+        }
+      })
+      .catch(function (err) {
+        setStatus(tr(
+          "✗ Network error. Please check your connection and try again, or use the GitHub link below.",
+          "✗ 네트워크 오류. 연결을 확인 후 다시 시도하시거나 아래 GitHub 링크를 이용해 주세요."
+        ), "error");
+        if (window.console) console.error(err);
+      })
+      .then(function () {
+        submitBtn.disabled = false;
+      });
+  });
 })();
 </script>
 </body>

@@ -4,8 +4,8 @@ QMaxent의 기본값, 평가 절차, 우선조사 후보지 워크플로는 종 
 문헌에 근거합니다. 본 장은 플러그인이 인용하는 문헌을 주제별로 묶고, 각
 참고문헌이 QMaxent 안에서 어떻게 활용되는지 한 줄 주석을 덧붙였습니다.
 플러그인 소스 코드의 관련 모듈(`workers/maxent_worker.py`,
-`bridge/elapid_bridge.py`, `bridge/priority_sites.py`)에 인라인 인용이
-포함되어 있습니다.
+`bridge/elapid_bridge.py`, `bridge/priority_sites.py`,
+`core/venv_manager.py`)에 인라인 인용이 포함되어 있습니다.
 
 ## Maxent — 핵심 방법론
 
@@ -160,6 +160,17 @@ Harris, C. R., Millman, K. J., van der Walt, S. J., Gommers, R., Virtanen,
 P., Cournapeau, D., et al. (2020). Array programming with NumPy. *Nature*,
 585(7825), 357–362. <https://doi.org/10.1038/s41586-020-2649-2>
 :   위 모든 라이브러리의 수치 연산 토대.
+
+## 플러그인 아키텍처
+
+Wu, Q. (2026). GeoAI: A Python package for integrating artificial
+intelligence with geospatial data analysis and visualization. *Journal of
+Open Source Software*, 11(118), 9605.
+<https://doi.org/10.21105/joss.09605>
+:   QMaxent의 의존성 설치 워크플로(`core/venv_manager.py`)를 차용한 QGIS
+    플러그인. 특히 Windows QGIS에서 `sys.executable`이 `qgis-bin.exe`를
+    가리키는 문제를 우회하기 위한 `_get_qgis_python()` 패턴과, `pip install`
+    실행 중 서브프로세스 파이프 처리 방식을 그대로 따랐습니다.
 
 ## 관련 SDM 플랫폼
 
