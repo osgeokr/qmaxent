@@ -16,104 +16,109 @@ band) with the mean as a vertical reference line:
 
 ![Response curve for bio1 showing predicted cloglog suitability across the training range](images/ui/dock-4-response-curve-bio1.png)
 
-How to read a response curve:
+For continuous variables the curve is a marginal-effect plot in the sense
+of [Elith et al. 2011](references.md): suitability is computed at the
+sweep of values for the focal variable while every other variable is held
+at its mean (or, for categoricals, its modal level).
 
-- **Y-axis** is the cloglog probability of suitability (0–1).
-- **X-axis** is the variable's value in its native units. The shaded
-    "Training range" band marks the data range the model actually saw;
-    extending the curve outside that band means extrapolation, which should
-    be interpreted cautiously (see the discussion in
-    [Methodological background](methodological-background.md)).
-- **Sharp peaks or steps** are usually hinge or threshold features at work.
-    Smooth curves come from linear and quadratic features.
-- **Per-variable interpretation**: the curve marginalizes over all other
-    variables, so it shows the partial response *holding the others at their
-    mean*. Use it for ecological interpretation, not for prediction.
+For categorical variables, QMaxent renders a bar chart with one bar per
+class, ordered by predicted suitability — visually clearer than the
+ramped curve a Java-MaxEnt run would produce.
 
-Switch variables freely from the drop-down — the plot redraws each time
-without re-running the model.
+The shaded **Training range** band is important: predictions outside this
+band are pure extrapolation. Whenever your eventual spatial projection
+reaches values outside the band, QMaxent shows a one-off
+[Multivariate Environmental Similarity Surface](#)-style warning (see
+[Elith, Kearney & Phillips 2010](references.md)) before writing the
+output GeoTIFF.
+
+![Response Curves sub-tab grid view of all variables](images/ui/dock-4-results-response-curves.png)
+
+The grid view across all variables is the standard
+[Phillips et al. 2006](references.md) summary plot used in publications.
+QMaxent saves it as `prediction_response_curves.png` (300 dpi) when the
+**Save analysis charts as PNG** checkbox is on at projection time — see
+[Exporting results](exporting-results.md).
 
 ## Jackknife Importance
 
-The Jackknife sub-tab is the most information-dense view in the plugin: it
-combines the ROC analysis (training and per-fold CV) with the variable
-importance bars in a single side-by-side figure:
+This sub-tab combines the ROC curve and per-variable Jackknife bars in a
+single panel — the canonical Maxent figure since
+[Phillips, Anderson & Schapire 2006](references.md):
 
-![ROC curve plus Jackknife variable importance for the 9 Bradypus variables](images/ui/dock-4-jackknife-bars.png)
+![ROC and Jackknife panels in the Results tab](images/ui/dock-4-results-jackknife.png)
 
-### ROC panel (left)
+**Reading the ROC panel:**
 
-- **Training ROC** (solid line): the in-sample fit. Always optimistic.
-- **Mean CV ROC** (dashed): the average across all CV folds. This is the
-    headline performance estimate for the model.
-- **Per-fold ROC** (faint lines): each spatial CV fold's ROC. The spread
-    visualizes how stable the model is across spatial subsamples.
-- **Random** (diagonal): the no-skill baseline.
+- **Training ROC** (solid) — in-sample fit
+- **Mean CV ROC** (dashed) — across-fold mean of held-out folds
+- **Per-fold ROC** (faint) — variance across folds is the model's
+  spatial sub-sample stability
 
-The Bradypus example shows training AUC of 0.956 with mean CV AUC of 0.758 —
-a typical, healthy gap that indicates the model has learned a real signal
-without being grossly over-fitted.
+**Reading the Jackknife bars:**
 
-### Jackknife panel (right)
+- **With-only** (dark) — AUC of a model fit on this variable alone
+- **Without** (light) — AUC of the full model with this variable removed
+- A variable with a high *with-only* and a high *without* drop carries
+  a unique signal not redundant with the others (the most informative kind).
 
-For each variable, two bars:
-
-- **With only variable** (dark): how well a model with *just this variable*
-    predicts. High = the variable carries strong univariate signal.
-- **Without variable** (light): how well the model performs *without it*.
-    Low (compared to the full-model AUC) = the variable carries unique
-    information not redundant with others.
-
-A variable that **scores high on dark and creates a noticeable drop on
-light** is unambiguously important. A variable that scores high on dark
-but barely changes light is informative but redundant with others (likely
-correlated). The test/train split for each bar is shown in the same view —
-the value labels are the held-out test AUCs from the CV folds.
+The bars are sorted by **Test AUC drop** by default. The same numbers are
+exported into Table 4 of the XLSX — see
+[Exporting results](exporting-results.md) for the sheet layout.
 
 ## Spatial Projection
 
-This sub-tab applies the trained model to the entire raster stack to
-produce a continuous habitat-suitability surface.
+The third sub-tab projects the trained model across all the input rasters,
+producing a habitat-suitability GeoTIFF.
 
-![Spatial Projection sub-tab after running, with the output GeoTIFF path reported as Done](images/ui/dock-4-projection-done.png)
+![Spatial Projection sub-tab before clicking Run](images/ui/dock-4-results-spatial-projection.png)
 
-### Output transforms
+Controls:
 
-| Transform | Range | Interpretation |
-|---|---|---|
-| **cloglog** *(default)* | 0–1 | Probability of presence at average prevalence (Phillips et al. 2017) |
-| **logistic** | 0–1 | Older logistic transform; included for backward compatibility |
-| **raw** | unbounded | Relative occurrence rate; sums to 1 over the study area |
+- **Output transform**:
+  - `cloglog` (default) — interpretable as probability of presence
+    given a typical sample of the species, the form
+    [Phillips et al. 2017](references.md) recommend as the new default.
+  - `logistic` — the older ([Phillips & Dudík 2008](references.md))
+    parameterisation; still used in some published baselines.
+  - `raw` — the unnormalised exponential output, mostly useful for
+    advanced post-processing.
+- **Auto-load result as QGIS layer** (default on) — the GeoTIFF appears
+  on the canvas with a default white-to-green ramp.
+- **Save analysis charts as PNG** — when on, three additional 300-dpi
+  PNGs (ROC, Jackknife, response-curve grid) are written next to the
+  GeoTIFF. Sized for direct paste into a single-column manuscript figure.
 
-`cloglog` is the recommended default for almost all studies — it has a
-proper probabilistic interpretation, scales linearly with relative occurrence
-rate, and is what the modern Maxent literature reports.
+### The unified preflight dialog
 
-### Auto-load result as QGIS layer
+Before writing the projection, QMaxent runs **two safety checks** in a
+single combined dialog:
 
-Leave this on (the default) and the resulting GeoTIFF is added to your
-QGIS project the moment it is written, with an auto-applied continuous
-white-to-green color ramp. For Bradypus the result is:
+1. **Categorical-code coverage** — any class code present in the
+   projection rasters but unseen during training is auto-masked to NoData
+   (rather than silently extrapolated to a random class probability).
+2. **Continuous-variable extrapolation** — if any continuous variable's
+   projection range exceeds its training range
+   ([Elith, Kearney & Phillips 2010](references.md)), the dialog reports
+   the affected variables and the magnitude of the excursion.
 
-![Bradypus habitat-suitability map across Latin America, white=low, green=high](images/maps/quickstart-final-suitability.png)
+![Unified preflight dialog combining both safety checks](images/ui/dialog-preflight-unified.png)
 
-You can override the color ramp afterward via the layer's **Symbology**
-panel; QMaxent's auto-styling is just a sensible default.
+Click **Yes** to proceed; **No** aborts the projection so you can revise
+the input rasters.
 
-### Save analysis charts as PNG
+### After the projection
 
-When checked, QMaxent also writes high-resolution PNG copies of the
-Response Curves, ROC, and Jackknife plots next to the GeoTIFF. These are
-publication-ready and match the figures you see in this tab. They are
-sized for direct paste into a manuscript figure (300 dpi).
+A success message appears in the panel:
 
-## Memory and performance
+![Projection sub-tab after a successful run](images/ui/dock-4-projection-done.png)
 
-Spatial projection reads each raster cell-by-cell and applies the model.
-For very large rasters (continental scale at 30 m resolution), expect the
-projection step to dominate runtime. Two tips:
+The GeoTIFF is loaded into QGIS with a default white-to-green ramp keyed
+to the cloglog 0–1 range, ready to compose into a publication map.
 
-- **Pre-tile the rasters** to your true study extent before projection; use
-    QGIS's `Clip raster by extent` or `Warp` algorithms.
-- **Coarsen** if appropriate — a 30 m climate raster is rarely meaningful;
-    250 m–1 km is usually fine for SDM and runs much faster.
+## Next
+
+Move to the [⑤ Priority Sites for Survey tab](priority-sites.md) to turn
+the suitability raster into a field-ready candidate point layer, or skip
+ahead to [Exporting results](exporting-results.md) to learn what is in
+the output workbook.

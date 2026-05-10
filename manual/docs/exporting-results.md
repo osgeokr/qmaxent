@@ -35,7 +35,9 @@ identical for every dataset; only the values change.
 
 A one-page record of the full run configuration. Reviewers can verify
 seed, variable count, regularization, CV scheme, and training/CV AUCs
-at a glance.
+at a glance. This is exactly the information
+[Araújo et al. 2019](references.md) flag as the minimum
+methods-section reporting standard for a published SDM.
 
 ![Table 1 — Experimental setup, training data, and run-level metrics](images/results/xlsx-1-experimental-setup.png)
 
@@ -54,7 +56,8 @@ encountered during training.
 
 Use this sheet to document **extrapolation scope**: any prediction
 applied to environmental values outside these ranges is by definition
-extrapolation and should be flagged in your results discussion.
+extrapolation ([Elith, Kearney & Phillips 2010](references.md)) and
+should be flagged in your results discussion.
 
 ### Table 3 — Cross-validation results
 
@@ -81,6 +84,8 @@ are at the top.
 The footer note explains the drop columns:
 *Drop = full-model AUC − without-variable AUC; larger drops indicate
 variables whose unique contribution is harder to recover from the others.*
+This is the metric [Phillips, Anderson & Schapire 2006](references.md)
+recommend as the most robust indicator of *unique* contribution.
 
 ### Optional Table 5 — Priority sites
 

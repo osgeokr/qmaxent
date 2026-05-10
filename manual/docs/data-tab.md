@@ -9,111 +9,98 @@ the presence-points selector, the environmental-raster list with its
 
 ## Presence Points Layer
 
-The first drop-down lists every loaded vector point layer in the current QGIS
-project. Pick the layer that contains your species occurrence records. As
-soon as you select it, QMaxent reads the geometry and reports the number of
-points underneath the selector (e.g. `116 presence points loaded`).
+The first drop-down lists every loaded vector point layer in the current
+QGIS project. Pick the layer that contains your species occurrence records.
+QMaxent reads the geometry and reports the count beside the selector
+(e.g. `116 presence points loaded`).
 
 Tips for preparing this layer:
 
-- **Geometry** must be `Point` or `MultiPoint`.
-- **CRS** can be any QGIS-supported CRS; QMaxent reprojects internally to the
-    rasters' CRS as needed.
-- **Duplicate-point removal** is left to the user. If your data has multiple
-    records at exactly the same coordinates, deduplicate first
-    (`Vector → Geoprocessing tools → Delete duplicate geometries`).
-- **Spatial filtering**: if you only want to model a sub-region, clip the
-    layer to that region before adding it here.
+- **Geometry** must be `Point` or `MultiPoint`. Lines and polygons must be
+  converted to centroids first via **Vector → Geometry Tools → Centroids…**.
+- **CRS** can be anything — QMaxent reprojects on the fly to match the
+  raster grid. That said, a projected CRS that matches the rasters avoids a
+  mid-run reprojection step.
+- **Duplicates and clustering** are tolerated but distort the model.
+  [Boria et al. 2014](references.md) recommend **spatial thinning** before
+  modeling; consider running QGIS plugin *NNJoin* or the standalone tool
+  *spThin* before using QMaxent.
 
-## Environmental Rasters list
+## Environmental rasters
 
-The big list panel below holds every raster the model will see. Use the
-buttons to manage it:
+Two buttons populate the raster list:
 
-- **Add from project** – batch-add every loaded raster layer in the QGIS
-    project. Quickest way to populate the list when you have just dragged
-    in a folder of bioclim variables.
-- **Remove selected** – removes the highlighted entry.
-- **▲ / ▼** – reorder rasters. The order does not affect the *fitted* model,
-    but it does affect the column order in the results XLSX, so it is worth
-    arranging variables sensibly.
+- **Add from project** — adds every raster layer currently loaded in the
+  QGIS project. The fastest way to start.
+- **Add from file…** — opens a multi-select file dialog. Use this if you
+  want to keep the rasters off the QGIS canvas while still using them for
+  modeling.
 
-Each raster has a `[continuous]` / `[categorical]` toggle on the right. **You
-must mark categorical rasters as such** — QMaxent applies one-hot encoding
-to them and any continuous treatment of a categorical variable will produce
-nonsense. Variables like a landcover class index, soil type, or biome ID
-belong here.
+Each row in the raster list shows the file name and a `[continuous]` /
+`[categorical]` tag. **Categorical detection is automatic** when the file
+carries a PAM (`.aux.xml`) sidecar with the metadata key
+`LAYER_TYPE=thematic`. Without that tag, you can manually toggle a row to
+categorical by right-clicking it.
 
-After loading the Bradypus example dataset and marking `biome` as categorical,
-the panel looks like this:
-
-![Data tab with Bradypus presence layer (116 points), 7 environmental rasters, biome marked categorical, and Check Raster Consistency: All 9 rasters share grid](images/ui/dock-1-data-with-bradypus.png)
+!!! tip "Why categorical handling matters"
+    Treating a categorical raster (e.g. biome, land-cover class) as
+    continuous is one of the most common silent failures in operational
+    SDM. Maxent will average across class codes as if they were ordinal,
+    producing biologically meaningless responses. Always verify the
+    `[categorical]` tag on integer-coded landscape rasters before training.
 
 ## Check Raster Consistency
 
-This is QMaxent's silent-error gate. It verifies that every raster shares
-**the same CRS, extent, and resolution**. Maxent on mismatched rasters does
-not throw an error — it just produces wrong predictions because covariates
-get sampled at offset cells. We strongly recommend running this check
-after any change to the raster list.
+This button runs the most important pre-flight check in the dock:
+do all rasters share the **same CRS, extent, and resolution**?
 
-Three possible outcomes:
+- **✓ Pass** (green): the stack is grid-aligned and ready to model.
+- **⚠ Mismatch** (amber): one or more rasters disagree.
 
-| Status | Meaning |
-|---|---|
-| ✓ All rasters share grid (CRS, resolution) | You are good to proceed |
-| ⚠ CRS mismatch or extent mismatch | Use **Harmonize Rasters** (next section) |
-| ⚠ Resolution mismatch | Use **Harmonize Rasters** to resample to a common grid |
+When it fails, a second button — **Harmonize to Folder…** — appears.
+Clicking it lets you nominate an output directory; QMaxent reprojects
+every raster to the highest-resolution one in the stack
+(nearest-neighbour for categoricals, bilinear for continuous variables) and
+re-loads the harmonised set. The
+[Ariolimax worked example](examples/ariolimax.md) walks through this in
+detail.
 
-The status line below the button records the outcome and the shared CRS and
-resolution when the check passes — a sanity-check that survives a save+reload
-of the QGIS project.
+![Data tab showing a grid mismatch warning](images/ui/dock-1-data-mismatch.png)
+![Data tab after harmonization, all rasters share the grid](images/ui/dock-1-data-harmonized.png)
 
-For a worked example of what happens when this check fails and how to fix
-it, see the [Ariolimax worked example](examples/ariolimax.md).
+## Background points
 
-## Harmonize Rasters
+Maxent is a **presence-background** algorithm
+([Phillips et al. 2006](references.md);
+[Fithian & Hastie 2013](references.md)) — it contrasts presence locations
+against a background sample drawn from the rest of the study area. The
+default background sample is **10,000 points** drawn uniformly across the
+union of all raster extents, the value
+[Phillips & Dudík 2008](references.md) recommend for typical continental-
+to landscape-scale studies.
 
-When **Check Raster Consistency** finds a mismatch, the Harmonize Rasters
-dialog (opened from the same area) reprojects, clips, and resamples each
-raster to a common grid that you choose. Behind the scenes it uses
-[`gdalwarp`](https://gdal.org/programs/gdalwarp.html), the same tool the QGIS
-**Warp (Reproject)** algorithm wraps. Inputs are not modified; harmonized
-copies are written next to your project so the originals stay intact.
+You can override it in the **Background points** field. Smaller values are
+appropriate only for very small study areas (<10,000 cells); larger values
+rarely help and slow the run.
 
-## Background Points
+The **Add presences to background** checkbox is **on by default** — this
+is the convention the original Java MaxEnt applies and is required for
+the Maxent likelihood to be well-defined
+([Phillips & Dudík 2008](references.md)).
 
-Maxent does not need true absences; instead it samples the *available*
-environmental space using **background points**. The default of 10,000 is
-the recommendation in Phillips et al. (2017) and works well for almost any
-study area.
+## Load existing model (.pkl)…
 
-When to override the default:
+The bottom of the tab has a **Load existing model (.pkl)…** button for
+re-using a previously trained model on new rasters. Picking a `.pkl` opens
+a variable-mapping dialog so you can re-state which raster maps to which
+saved variable name — a safeguard against silent ordering errors when
+collaborators use different file names. See
+[Saving and reusing models](saving-models.md) for the full workflow and
+the security note on Python pickle files.
 
-- **Tiny study area** (a single watershed, an island): you may not have
-    10,000 distinct cells — use a smaller value such as 5,000 or even
-    `n_cells × 0.5`.
-- **Continental or global modeling**: keeping it at 10,000 is fine; the
-    underlying maxnet algorithm scales well.
-- **Heavy spatial sampling bias** in your presences: pair this with the
-    *Down-weight spatially clustered points* option in the
-    [Parameters tab](parameters-tab.md).
+## Status line
 
-The status bar reports the actual count after sampling
-(e.g. `background=10,113`); slight differences from the request reflect
-NaN-cell exclusion in the rasters.
-
-## Loading an existing model (.pkl)
-
-The **Load existing model (.pkl)…** button at the top right opens a saved
-model and walks you through mapping each model variable to a current QGIS
-raster. This is useful for re-projecting to a different region, comparing
-two studies, or sharing models with collaborators. See
-[Saving and reusing models](saving-models.md) for the full procedure and
-the important [security note on pickle files](saving-models.md).
-
-## What the dock remembers
-
-Layer choices and the categorical/continuous toggles are saved with your
-QGIS project (`.qgs` / `.qgz`). Reopening the project restores everything in
-this tab so you can resume modeling without rebuilding the configuration.
+The bottom of the dock shows a one-line summary:
+`presence=N background=M train AUC=… CV AUC=…`. The AUC fields populate
+after the **③ Training** tab finishes a run — they let you tell at a
+glance whether the dock state matches the most recent training.

@@ -15,49 +15,52 @@ re-docked using the standard QGIS panel handles.
 
 ## The five tabs at a glance
 
-| # | Tab | What you do here |
-|---|---|---|
-| ① | **Data** | Choose the species (presence-point layer) and environmental rasters; check that everything aligns |
-| ② | **Parameters** | Pick Maxent feature types, regularization, spatial cross-validation method, and output paths |
-| ③ | **Training** | Watch the model fit; read the log for AUC, jackknife results, and any warnings |
-| ④ | **Results** | Inspect response curves, jackknife variable importance, and run spatial projection |
-| ⑤ | **Priority Sites for Survey** | Generate field-ready candidate sites from a trained model |
+| # | Tab | Purpose | Detailed chapter |
+|---|---|---|---|
+| ① | **Data** | Pick presence layer; register environmental rasters; pre-flight raster grid check | [① Data tab](data-tab.md) |
+| ② | **Parameters** | Choose feature classes, regularization, spatial CV scheme, output paths | [② Parameters tab](parameters-tab.md) |
+| ③ | **Training** | Live progress bar and log while the model fits | [③ Training tab](training-tab.md) |
+| ④ | **Results** | Response curves, Jackknife importance, spatial projection | [④ Results tab](results-tab.md) |
+| ⑤ | **Priority Sites for Survey** | Turn the prediction into field-ready candidate points | [⑤ Priority Sites](priority-sites.md) |
 
-The numbered prefix is intentional — it signals the order. You cannot use
-the **Results** tab before **Training** has completed, and **Priority Sites**
-needs a finished projection raster.
+The numbered glyphs are deliberate: even when QGIS is configured in a
+language other than English, the order is unambiguous.
 
-## Status bar and Run buttons
+## Status bar
 
-Two elements stay fixed regardless of which tab is active:
+A persistent **status bar at the bottom of the dock** shows the most
+recent run summary — presence count, background count, training AUC, and
+CV AUC. It is updated continuously as you click around, so you can switch
+projects or reopen QGIS and immediately see whether the dock is showing a
+fresh state or a previous run's results.
 
-- The **status bar** at the bottom-left summarises the current model state
-    (e.g. `presence=116 background=10,113 train AUC=0.9562 CV AUC=0.7581`).
-    Empty before training; populated after.
-- The big **▶ Run Maxent** button at the bottom-right kicks off the full
-    training+evaluation pipeline. Clicking it switches focus to the Training
-    tab automatically.
+## Persistence across QGIS sessions
 
-## Loading an existing model
+QMaxent remembers your last-used presence layer, raster set, parameter
+values, and output paths inside the QGIS project file (`.qgz`). When you
+reopen a project, the dock reflects the previous state — no need to
+re-pick layers each time.
 
-Sometimes you want to reuse a model you trained earlier rather than start
-from scratch. The **Load existing model (.pkl)…** button at the top right of
-the **Data** tab opens a dialog that re-hydrates a saved Maxent model and
-asks you to map each model variable to a current QGIS raster layer. See
-[Saving and reusing models](saving-models.md) for the full workflow and the
-security note on pickle files.
+## Buttons across the bottom
 
-## A typical workflow
+The footer of the dock has three persistent buttons:
 
-```mermaid
-flowchart LR
-    A[① Data] --> B[② Parameters]
-    B --> C[③ Training]
-    C --> D[④ Results]
-    D -->|Spatial Projection| E[Habitat-suitability raster]
-    E --> F[⑤ Priority Sites for Survey]
-    style C fill:#FBF7E8,stroke:#3A7E94
-    style E fill:#FBF7E8,stroke:#5E8C36
-```
+- **▶ Run Maxent** — start a training run
+- **▶ Run Spatial Projection** — apply the trained model across all rasters
+- **▶ Extract Priority Sites** — sample candidate survey locations from
+  the prediction
 
-The next five chapters take each tab in turn.
+These buttons are **enabled only when their prerequisites are met**: e.g.
+projection becomes available only after a model has been trained, and the
+priority-sites extractor requires a projection raster on disk.
+
+## What this means for your workflow
+
+The dock's design encodes the canonical Maxent workflow described in
+[Elith et al. 2011](references.md): assemble inputs → choose
+hyperparameters → fit → evaluate → project → act. By making each stage a
+separate tab with its own status, QMaxent forces a discipline that helps
+catch the silent failures
+[Roberts et al. 2017](references.md) and
+[Araújo et al. 2019](references.md) warn about — particularly raster
+mismatch and over-optimistic AUCs from non-spatial CV.

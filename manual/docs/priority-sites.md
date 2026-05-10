@@ -3,7 +3,7 @@
 The fifth tab turns a habitat-suitability raster into a **field-ready list
 of candidate survey sites**. There are two distinct purposes — discovering
 new populations versus validating the model — and QMaxent supports both
-with separate sampling strategies.
+with separate sampling strategies grounded in the survey-design literature.
 
 ## Survey purpose
 
@@ -11,108 +11,114 @@ Pick one:
 
 | Mode | Goal | Reference |
 |---|---|---|
-| **Discovery** | Find new populations in unsurveyed areas | Williams et al. 2009 |
-| **Model validation** | Test whether the suitability gradient predicts presence/absence | Rhoden, Peterman & Taylor 2017 |
+| **Discovery** | Find new populations in unsurveyed high-suitability areas | [Williams et al. 2009](references.md) |
+| **Model validation** | Test whether the suitability gradient predicts presence/absence | [Rhoden, Peterman & Taylor 2017](references.md) |
 
-The two modes ask very different questions of your model, so the rest of
-the panel switches between two distinct configurations depending on which
-purpose you choose.
+The two modes ask very different questions of the same map, so they sample
+it differently:
 
-## Discovery mode
+- **Discovery** preferentially picks the highest-suitability cells far
+  from any known occurrence — the most informative locations for finding
+  the species where it has not been recorded yet.
+- **Model validation** stratifies the suitability gradient and samples
+  proportionally within strata — the design needed for an unbiased
+  presence/absence test of the model's calibration.
 
-![Priority Sites tab in Discovery mode](images/ui/dock-5-priority-sites-discovery.png)
+![Priority Sites tab in Discovery mode after extraction](images/ui/dock-5-priority-sites-discovery.png)
 
-Generates candidate sites where the trained model predicts **high
-suitability** so field teams can target their search efficiently.
+## Sampling strategy
 
-### Discovery settings
+A second drop-down picks the within-mode sampling strategy:
 
-- **Minimum suitability**: the threshold below which cells are excluded
-    from sampling. The default of 0.9000 is auto-set to *raster maximum
-    × 0.9*, capturing only the most promising areas. Lower it (e.g. to 0.7)
-    if you want a broader candidate pool.
-- **Sampling order**:
-    - **Random**: uniform random sampling within the high-suitability band.
-        Use when you want spatial coverage of the candidate pool.
-    - **Top-N (highest first)**: take the *N* highest-suitability cells.
-        Use when you must visit only the very best sites.
+| Strategy | What it does |
+|---|---|
+| **Top-N (highest first)** | Take the top-N cells by suitability, subject to spacing constraints |
+| **Threshold-stratified** | Divide cells above the minimum suitability into N quantile bins and sample equally from each |
+| **Random above threshold** | Random draw from cells above the minimum suitability |
 
-### Sampling strategy
+Top-N is the right choice when you want to maximise hit-rate (the
+classical *Discovery* design of [Williams et al. 2009](references.md)).
+Threshold-stratified is what
+[Rhoden, Peterman & Taylor 2017](references.md) recommend for model
+validation because it gives the test the statistical power to detect a
+declining presence-rate across the suitability gradient.
 
-Three numerical controls shape the candidate set regardless of purpose:
+## Spacing constraints
 
-- **Number of priority sites**: how many candidates to generate (default 20).
-- **Min. distance from existing presences (m)**: forbids sampling within
-    this radius of any presence point. Default 1,000 m. Increase if your
-    presences are GPS-imprecise or you want to find genuinely new
-    populations far from known ones.
-- **Min. distance between sites (m)**: forbids sampling closer than this
-    radius to any already-chosen candidate. Default 500 m. Spreads
-    candidates across the high-suitability band rather than clustering them.
+Two distance fields define the spatial structure of the sampled set:
 
-### Reverse geocoding
+- **Minimum distance from existing presences** — keeps candidates away
+  from known occurrences. Set to the species' detection radius
+  (e.g. 1 km for a calling fairy pitta, 200 m for a sessile slug). This
+  prevents the algorithm from re-sampling territory already covered by
+  earlier surveys.
+- **Minimum distance between candidates** — keeps the candidate set
+  spatially independent. A typical value is half the *minimum distance
+  from existing presences*. Whittaker-style **spatially balanced**
+  sampling, in the sense of [Stevens & Olsen 2004](references.md), is
+  approximated by setting this value to the median nearest-neighbour
+  distance you want in the final set.
 
-Tick **Add administrative address (province/city/district)** and QMaxent
-queries [OpenStreetMap Nominatim](https://nominatim.openstreetmap.org/) to
-add a human-readable address to each candidate. No API key required;
-respects Nominatim's [usage policy](https://operations.osmfoundation.org/policies/nominatim/).
-Geocoding ~20 sites takes 10–20 seconds.
+QMaxent enforces both constraints exactly — candidates are dropped, not
+moved, when a constraint is violated, so the surviving set is always
+within-spec.
 
-## Model validation mode
+## Reverse geocoding
 
-Validation mode is intended for confirming or refuting the suitability
-gradient with new fieldwork. Following Rhoden, Peterman & Taylor (2017), it
-**stratifies sampling across four suitability quartiles** so each band gets
-representative coverage in your survey design.
+When the **Reverse-geocode addresses** checkbox is on, QMaxent calls the
+[Nominatim](https://nominatim.org) API for each candidate point and adds
+columns for `country`, `province`, `city_county`, `district`, and a
+human-readable `display_name`. This makes the resulting GeoPackage
+directly usable for permit applications and field-team coordination —
+particularly valuable in jurisdictions where survey access requires
+prior administrative notification.
 
-### Threshold methods
+The geocoder is rate-limited to one request per second to comply with
+Nominatim's public-server fair-use policy; for large candidate sets
+(>1,000 points) consider running the extractor in batches or pointing
+QMaxent at a self-hosted Nominatim instance via the **Advanced** options.
 
-The lower bound of the lowest quartile must be set somehow. QMaxent offers
-the standard methods:
+![Priority Sites GeoPackage attribute table with reverse-geocoded addresses](images/results/attribute-table-priority-sites.png)
 
-| Method | Definition | Reference |
-|---|---|---|
-| **MTP** | *Minimum Training Presence* — the lowest suitability at any presence | Pearson et al. 2007 |
-| **T10** | *10th-percentile Training Presence* — robust to a few outlier presences | — |
-| **MaxSSS** | *Maximum Sum of Sensitivity and Specificity* — optimum threshold from the ROC | Liu, White & Newell 2013 |
-| **Custom** | Pick any value yourself | — |
+## Outputs
 
-`MaxSSS` is recommended for validation purposes because it is the
-threshold that maximises the model's discriminatory power. `MTP` is more
-permissive and useful when even the lowest historically-occupied sites
-carry biological meaning.
+After clicking **▶ Extract Priority Sites**, two outputs are produced:
 
-## Output
+- **`priority_sites.gpkg`** — a GeoPackage layer auto-loaded into QGIS
+  and styled with red point symbols.
+- **A `Priority sites` sheet** appended to the existing `results.xlsx`
+  workbook, with the same columns as the GeoPackage attribute table.
 
-- **Output vector layer**: a GeoPackage (`.gpkg`) is written next to your
-    other QMaxent outputs. Each candidate is a point with attributes
-    `suitability`, `quartile` (validation mode), `min_distance_m`, and the
-    Nominatim address fields if geocoding was enabled.
-- **Auto-add to QGIS project** *(default on)*: the new layer is loaded with
-    a default red-dot symbology so you can immediately see the candidates
-    on top of the suitability map.
+![Priority Sites tab after extraction with the candidates rendered on the QGIS canvas](images/ui/dock-5-priority-sites-extracted.png)
 
-After running Discovery on the Bradypus model:
+The candidates are immediately ready for export to mobile-GIS apps such
+as **QField**, **Mergin Maps**, or **Locus Map** for offline field use.
 
-![Priority Sites tab after extraction: 20 sites extracted, 19/20 geocoded](images/ui/dock-5-priority-sites-extracted.png)
+## Choosing parameter values
 
-The status bar reports "20 priority sites extracted (MinSuit = 0.9000); 19/20
-geocoded". One site failed geocoding because it fell over open ocean —
-Nominatim does not have address records there.
+Some practical defaults from the literature:
 
-The candidates appear on top of the suitability map:
+- **Number of candidates**: 20–30 per species per season is a typical
+  field-survey budget for a single team
+  ([Robinson et al. 2018](references.md)).
+- **Minimum distance from existing presences**: the species' typical
+  home-range diameter is a good starting point. Too small and you
+  re-sample known sites; too large and you push candidates into
+  marginal habitat.
+- **Minimum suitability**: 0.5 for a balanced search; 0.7+ for a
+  focused high-confidence survey; lower (0.2–0.3) for *negative
+  controls* in a model-validation study.
 
-![Priority sites overlaid as red dots on the Bradypus suitability map](images/maps/priority-sites-on-canvas.png)
+## Worked applications
 
-## Tips for designing a survey
+- The [Bradypus example](examples/bradypus.md) walks through a Discovery
+  extraction at landscape scale.
+- The [Pitta nympha example](examples/pitta-nympha.md) shows the same
+  workflow at municipality scale, with reverse-geocoded Korean
+  administrative addresses ready for field permits.
 
-- **Pair a Discovery and a Validation run** when you have field budget for
-    both. Discovery gives you new populations to confirm; Validation gives
-    you the model accuracy estimate.
-- **Override the auto-set Minimum suitability** if your study system's
-    "high" is biologically different from the model's. For Bradypus a
-    cloglog of 0.9 captures rainforest cores; for an alpine species you
-    might tune it lower.
-- **Use the spacing constraints** to ensure your survey trips can actually
-    reach the sites. Default 500 m between sites is fine for road-accessible
-    species; raise it for habitats that demand multi-day expeditions per site.
+## Next
+
+Move to [Saving and reusing models](saving-models.md) to learn how to
+share the trained model with collaborators or re-project it onto a new
+raster stack later.
