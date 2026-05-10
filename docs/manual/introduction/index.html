@@ -1175,15 +1175,102 @@
 
 
 <h1 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">&para;</a></h1>
-<p>What QMaxent is, who it is for, and how it relates to other species distribution modeling tools.</p>
+<p>QMaxent is a <a href="https://qgis.org/">QGIS</a> plugin that brings the full Maxent
+species distribution modeling (SDM) workflow inside the GIS. From a single
+docked panel you can choose presence points, register environmental
+rasters, train a regularised Maxent model, evaluate it with spatial
+cross-validation, project it across the landscape, and generate field-ready
+candidate survey sites — without leaving QGIS or writing a line of code.</p>
 <h2 id="what-is-qmaxent">What is QMaxent<a class="headerlink" href="#what-is-qmaxent" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>Under the hood, QMaxent wraps the <a href="https://github.com/earth-chris/elapid">elapid</a>
+Python library (Anderson 2023). Elapid implements the maxnet algorithm — a
+penalised Poisson formulation that is provably equivalent to the original
+Maxent model on a sufficient sample of background points (Fithian &amp; Hastie
+2013) — using the lasso-regularised generalised linear model machinery of
+glmnet (Friedman, Hastie &amp; Tibshirani 2010). The user-facing model is the
+same Maxent that the broader SDM literature has used since Phillips,
+Anderson &amp; Schapire (2006); the difference is the surrounding tooling, not
+the inferential engine.</p>
 <h2 id="intended-users">Intended users<a class="headerlink" href="#intended-users" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>QMaxent is for ecologists, conservation planners, and biogeographers who:</p>
+<ul>
+<li>Already use QGIS for spatial analysis and want SDM as an integrated step
+    rather than a separate Java GUI</li>
+<li>Need cross-validated, <em>spatially honest</em> performance estimates rather
+    than an over-optimistic in-sample AUC (Roberts et al. 2017)</li>
+<li>Want their results to be <strong>reproducible</strong> — fixed seeds, configuration
+    written to a multi-sheet Excel supplement, model serialised as a
+    portable <code>.pkl</code></li>
+<li>Work bilingually (Korean / English) and need a UI in their language</li>
+</ul>
+<p>You do not need to know Python. You do need a working knowledge of vector
+points and raster layers in QGIS, and enough domain knowledge of your
+study system to choose appropriate environmental predictors.</p>
 <h2 id="how-it-compares-to-other-sdm-tools">How it compares to other SDM tools<a class="headerlink" href="#how-it-compares-to-other-sdm-tools" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Interface</th>
+<th>Engine</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>QMaxent</strong></td>
+<td>QGIS plugin</td>
+<td>elapid (maxnet, Python)</td>
+<td>Active, this manual</td>
+</tr>
+<tr>
+<td>Java MaxEnt</td>
+<td>Standalone Java GUI</td>
+<td>Original Maxent</td>
+<td>Stable; broadly used</td>
+</tr>
+<tr>
+<td>ENMeval (R)</td>
+<td>R package</td>
+<td>maxnet / dismo</td>
+<td>Strong CV / tuning support (Muscarella et al. 2014)</td>
+</tr>
+<tr>
+<td>Wallace</td>
+<td>Shiny web app</td>
+<td>Multiple (incl. maxnet)</td>
+<td>Reproducibility focus (Kass et al. 2018)</td>
+</tr>
+<tr>
+<td>dismo (R)</td>
+<td>R package</td>
+<td>Multiple SDM algorithms</td>
+<td>Mature; broad ecosystem</td>
+</tr>
+</tbody>
+</table>
+<p>QMaxent occupies the same conceptual niche as the Java MaxEnt GUI for
+QGIS users, with the added benefit of a modern Python runtime that ships
+with QGIS, an integrated raster-consistency preflight, and built-in
+spatial cross-validation. The <a href="../examples/pitta-nympha/">Pitta nympha worked example</a>
+reproduces a published Java MaxEnt analysis in QMaxent and discusses
+where the two pipelines agree or diverge.</p>
 <h2 id="methodological-lineage">Methodological lineage<a class="headerlink" href="#methodological-lineage" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>QMaxent's defaults follow the recommendations of:</p>
+<ul>
+<li>Phillips, Anderson &amp; Schapire (2006), Phillips &amp; Dudík (2008), and
+    Phillips et al. (2017) for the core Maxent formulation, regularization,
+    and cloglog output transform.</li>
+<li>Elith et al. (2011) and Merow, Smith &amp; Silander (2013) for practitioner
+    guidance on inputs and settings.</li>
+<li>Radosavljevic &amp; Anderson (2014) for the auto-rule that selects feature
+    classes by sample size.</li>
+<li>Roberts et al. (2017) for spatial cross-validation as the default
+    evaluation method.</li>
+</ul>
+<p>Every default in the plugin can be overridden in the
+<a href="../parameters-tab/">② Parameters tab</a>. Full citations are in
+<a href="../references/">References</a>.</p>
 
 
 

@@ -1345,7 +1345,9 @@ identical for every dataset; only the values change.</p>
 <h3 id="table-1-experimental-setup">Table 1 — Experimental setup<a class="headerlink" href="#table-1-experimental-setup" title="Permanent link">&para;</a></h3>
 <p>A one-page record of the full run configuration. Reviewers can verify
 seed, variable count, regularization, CV scheme, and training/CV AUCs
-at a glance.</p>
+at a glance. This is exactly the information
+<a href="../references/">Araújo et al. 2019</a> flag as the minimum
+methods-section reporting standard for a published SDM.</p>
 <p><img alt="Table 1 — Experimental setup, training data, and run-level metrics" src="../images/results/xlsx-1-experimental-setup.png" /></p>
 <p>This sheet is the single best artefact for <strong>methods-section
 reproducibility</strong>. Cite it as your "Table S1" and a reader can
@@ -1358,7 +1360,8 @@ encountered during training.</p>
 <p><img alt="Table 2 — Predictor variables, types, and training-data range" src="../images/results/xlsx-2-predictor-variables.png" /></p>
 <p>Use this sheet to document <strong>extrapolation scope</strong>: any prediction
 applied to environmental values outside these ranges is by definition
-extrapolation and should be flagged in your results discussion.</p>
+extrapolation (<a href="../references/">Elith, Kearney &amp; Phillips 2010</a>) and
+should be flagged in your results discussion.</p>
 <h3 id="table-3-cross-validation-results">Table 3 — Cross-validation results<a class="headerlink" href="#table-3-cross-validation-results" title="Permanent link">&para;</a></h3>
 <p>Per-fold held-out AUC and the across-fold mean ± standard deviation —
 the headline performance estimate.</p>
@@ -1376,7 +1379,9 @@ are at the top.</p>
 <p><img alt="Table 4 — Jackknife variable importance" src="../images/results/xlsx-4-jackknife.png" /></p>
 <p>The footer note explains the drop columns:
 <em>Drop = full-model AUC − without-variable AUC; larger drops indicate
-variables whose unique contribution is harder to recover from the others.</em></p>
+variables whose unique contribution is harder to recover from the others.</em>
+This is the metric <a href="../references/">Phillips, Anderson &amp; Schapire 2006</a>
+recommend as the most robust indicator of <em>unique</em> contribution.</p>
 <h3 id="optional-table-5-priority-sites">Optional Table 5 — Priority sites<a class="headerlink" href="#optional-table-5-priority-sites" title="Permanent link">&para;</a></h3>
 <p>If you ran the <strong>Priority Sites for Survey</strong> tab, the same workbook
 gains a fifth sheet with one row per candidate location. The columns

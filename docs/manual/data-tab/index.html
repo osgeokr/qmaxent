@@ -685,9 +685,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#environmental-rasters-list" class="md-nav__link">
+  <a href="#environmental-rasters" class="md-nav__link">
     <span class="md-ellipsis">
-      Environmental Rasters list
+      Environmental rasters
     </span>
   </a>
   
@@ -703,36 +703,27 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#harmonize-rasters" class="md-nav__link">
-    <span class="md-ellipsis">
-      Harmonize Rasters
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#background-points" class="md-nav__link">
     <span class="md-ellipsis">
-      Background Points
+      Background points
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#loading-an-existing-model-pkl" class="md-nav__link">
+  <a href="#load-existing-model-pkl" class="md-nav__link">
     <span class="md-ellipsis">
-      Loading an existing model (.pkl)
+      Load existing model (.pkl)…
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#what-the-dock-remembers" class="md-nav__link">
+  <a href="#status-line" class="md-nav__link">
     <span class="md-ellipsis">
-      What the dock remembers
+      Status line
     </span>
   </a>
   
@@ -1157,9 +1148,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#environmental-rasters-list" class="md-nav__link">
+  <a href="#environmental-rasters" class="md-nav__link">
     <span class="md-ellipsis">
-      Environmental Rasters list
+      Environmental rasters
     </span>
   </a>
   
@@ -1175,36 +1166,27 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#harmonize-rasters" class="md-nav__link">
-    <span class="md-ellipsis">
-      Harmonize Rasters
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#background-points" class="md-nav__link">
     <span class="md-ellipsis">
-      Background Points
+      Background points
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#loading-an-existing-model-pkl" class="md-nav__link">
+  <a href="#load-existing-model-pkl" class="md-nav__link">
     <span class="md-ellipsis">
-      Loading an existing model (.pkl)
+      Load existing model (.pkl)…
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#what-the-dock-remembers" class="md-nav__link">
+  <a href="#status-line" class="md-nav__link">
     <span class="md-ellipsis">
-      What the dock remembers
+      Status line
     </span>
   </a>
   
@@ -1235,112 +1217,89 @@ the presence-points selector, the environmental-raster list with its
 <strong>Check Raster Consistency</strong> action, and the background-points sample size.</p>
 <p><img alt="Data tab in its initial empty state" src="../images/ui/dock-1-data-empty.png" /></p>
 <h2 id="presence-points-layer">Presence Points Layer<a class="headerlink" href="#presence-points-layer" title="Permanent link">&para;</a></h2>
-<p>The first drop-down lists every loaded vector point layer in the current QGIS
-project. Pick the layer that contains your species occurrence records. As
-soon as you select it, QMaxent reads the geometry and reports the number of
-points underneath the selector (e.g. <code>116 presence points loaded</code>).</p>
+<p>The first drop-down lists every loaded vector point layer in the current
+QGIS project. Pick the layer that contains your species occurrence records.
+QMaxent reads the geometry and reports the count beside the selector
+(e.g. <code>116 presence points loaded</code>).</p>
 <p>Tips for preparing this layer:</p>
 <ul>
-<li><strong>Geometry</strong> must be <code>Point</code> or <code>MultiPoint</code>.</li>
-<li><strong>CRS</strong> can be any QGIS-supported CRS; QMaxent reprojects internally to the
-    rasters' CRS as needed.</li>
-<li><strong>Duplicate-point removal</strong> is left to the user. If your data has multiple
-    records at exactly the same coordinates, deduplicate first
-    (<code>Vector → Geoprocessing tools → Delete duplicate geometries</code>).</li>
-<li><strong>Spatial filtering</strong>: if you only want to model a sub-region, clip the
-    layer to that region before adding it here.</li>
+<li><strong>Geometry</strong> must be <code>Point</code> or <code>MultiPoint</code>. Lines and polygons must be
+  converted to centroids first via <strong>Vector → Geometry Tools → Centroids…</strong>.</li>
+<li><strong>CRS</strong> can be anything — QMaxent reprojects on the fly to match the
+  raster grid. That said, a projected CRS that matches the rasters avoids a
+  mid-run reprojection step.</li>
+<li><strong>Duplicates and clustering</strong> are tolerated but distort the model.
+  <a href="../references/">Boria et al. 2014</a> recommend <strong>spatial thinning</strong> before
+  modeling; consider running QGIS plugin <em>NNJoin</em> or the standalone tool
+  <em>spThin</em> before using QMaxent.</li>
 </ul>
-<h2 id="environmental-rasters-list">Environmental Rasters list<a class="headerlink" href="#environmental-rasters-list" title="Permanent link">&para;</a></h2>
-<p>The big list panel below holds every raster the model will see. Use the
-buttons to manage it:</p>
+<h2 id="environmental-rasters">Environmental rasters<a class="headerlink" href="#environmental-rasters" title="Permanent link">&para;</a></h2>
+<p>Two buttons populate the raster list:</p>
 <ul>
-<li><strong>Add from project</strong> – batch-add every loaded raster layer in the QGIS
-    project. Quickest way to populate the list when you have just dragged
-    in a folder of bioclim variables.</li>
-<li><strong>Remove selected</strong> – removes the highlighted entry.</li>
-<li><strong>▲ / ▼</strong> – reorder rasters. The order does not affect the <em>fitted</em> model,
-    but it does affect the column order in the results XLSX, so it is worth
-    arranging variables sensibly.</li>
+<li><strong>Add from project</strong> — adds every raster layer currently loaded in the
+  QGIS project. The fastest way to start.</li>
+<li><strong>Add from file…</strong> — opens a multi-select file dialog. Use this if you
+  want to keep the rasters off the QGIS canvas while still using them for
+  modeling.</li>
 </ul>
-<p>Each raster has a <code>[continuous]</code> / <code>[categorical]</code> toggle on the right. <strong>You
-must mark categorical rasters as such</strong> — QMaxent applies one-hot encoding
-to them and any continuous treatment of a categorical variable will produce
-nonsense. Variables like a landcover class index, soil type, or biome ID
-belong here.</p>
-<p>After loading the Bradypus example dataset and marking <code>biome</code> as categorical,
-the panel looks like this:</p>
-<p><img alt="Data tab with Bradypus presence layer (116 points), 7 environmental rasters, biome marked categorical, and Check Raster Consistency: All 9 rasters share grid" src="../images/ui/dock-1-data-with-bradypus.png" /></p>
+<p>Each row in the raster list shows the file name and a <code>[continuous]</code> /
+<code>[categorical]</code> tag. <strong>Categorical detection is automatic</strong> when the file
+carries a PAM (<code>.aux.xml</code>) sidecar with the metadata key
+<code>LAYER_TYPE=thematic</code>. Without that tag, you can manually toggle a row to
+categorical by right-clicking it.</p>
+<div class="admonition tip">
+<p class="admonition-title">Why categorical handling matters</p>
+<p>Treating a categorical raster (e.g. biome, land-cover class) as
+continuous is one of the most common silent failures in operational
+SDM. Maxent will average across class codes as if they were ordinal,
+producing biologically meaningless responses. Always verify the
+<code>[categorical]</code> tag on integer-coded landscape rasters before training.</p>
+</div>
 <h2 id="check-raster-consistency">Check Raster Consistency<a class="headerlink" href="#check-raster-consistency" title="Permanent link">&para;</a></h2>
-<p>This is QMaxent's silent-error gate. It verifies that every raster shares
-<strong>the same CRS, extent, and resolution</strong>. Maxent on mismatched rasters does
-not throw an error — it just produces wrong predictions because covariates
-get sampled at offset cells. We strongly recommend running this check
-after any change to the raster list.</p>
-<p>Three possible outcomes:</p>
-<table>
-<thead>
-<tr>
-<th>Status</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>✓ All rasters share grid (CRS, resolution)</td>
-<td>You are good to proceed</td>
-</tr>
-<tr>
-<td>⚠ CRS mismatch or extent mismatch</td>
-<td>Use <strong>Harmonize Rasters</strong> (next section)</td>
-</tr>
-<tr>
-<td>⚠ Resolution mismatch</td>
-<td>Use <strong>Harmonize Rasters</strong> to resample to a common grid</td>
-</tr>
-</tbody>
-</table>
-<p>The status line below the button records the outcome and the shared CRS and
-resolution when the check passes — a sanity-check that survives a save+reload
-of the QGIS project.</p>
-<p>For a worked example of what happens when this check fails and how to fix
-it, see the <a href="../examples/ariolimax/">Ariolimax worked example</a>.</p>
-<h2 id="harmonize-rasters">Harmonize Rasters<a class="headerlink" href="#harmonize-rasters" title="Permanent link">&para;</a></h2>
-<p>When <strong>Check Raster Consistency</strong> finds a mismatch, the Harmonize Rasters
-dialog (opened from the same area) reprojects, clips, and resamples each
-raster to a common grid that you choose. Behind the scenes it uses
-<a href="https://gdal.org/programs/gdalwarp.html"><code>gdalwarp</code></a>, the same tool the QGIS
-<strong>Warp (Reproject)</strong> algorithm wraps. Inputs are not modified; harmonized
-copies are written next to your project so the originals stay intact.</p>
-<h2 id="background-points">Background Points<a class="headerlink" href="#background-points" title="Permanent link">&para;</a></h2>
-<p>Maxent does not need true absences; instead it samples the <em>available</em>
-environmental space using <strong>background points</strong>. The default of 10,000 is
-the recommendation in Phillips et al. (2017) and works well for almost any
-study area.</p>
-<p>When to override the default:</p>
+<p>This button runs the most important pre-flight check in the dock:
+do all rasters share the <strong>same CRS, extent, and resolution</strong>?</p>
 <ul>
-<li><strong>Tiny study area</strong> (a single watershed, an island): you may not have
-    10,000 distinct cells — use a smaller value such as 5,000 or even
-    <code>n_cells × 0.5</code>.</li>
-<li><strong>Continental or global modeling</strong>: keeping it at 10,000 is fine; the
-    underlying maxnet algorithm scales well.</li>
-<li><strong>Heavy spatial sampling bias</strong> in your presences: pair this with the
-    <em>Down-weight spatially clustered points</em> option in the
-    <a href="../parameters-tab/">Parameters tab</a>.</li>
+<li><strong>✓ Pass</strong> (green): the stack is grid-aligned and ready to model.</li>
+<li><strong>⚠ Mismatch</strong> (amber): one or more rasters disagree.</li>
 </ul>
-<p>The status bar reports the actual count after sampling
-(e.g. <code>background=10,113</code>); slight differences from the request reflect
-NaN-cell exclusion in the rasters.</p>
-<h2 id="loading-an-existing-model-pkl">Loading an existing model (.pkl)<a class="headerlink" href="#loading-an-existing-model-pkl" title="Permanent link">&para;</a></h2>
-<p>The <strong>Load existing model (.pkl)…</strong> button at the top right opens a saved
-model and walks you through mapping each model variable to a current QGIS
-raster. This is useful for re-projecting to a different region, comparing
-two studies, or sharing models with collaborators. See
-<a href="../saving-models/">Saving and reusing models</a> for the full procedure and
-the important <a href="../saving-models/">security note on pickle files</a>.</p>
-<h2 id="what-the-dock-remembers">What the dock remembers<a class="headerlink" href="#what-the-dock-remembers" title="Permanent link">&para;</a></h2>
-<p>Layer choices and the categorical/continuous toggles are saved with your
-QGIS project (<code>.qgs</code> / <code>.qgz</code>). Reopening the project restores everything in
-this tab so you can resume modeling without rebuilding the configuration.</p>
+<p>When it fails, a second button — <strong>Harmonize to Folder…</strong> — appears.
+Clicking it lets you nominate an output directory; QMaxent reprojects
+every raster to the highest-resolution one in the stack
+(nearest-neighbour for categoricals, bilinear for continuous variables) and
+re-loads the harmonised set. The
+<a href="../examples/ariolimax/">Ariolimax worked example</a> walks through this in
+detail.</p>
+<p><img alt="Data tab showing a grid mismatch warning" src="../images/ui/dock-1-data-mismatch.png" />
+<img alt="Data tab after harmonization, all rasters share the grid" src="../images/ui/dock-1-data-harmonized.png" /></p>
+<h2 id="background-points">Background points<a class="headerlink" href="#background-points" title="Permanent link">&para;</a></h2>
+<p>Maxent is a <strong>presence-background</strong> algorithm
+(<a href="../references/">Phillips et al. 2006</a>;
+<a href="../references/">Fithian &amp; Hastie 2013</a>) — it contrasts presence locations
+against a background sample drawn from the rest of the study area. The
+default background sample is <strong>10,000 points</strong> drawn uniformly across the
+union of all raster extents, the value
+<a href="../references/">Phillips &amp; Dudík 2008</a> recommend for typical continental-
+to landscape-scale studies.</p>
+<p>You can override it in the <strong>Background points</strong> field. Smaller values are
+appropriate only for very small study areas (&lt;10,000 cells); larger values
+rarely help and slow the run.</p>
+<p>The <strong>Add presences to background</strong> checkbox is <strong>on by default</strong> — this
+is the convention the original Java MaxEnt applies and is required for
+the Maxent likelihood to be well-defined
+(<a href="../references/">Phillips &amp; Dudík 2008</a>).</p>
+<h2 id="load-existing-model-pkl">Load existing model (.pkl)…<a class="headerlink" href="#load-existing-model-pkl" title="Permanent link">&para;</a></h2>
+<p>The bottom of the tab has a <strong>Load existing model (.pkl)…</strong> button for
+re-using a previously trained model on new rasters. Picking a <code>.pkl</code> opens
+a variable-mapping dialog so you can re-state which raster maps to which
+saved variable name — a safeguard against silent ordering errors when
+collaborators use different file names. See
+<a href="../saving-models/">Saving and reusing models</a> for the full workflow and
+the security note on Python pickle files.</p>
+<h2 id="status-line">Status line<a class="headerlink" href="#status-line" title="Permanent link">&para;</a></h2>
+<p>The bottom of the dock shows a one-line summary:
+<code>presence=N background=M train AUC=… CV AUC=…</code>. The AUC fields populate
+after the <strong>③ Training</strong> tab finishes a run — they let you tell at a
+glance whether the dock state matches the most recent training.</p>
 
 
 

@@ -673,27 +673,36 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#status-bar-and-run-buttons" class="md-nav__link">
+  <a href="#status-bar" class="md-nav__link">
     <span class="md-ellipsis">
-      Status bar and Run buttons
+      Status bar
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#loading-an-existing-model" class="md-nav__link">
+  <a href="#persistence-across-qgis-sessions" class="md-nav__link">
     <span class="md-ellipsis">
-      Loading an existing model
+      Persistence across QGIS sessions
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#a-typical-workflow" class="md-nav__link">
+  <a href="#buttons-across-the-bottom" class="md-nav__link">
     <span class="md-ellipsis">
-      A typical workflow
+      Buttons across the bottom
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-this-means-for-your-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      What this means for your workflow
     </span>
   </a>
   
@@ -1148,27 +1157,36 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#status-bar-and-run-buttons" class="md-nav__link">
+  <a href="#status-bar" class="md-nav__link">
     <span class="md-ellipsis">
-      Status bar and Run buttons
+      Status bar
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#loading-an-existing-model" class="md-nav__link">
+  <a href="#persistence-across-qgis-sessions" class="md-nav__link">
     <span class="md-ellipsis">
-      Loading an existing model
+      Persistence across QGIS sessions
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#a-typical-workflow" class="md-nav__link">
+  <a href="#buttons-across-the-bottom" class="md-nav__link">
     <span class="md-ellipsis">
-      A typical workflow
+      Buttons across the bottom
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-this-means-for-your-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      What this means for your workflow
     </span>
   </a>
   
@@ -1208,67 +1226,76 @@ re-docked using the standard QGIS panel handles.</p>
 <tr>
 <th>#</th>
 <th>Tab</th>
-<th>What you do here</th>
+<th>Purpose</th>
+<th>Detailed chapter</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>①</td>
 <td><strong>Data</strong></td>
-<td>Choose the species (presence-point layer) and environmental rasters; check that everything aligns</td>
+<td>Pick presence layer; register environmental rasters; pre-flight raster grid check</td>
+<td><a href="../data-tab/">① Data tab</a></td>
 </tr>
 <tr>
 <td>②</td>
 <td><strong>Parameters</strong></td>
-<td>Pick Maxent feature types, regularization, spatial cross-validation method, and output paths</td>
+<td>Choose feature classes, regularization, spatial CV scheme, output paths</td>
+<td><a href="../parameters-tab/">② Parameters tab</a></td>
 </tr>
 <tr>
 <td>③</td>
 <td><strong>Training</strong></td>
-<td>Watch the model fit; read the log for AUC, jackknife results, and any warnings</td>
+<td>Live progress bar and log while the model fits</td>
+<td><a href="../training-tab/">③ Training tab</a></td>
 </tr>
 <tr>
 <td>④</td>
 <td><strong>Results</strong></td>
-<td>Inspect response curves, jackknife variable importance, and run spatial projection</td>
+<td>Response curves, Jackknife importance, spatial projection</td>
+<td><a href="../results-tab/">④ Results tab</a></td>
 </tr>
 <tr>
 <td>⑤</td>
 <td><strong>Priority Sites for Survey</strong></td>
-<td>Generate field-ready candidate sites from a trained model</td>
+<td>Turn the prediction into field-ready candidate points</td>
+<td><a href="../priority-sites/">⑤ Priority Sites</a></td>
 </tr>
 </tbody>
 </table>
-<p>The numbered prefix is intentional — it signals the order. You cannot use
-the <strong>Results</strong> tab before <strong>Training</strong> has completed, and <strong>Priority Sites</strong>
-needs a finished projection raster.</p>
-<h2 id="status-bar-and-run-buttons">Status bar and Run buttons<a class="headerlink" href="#status-bar-and-run-buttons" title="Permanent link">&para;</a></h2>
-<p>Two elements stay fixed regardless of which tab is active:</p>
+<p>The numbered glyphs are deliberate: even when QGIS is configured in a
+language other than English, the order is unambiguous.</p>
+<h2 id="status-bar">Status bar<a class="headerlink" href="#status-bar" title="Permanent link">&para;</a></h2>
+<p>A persistent <strong>status bar at the bottom of the dock</strong> shows the most
+recent run summary — presence count, background count, training AUC, and
+CV AUC. It is updated continuously as you click around, so you can switch
+projects or reopen QGIS and immediately see whether the dock is showing a
+fresh state or a previous run's results.</p>
+<h2 id="persistence-across-qgis-sessions">Persistence across QGIS sessions<a class="headerlink" href="#persistence-across-qgis-sessions" title="Permanent link">&para;</a></h2>
+<p>QMaxent remembers your last-used presence layer, raster set, parameter
+values, and output paths inside the QGIS project file (<code>.qgz</code>). When you
+reopen a project, the dock reflects the previous state — no need to
+re-pick layers each time.</p>
+<h2 id="buttons-across-the-bottom">Buttons across the bottom<a class="headerlink" href="#buttons-across-the-bottom" title="Permanent link">&para;</a></h2>
+<p>The footer of the dock has three persistent buttons:</p>
 <ul>
-<li>The <strong>status bar</strong> at the bottom-left summarises the current model state
-    (e.g. <code>presence=116 background=10,113 train AUC=0.9562 CV AUC=0.7581</code>).
-    Empty before training; populated after.</li>
-<li>The big <strong>▶ Run Maxent</strong> button at the bottom-right kicks off the full
-    training+evaluation pipeline. Clicking it switches focus to the Training
-    tab automatically.</li>
+<li><strong>▶ Run Maxent</strong> — start a training run</li>
+<li><strong>▶ Run Spatial Projection</strong> — apply the trained model across all rasters</li>
+<li><strong>▶ Extract Priority Sites</strong> — sample candidate survey locations from
+  the prediction</li>
 </ul>
-<h2 id="loading-an-existing-model">Loading an existing model<a class="headerlink" href="#loading-an-existing-model" title="Permanent link">&para;</a></h2>
-<p>Sometimes you want to reuse a model you trained earlier rather than start
-from scratch. The <strong>Load existing model (.pkl)…</strong> button at the top right of
-the <strong>Data</strong> tab opens a dialog that re-hydrates a saved Maxent model and
-asks you to map each model variable to a current QGIS raster layer. See
-<a href="../saving-models/">Saving and reusing models</a> for the full workflow and the
-security note on pickle files.</p>
-<h2 id="a-typical-workflow">A typical workflow<a class="headerlink" href="#a-typical-workflow" title="Permanent link">&para;</a></h2>
-<pre class="mermaid"><code>flowchart LR
-    A[① Data] --&gt; B[② Parameters]
-    B --&gt; C[③ Training]
-    C --&gt; D[④ Results]
-    D --&gt;|Spatial Projection| E[Habitat-suitability raster]
-    E --&gt; F[⑤ Priority Sites for Survey]
-    style C fill:#FBF7E8,stroke:#3A7E94
-    style E fill:#FBF7E8,stroke:#5E8C36</code></pre>
-<p>The next five chapters take each tab in turn.</p>
+<p>These buttons are <strong>enabled only when their prerequisites are met</strong>: e.g.
+projection becomes available only after a model has been trained, and the
+priority-sites extractor requires a projection raster on disk.</p>
+<h2 id="what-this-means-for-your-workflow">What this means for your workflow<a class="headerlink" href="#what-this-means-for-your-workflow" title="Permanent link">&para;</a></h2>
+<p>The dock's design encodes the canonical Maxent workflow described in
+<a href="../references/">Elith et al. 2011</a>: assemble inputs → choose
+hyperparameters → fit → evaluate → project → act. By making each stage a
+separate tab with its own status, QMaxent forces a discipline that helps
+catch the silent failures
+<a href="../references/">Roberts et al. 2017</a> and
+<a href="../references/">Araújo et al. 2019</a> warn about — particularly raster
+mismatch and over-optimistic AUCs from non-spatial CV.</p>
 
 
 

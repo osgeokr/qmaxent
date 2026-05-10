@@ -514,16 +514,16 @@
         <li class="md-nav__item">
   <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
-      주요 사용자
+      누구를 위한 도구인가
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#sdm" class="md-nav__link">
+  <a href="#java-maxent-r" class="md-nav__link">
     <span class="md-ellipsis">
-      다른 SDM 도구와의 비교
+      Java MaxEnt 및 R 패키지와의 차이
     </span>
   </a>
   
@@ -532,7 +532,16 @@
         <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
-      방법론적 계보
+      방법론 계보
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      다음 단계
     </span>
   </a>
   
@@ -1132,16 +1141,16 @@
         <li class="md-nav__item">
   <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
-      주요 사용자
+      누구를 위한 도구인가
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#sdm" class="md-nav__link">
+  <a href="#java-maxent-r" class="md-nav__link">
     <span class="md-ellipsis">
-      다른 SDM 도구와의 비교
+      Java MaxEnt 및 R 패키지와의 차이
     </span>
   </a>
   
@@ -1150,7 +1159,16 @@
         <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
-      방법론적 계보
+      방법론 계보
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      다음 단계
     </span>
   </a>
   
@@ -1175,15 +1193,128 @@
 
 
 <h1 id="_1">소개<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
-<p>QMaxent가 무엇이고 누구를 위한 도구이며, 다른 종 분포 모델링 도구와 어떻게 다른지 설명합니다.</p>
+<p>QMaxent는 <a href="https://cran.r-project.org/package=maxnet">maxnet</a> /
+<a href="https://github.com/earth-chris/elapid">elapid</a> Maxent 알고리즘을 QGIS의
+<strong>도크 기반 GUI</strong>로 감싸서, 이미 QGIS 환경에 익숙한 생태학자, 보전 관련
+실무자, 학생들이 별도의 R/Python 스크립트나 Java MaxEnt 명령행 없이
+종 분포 모델(SDM)을 구축할 수 있도록 합니다.</p>
 <h2 id="qmaxent">QMaxent란<a class="headerlink" href="#qmaxent" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
-<h2 id="_2">주요 사용자<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
-<h2 id="sdm">다른 SDM 도구와의 비교<a class="headerlink" href="#sdm" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
-<h2 id="_3">방법론적 계보<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p><strong>Plugins → QMaxent → QMaxent Analysis</strong> 메뉴 하나로 다섯 개 탭의
+도크가 열리고, 사용자는 다음 워크플로를 차례로 진행합니다:</p>
+<ol>
+<li><strong>① Data</strong> — 출현 점 레이어와 환경 래스터 등록</li>
+<li><strong>② Parameters</strong> — 피처 클래스, 정규화, 공간 CV 방식 선택</li>
+<li><strong>③ Training</strong> — 진행 막대를 보면서 모델 학습</li>
+<li><strong>④ Results</strong> — 반응 곡선, Jackknife 중요도, 공간 투영 확인</li>
+<li><strong>⑤ Priority Sites for Survey</strong> — 적합도 지도에서 현장 조사 후보지 추출</li>
+</ol>
+<p>각 탭은 독립적인 챕터에서 자세히 다룹니다.</p>
+<h2 id="_2">누구를 위한 도구인가<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>사용자</th>
+<th>QMaxent의 가치</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>현장 생태학자</strong></td>
+<td>코드 작성 없이 적합도 지도 구축; 즉시 활용 가능한 우선조사 후보지</td>
+</tr>
+<tr>
+<td><strong>대학원생</strong></td>
+<td>발표 논문 재현; 다중 시트 XLSX 보충표로 학위논문 부록 작성</td>
+</tr>
+<tr>
+<td><strong>보전 단체</strong></td>
+<td>QGIS 안에서 멸종위기종의 잠재 서식지 신속 평가</td>
+</tr>
+<tr>
+<td><strong>방법론 연구자</strong></td>
+<td>Java MaxEnt와의 정량적 비교; ENMeval/Wallace 결과 검증</td>
+</tr>
+</tbody>
+</table>
+<h2 id="java-maxent-r">Java MaxEnt 및 R 패키지와의 차이<a class="headerlink" href="#java-maxent-r" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>항목</th>
+<th>Java MaxEnt</th>
+<th>maxnet/dismo (R)</th>
+<th><strong>QMaxent</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GUI</td>
+<td>자체 Swing GUI</td>
+<td>없음 (스크립트)</td>
+<td>QGIS 도크</td>
+</tr>
+<tr>
+<td>백엔드</td>
+<td>Java MaxEnt</td>
+<td>maxnet (glmnet)</td>
+<td>elapid (Python)</td>
+</tr>
+<tr>
+<td>공간 CV</td>
+<td>75/25 분할</td>
+<td>사용자 구현</td>
+<td>Geographic K-Fold (기본값)</td>
+</tr>
+<tr>
+<td>자동 hyperparameter rule</td>
+<td>없음</td>
+<td>사용자 정의</td>
+<td>maxnet 자동 규칙</td>
+</tr>
+<tr>
+<td>범주형 외삽 처리</td>
+<td>무작위 클래스</td>
+<td>명시적 처리 필요</td>
+<td>자동 NoData 마스킹</td>
+</tr>
+<tr>
+<td>출력 보충표</td>
+<td>TXT/HTML</td>
+<td>사용자 구현</td>
+<td>다중 시트 XLSX</td>
+</tr>
+<tr>
+<td>우선조사 후보지 추출</td>
+<td>없음</td>
+<td>없음</td>
+<td>내장</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_3">방법론 계보<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>QMaxent의 기본값은 다음 핵심 SDM 문헌의 권고를 따릅니다:</p>
+<ul>
+<li>알고리즘 자체: <a href="../references/">Phillips, Anderson &amp; Schapire 2006</a>;
+  <a href="../references/">Phillips et al. 2017</a>;
+  <a href="../references/">Fithian &amp; Hastie 2013</a></li>
+<li>피처 선택 규칙: <a href="../references/">Phillips &amp; Dudík 2008</a>;
+  <a href="../references/">Radosavljevic &amp; Anderson 2014</a></li>
+<li>공간 CV 기본값: <a href="../references/">Roberts et al. 2017</a></li>
+<li>출력 cloglog 변환: <a href="../references/">Phillips et al. 2017</a></li>
+<li>우선조사 후보지 설계:
+  <a href="../references/">Williams et al. 2009</a>;
+  <a href="../references/">Rhoden, Peterman &amp; Taylor 2017</a></li>
+<li>보고 표준: <a href="../references/">Araújo et al. 2019</a>;
+  <a href="../references/">Elith et al. 2011</a>;
+  <a href="../references/">Merow, Smith &amp; Silander 2013</a></li>
+</ul>
+<p>전체 인용 목록은 <a href="../references/">참고문헌</a>에 정리되어 있습니다.
+방법론적 의사결정의 <em>왜</em>에 대한 해설은
+<a href="../methodological-background/">방법론 해설</a>을 참고하세요.</p>
+<h2 id="_4">다음 단계<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>설치를 진행하려면 <a href="../installation/">설치</a> 챕터로 이동하세요. 30 초 이내에
+첫 실행 가능한 모델을 만들고 싶다면 <a href="../quick-start/">빠른 시작</a>부터
+시작해도 좋습니다.</p>
 
 
 

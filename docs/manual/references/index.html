@@ -1031,72 +1031,63 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#sample-selection-bias-and-background-points" class="md-nav__link">
+  <a href="#elapid-software-backend" class="md-nav__link">
     <span class="md-ellipsis">
-      Sample selection bias and background points
+      elapid — software backend
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#spatial-cross-validation" class="md-nav__link">
+  <a href="#cross-validation-and-model-evaluation" class="md-nav__link">
     <span class="md-ellipsis">
-      Spatial cross-validation
+      Cross-validation and model evaluation
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#model-complexity-regularization-and-evaluation" class="md-nav__link">
+  <a href="#sample-bias-correction" class="md-nav__link">
     <span class="md-ellipsis">
-      Model complexity, regularization, and evaluation
+      Sample bias correction
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#threshold-methods-and-small-sample-evaluation" class="md-nav__link">
+  <a href="#sdm-best-practice-reviews" class="md-nav__link">
     <span class="md-ellipsis">
-      Threshold methods and small-sample evaluation
+      SDM best-practice reviews
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#survey-planning-with-sdm-output" class="md-nav__link">
+  <a href="#survey-design" class="md-nav__link">
     <span class="md-ellipsis">
-      Survey planning with SDM output
+      Survey design
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#software-dependencies" class="md-nav__link">
+  <a href="#worked-example-reference" class="md-nav__link">
     <span class="md-ellipsis">
-      Software dependencies
+      Worked example reference
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#related-sdm-platforms" class="md-nav__link">
+  <a href="#how-qmaxent-cites-itself" class="md-nav__link">
     <span class="md-ellipsis">
-      Related SDM platforms
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#case-study-reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      Case study reference
+      How QMaxent cites itself
     </span>
   </a>
   
@@ -1175,72 +1166,63 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#sample-selection-bias-and-background-points" class="md-nav__link">
+  <a href="#elapid-software-backend" class="md-nav__link">
     <span class="md-ellipsis">
-      Sample selection bias and background points
+      elapid — software backend
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#spatial-cross-validation" class="md-nav__link">
+  <a href="#cross-validation-and-model-evaluation" class="md-nav__link">
     <span class="md-ellipsis">
-      Spatial cross-validation
+      Cross-validation and model evaluation
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#model-complexity-regularization-and-evaluation" class="md-nav__link">
+  <a href="#sample-bias-correction" class="md-nav__link">
     <span class="md-ellipsis">
-      Model complexity, regularization, and evaluation
+      Sample bias correction
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#threshold-methods-and-small-sample-evaluation" class="md-nav__link">
+  <a href="#sdm-best-practice-reviews" class="md-nav__link">
     <span class="md-ellipsis">
-      Threshold methods and small-sample evaluation
+      SDM best-practice reviews
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#survey-planning-with-sdm-output" class="md-nav__link">
+  <a href="#survey-design" class="md-nav__link">
     <span class="md-ellipsis">
-      Survey planning with SDM output
+      Survey design
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#software-dependencies" class="md-nav__link">
+  <a href="#worked-example-reference" class="md-nav__link">
     <span class="md-ellipsis">
-      Software dependencies
+      Worked example reference
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#related-sdm-platforms" class="md-nav__link">
+  <a href="#how-qmaxent-cites-itself" class="md-nav__link">
     <span class="md-ellipsis">
-      Related SDM platforms
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#case-study-reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      Case study reference
+      How QMaxent cites itself
     </span>
   </a>
   
@@ -1273,175 +1255,142 @@ inline citations to these works in the relevant modules
 (<code>workers/maxent_worker.py</code>, <code>bridge/elapid_bridge.py</code>,
 <code>bridge/priority_sites.py</code>).</p>
 <h2 id="maxent-core-methodology">Maxent — core methodology<a class="headerlink" href="#maxent-core-methodology" title="Permanent link">&para;</a></h2>
-<dl>
-<dt>Phillips, S. J., Anderson, R. P., &amp; Schapire, R. E. (2006). Maximum entropy</dt>
-<dt>modeling of species geographic distributions. <em>Ecological Modelling</em>, 190(3–4),</dt>
-<dt>231–259. <a href="https://doi.org/10.1016/j.ecolmodel.2005.03.026">https://doi.org/10.1016/j.ecolmodel.2005.03.026</a></dt>
-<dd>The original Maxent paper. Defines the linear, quadratic, hinge, product,
-and threshold features (LQPHT), the regularization framework, and the
-interpretation of the output as a relative probability of presence.</dd>
-<dt>Phillips, S. J., &amp; Dudík, M. (2008). Modeling of species distributions with</dt>
-<dt>Maxent: new extensions and a comprehensive evaluation. <em>Ecography</em>, 31(2),</dt>
-<dt>161–175. <a href="https://doi.org/10.1111/j.0906-7590.2008.5203.x">https://doi.org/10.1111/j.0906-7590.2008.5203.x</a></dt>
-<dd>Introduces the regularization-multiplier scheme that QMaxent's
-"Regularization" parameter exposes, and benchmarks Maxent against
-alternative SDM methods.</dd>
-<dt>Phillips, S. J., Anderson, R. P., Dudík, M., Schapire, R. E., &amp; Blair, M. E.</dt>
-<dt>(2017). Opening the black box: an open-source release of Maxent.</dt>
-<dt><em>Ecography</em>, 40(7), 887–893. <a href="https://doi.org/10.1111/ecog.03049">https://doi.org/10.1111/ecog.03049</a></dt>
-<dd>The release that defines the cloglog output transform now considered the
-standard reporting format. QMaxent uses cloglog as the default in the
-Spatial Projection sub-tab.</dd>
-<dt>Elith, J., Phillips, S. J., Hastie, T., Dudík, M., Chee, Y. E., &amp; Yates, C. J.</dt>
-<dt>(2011). A statistical explanation of MaxEnt for ecologists. *Diversity and</dt>
-<dt>Distributions*, 17(1), 43–57.</dt>
-<dt><a href="https://doi.org/10.1111/j.1472-4642.2010.00725.x">https://doi.org/10.1111/j.1472-4642.2010.00725.x</a></dt>
-<dd>Re-derives Maxent as a penalized log-linear (Poisson) model, providing
-the theoretical basis for the maxnet implementation that elapid (and
-therefore QMaxent) uses under the hood.</dd>
-<dt>Merow, C., Smith, M. J., &amp; Silander, J. A. (2013). A practical guide to</dt>
-<dt>MaxEnt for modeling species' distributions: what it does, and why inputs</dt>
-<dt>and settings matter. <em>Ecography</em>, 36(10), 1058–1069.</dt>
-<dt><a href="https://doi.org/10.1111/j.1600-0587.2013.07872.x">https://doi.org/10.1111/j.1600-0587.2013.07872.x</a></dt>
-<dd>The standard practitioner's guide. QMaxent's recommendations on
-background sampling, feature complexity, and regularization mirror this
-paper.</dd>
-<dt>Fithian, W., &amp; Hastie, T. (2013). Finite-sample equivalence in statistical</dt>
-<dt>models for presence-only data. <em>Annals of Applied Statistics</em>, 7(4),</dt>
-<dt>1917–1939. <a href="https://doi.org/10.1214/13-AOAS667">https://doi.org/10.1214/13-AOAS667</a></dt>
-<dd>Proves the equivalence between Maxent and a downweighted Poisson
-regression on a sufficient sample of background points — the basis for
-the maxnet algorithm.</dd>
-</dl>
-<h2 id="sample-selection-bias-and-background-points">Sample selection bias and background points<a class="headerlink" href="#sample-selection-bias-and-background-points" title="Permanent link">&para;</a></h2>
-<dl>
-<dt>Phillips, S. J., Dudík, M., Elith, J., Graham, C. H., Lehmann, A., Leathwick,</dt>
-<dt>J., &amp; Ferrier, S. (2009). Sample selection bias and presence-only</dt>
-<dt>distribution models: implications for background and pseudo-absence data.</dt>
-<dt><em>Ecological Applications</em>, 19(1), 181–197.</dt>
-<dt><a href="https://doi.org/10.1890/07-2153.1">https://doi.org/10.1890/07-2153.1</a></dt>
-<dd>Justifies QMaxent's "Down-weight spatially clustered points" option and
-the recommended practice of drawing background points from the same
-region as presence points.</dd>
-</dl>
-<h2 id="spatial-cross-validation">Spatial cross-validation<a class="headerlink" href="#spatial-cross-validation" title="Permanent link">&para;</a></h2>
-<dl>
-<dt>Roberts, D. R., Bahn, V., Ciuti, S., Boyce, M. S., Elith, J.,</dt>
-<dt>Guillera-Arroita, G., et al. (2017). Cross-validation strategies for data</dt>
-<dt>with temporal, spatial, hierarchical, or phylogenetic structure.</dt>
-<dt><em>Ecography</em>, 40(8), 913–929. <a href="https://doi.org/10.1111/ecog.02881">https://doi.org/10.1111/ecog.02881</a></dt>
-<dd>The conceptual foundation for QMaxent's Geographic K-Fold and Buffered
-Leave-One-Out methods. Demonstrates that random K-fold is
-over-optimistic when data are spatially autocorrelated.</dd>
-<dt>Muscarella, R., Galante, P. J., Soley-Guardia, M., Boria, R. A., Kass, J. M.,</dt>
-<dt>Uriarte, M., &amp; Anderson, R. P. (2014). ENMeval: an R package for conducting</dt>
-<dt>spatially independent evaluations and estimating optimal model complexity</dt>
-<dt>for Maxent ecological niche models. <em>Methods in Ecology and Evolution</em>,</dt>
-<dt>5(11), 1198–1205. <a href="https://doi.org/10.1111/2041-210X.12261">https://doi.org/10.1111/2041-210X.12261</a></dt>
-<dd>Source of QMaxent's Checkerboard partitioning method.</dd>
-<dt>Valavi, R., Elith, J., Lahoz-Monfort, J. J., &amp; Guillera-Arroita, G. (2019).</dt>
-<dt>blockCV: an R package for generating spatially or environmentally separated</dt>
-<dt>folds for k-fold cross-validation of species distribution models. *Methods</dt>
-<dt>in Ecology and Evolution*, 10(2), 225–232.</dt>
-<dt><a href="https://doi.org/10.1111/2041-210X.13107">https://doi.org/10.1111/2041-210X.13107</a></dt>
-<dd>Companion software reference; QMaxent's spatial-block partitioning
-follows the same logic in Python.</dd>
-<dt>Ploton, P., Mortier, F., Réjou-Méchain, M., Barbier, N., Picard, N.,</dt>
-<dt>Rossi, V., et al. (2020). Spatial validation reveals poor predictive</dt>
-<dt>performance of large-scale ecological mapping models. *Nature</dt>
-<dt>Communications*, 11, 4540. <a href="https://doi.org/10.1038/s41467-020-18321-y">https://doi.org/10.1038/s41467-020-18321-y</a></dt>
-<dd>Empirical evidence for the gap between random-CV and spatial-CV
-performance estimates. Underpins QMaxent's default of pooled AUC over
-Buffered LOO folds.</dd>
-</dl>
-<h2 id="model-complexity-regularization-and-evaluation">Model complexity, regularization, and evaluation<a class="headerlink" href="#model-complexity-regularization-and-evaluation" title="Permanent link">&para;</a></h2>
-<dl>
-<dt>Radosavljevic, A., &amp; Anderson, R. P. (2014). Making better Maxent models of</dt>
-<dt>species distributions: complexity, overfitting and evaluation. *Journal of</dt>
-<dt>Biogeography*, 41(4), 629–643. <a href="https://doi.org/10.1111/jbi.12227">https://doi.org/10.1111/jbi.12227</a></dt>
-<dd>Provides the rationale for QMaxent's auto-rule for feature selection
-based on sample size, and the default regularization multiplier of 1.0.</dd>
-<dt>Lobo, J. M., Jiménez-Valverde, A., &amp; Real, R. (2008). AUC: a misleading</dt>
-<dt>measure of the performance of predictive distribution models. *Global</dt>
-<dt>Ecology and Biogeography*, 17(2), 145–151.</dt>
-<dt><a href="https://doi.org/10.1111/j.1466-8238.2007.00358.x">https://doi.org/10.1111/j.1466-8238.2007.00358.x</a></dt>
-<dd>Cautionary reference. QMaxent reports AUC alongside response curves and
-jackknife importance so users do not rely on AUC alone.</dd>
-</dl>
-<h2 id="threshold-methods-and-small-sample-evaluation">Threshold methods and small-sample evaluation<a class="headerlink" href="#threshold-methods-and-small-sample-evaluation" title="Permanent link">&para;</a></h2>
-<dl>
-<dt>Liu, C., White, M., &amp; Newell, G. (2013). Selecting thresholds for the</dt>
-<dt>prediction of species occurrence with presence-only data. *Journal of</dt>
-<dt>Biogeography*, 40(4), 778–789. <a href="https://doi.org/10.1111/jbi.12058">https://doi.org/10.1111/jbi.12058</a></dt>
-<dd>Source of the MaxSSS (Maximum Sum of Sensitivity and Specificity)
-threshold offered in QMaxent's Priority Sites tab, and the comparative
-discussion of MTP and T10.</dd>
-<dt>Pearson, R. G., Raxworthy, C. J., Nakamura, M., &amp; Peterson, A. T. (2007).</dt>
-<dt>Predicting species distributions from small numbers of occurrence records:</dt>
-<dt>a test case using cryptic geckos in Madagascar. <em>Journal of Biogeography</em>,</dt>
-<dt>34(1), 102–117. <a href="https://doi.org/10.1111/j.1365-2699.2006.01594.x">https://doi.org/10.1111/j.1365-2699.2006.01594.x</a></dt>
-<dd>Defines the Buffered Leave-One-Out (LOO) workflow that QMaxent
-implements for small datasets (≤ 25 presences).</dd>
-</dl>
-<h2 id="survey-planning-with-sdm-output">Survey planning with SDM output<a class="headerlink" href="#survey-planning-with-sdm-output" title="Permanent link">&para;</a></h2>
-<dl>
-<dt>Williams, J. N., Seo, C., Thorne, J., Nelson, J. K., Erwin, S., O'Brien, J. M.,</dt>
-<dt>&amp; Schwartz, M. W. (2009). Using species distribution models to predict new</dt>
-<dt>occurrences for rare plants. <em>Diversity and Distributions</em>, 15(4),</dt>
-<dt>565–576. <a href="https://doi.org/10.1111/j.1472-4642.2009.00567.x">https://doi.org/10.1111/j.1472-4642.2009.00567.x</a></dt>
-<dd>Conceptual basis for QMaxent's Discovery mode in the Priority Sites
-tab — using model-predicted high-suitability areas to direct new field
-surveys.</dd>
-<dt>Rhoden, C. M., Peterman, W. E., &amp; Taylor, C. A. (2017). Maxent-directed</dt>
-<dt>field surveys identify new populations of narrowly endemic habitat</dt>
-<dt>specialists. <em>PeerJ</em>, 5, e3632. <a href="https://doi.org/10.7717/peerj.3632">https://doi.org/10.7717/peerj.3632</a></dt>
-<dd>Source of QMaxent's Validation mode — stratified sampling across four
-suitability quartiles to test the prediction in the field.</dd>
-</dl>
-<h2 id="software-dependencies">Software dependencies<a class="headerlink" href="#software-dependencies" title="Permanent link">&para;</a></h2>
-<dl>
-<dt>Anderson, C. B. (2023). elapid: species distribution modeling tools for</dt>
-<dt>Python. <em>Journal of Open Source Software</em>, 8(84), 4930.</dt>
-<dt><a href="https://doi.org/10.21105/joss.04930">https://doi.org/10.21105/joss.04930</a></dt>
-<dd>The Python library that QMaxent integrates. Provides the maxnet engine,
-spatial-CV partitioners, and projection utilities.</dd>
-<dt>Friedman, J., Hastie, T., &amp; Tibshirani, R. (2010). Regularization paths for</dt>
-<dt>generalized linear models via coordinate descent. *Journal of Statistical</dt>
-<dt>Software*, 33(1), 1–22. <a href="https://doi.org/10.18637/jss.v033.i01">https://doi.org/10.18637/jss.v033.i01</a></dt>
-<dd>The glmnet algorithm that the maxnet R package (and elapid's Python
-port) is built on.</dd>
-<dt>Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V., Thirion, B., Grisel,</dt>
-<dt>O., et al. (2011). Scikit-learn: machine learning in Python. *Journal of</dt>
-<dt>Machine Learning Research*, 12, 2825–2830.</dt>
-<dt><a href="https://www.jmlr.org/papers/v12/pedregosa11a.html">https://www.jmlr.org/papers/v12/pedregosa11a.html</a></dt>
-<dd>Provides the cross-validation primitives, ROC computation, and metric
-utilities used by QMaxent's evaluation pipeline.</dd>
-<dt>Harris, C. R., Millman, K. J., van der Walt, S. J., Gommers, R., Virtanen,</dt>
-<dt>P., Cournapeau, D., et al. (2020). Array programming with NumPy. <em>Nature</em>,</dt>
-<dt>585(7825), 357–362. <a href="https://doi.org/10.1038/s41586-020-2649-2">https://doi.org/10.1038/s41586-020-2649-2</a></dt>
-<dd>Numerical foundation for all of the above.</dd>
-</dl>
-<h2 id="related-sdm-platforms">Related SDM platforms<a class="headerlink" href="#related-sdm-platforms" title="Permanent link">&para;</a></h2>
-<dl>
-<dt>Kass, J. M., Vilela, B., Aiello-Lammens, M. E., Muscarella, R., Merow, C., &amp;</dt>
-<dt>Anderson, R. P. (2018). Wallace: a flexible platform for reproducible</dt>
-<dt>modeling of species niches and distributions built for community</dt>
-<dt>expansion. <em>Methods in Ecology and Evolution</em>, 9(4), 1151–1156.</dt>
-<dt><a href="https://doi.org/10.1111/2041-210X.12945">https://doi.org/10.1111/2041-210X.12945</a></dt>
-<dd>Cited in the Introduction as a related platform. Wallace is a
-Shiny-based GUI for SDM; QMaxent occupies a similar niche but inside
-QGIS rather than as a standalone web app.</dd>
-</dl>
-<h2 id="case-study-reference">Case study reference<a class="headerlink" href="#case-study-reference" title="Permanent link">&para;</a></h2>
-<dl>
-<dt>Lee, S., Cho, M., Yu, B.-H., Lee, S., Lee, S., Wolfe, J. D., &amp; Oh, H.-S.</dt>
-<dt>(2025). Breeding habitat prediction and nest-site characteristics of the</dt>
-<dt>fairy pitta (<em>Pitta nympha</em>) in Geoje-si, South Korea: insights from a</dt>
-<dt>species distribution model.</dt>
-<dd>The published study reproduced in the <em>Pitta nympha</em> worked example.
-Originally analysed with the classical Java MaxEnt; the example chapter
-repeats the analysis in QMaxent and discusses agreement and divergence.</dd>
-</dl>
+<p><strong>Phillips, S. J., Anderson, R. P., &amp; Schapire, R. E. (2006).</strong> Maximum
+entropy modeling of species geographic distributions. <em>Ecological
+Modelling</em>, 190(3-4), 231–259.
+<em>The original Maxent paper. QMaxent's feature-class taxonomy (LQPHT),
+jackknife importance, and ROC-based evaluation all come from this
+formulation.</em></p>
+<p><strong>Phillips, S. J., &amp; Dudík, M. (2008).</strong> Modeling of species
+distributions with Maxent: new extensions and a comprehensive evaluation.
+<em>Ecography</em>, 31(2), 161–175.
+<em>The benchmark paper that established the sample-size feature-class rule
+QMaxent's "Auto" mode follows, and the regularization-multiplier
+default of 1.0.</em></p>
+<p><strong>Phillips, S. J., Anderson, R. P., Dudík, M., Schapire, R. E., &amp;
+Blair, M. E. (2017).</strong> Opening the black box: an open-source release of
+Maxent. <em>Ecography</em>, 40(7), 887–893.
+<em>The release of the open-source Maxent and the formal recommendation
+to adopt the cloglog output transform — adopted as QMaxent's default.</em></p>
+<p><strong>Fithian, W., &amp; Hastie, T. (2013).</strong> Finite-sample equivalence in
+statistical models for presence-only data. <em>The Annals of Applied
+Statistics</em>, 7(4), 1917–1939.
+<em>The paper that establishes the formal equivalence between Maxent and
+infinitely-weighted logistic regression — the foundation for elapid's
+implementation.</em></p>
+<h2 id="elapid-software-backend">elapid — software backend<a class="headerlink" href="#elapid-software-backend" title="Permanent link">&para;</a></h2>
+<p><strong>Anderson, C. B. (2023).</strong> elapid: Species distribution modeling
+tools for Python. <em>Journal of Open Source Software</em>, 8(84), 5435.
+<em>The peer-reviewed release of the elapid library that QMaxent uses for
+its <code>MaxentModel</code>, <code>GeographicKFold</code>, and feature transformers.</em></p>
+<p><strong>Pedregosa, F., et al. (2011).</strong> Scikit-learn: Machine learning in
+Python. <em>Journal of Machine Learning Research</em>, 12, 2825–2830.
+<em>The numerical core that elapid's regularized-likelihood maximisation
+delegates to.</em></p>
+<p><strong>Harris, C. R., et al. (2020).</strong> Array programming with NumPy.
+<em>Nature</em>, 585, 357–362.
+<em>The array library underlying elapid, scikit-learn, and the QMaxent
+raster-extraction layer.</em></p>
+<h2 id="cross-validation-and-model-evaluation">Cross-validation and model evaluation<a class="headerlink" href="#cross-validation-and-model-evaluation" title="Permanent link">&para;</a></h2>
+<p><strong>Roberts, D. R., et al. (2017).</strong> Cross-validation strategies for data
+with temporal, spatial, hierarchical, or phylogenetic structure.
+<em>Ecography</em>, 40(8), 913–929.
+<em>The paper that established <strong>spatial cross-validation as the default</strong>
+for SDMs — directly shaping QMaxent's Geographic K-Fold default and
+the warning text in <a href="../parameters-tab/">The Parameters tab</a>.</em></p>
+<p><strong>Hijmans, R. J. (2012).</strong> Cross-validation of species distribution
+models: removing spatial sorting bias and calibration with a null
+model. <em>Ecology</em>, 93(3), 679–688.
+<em>Provides the formal argument for buffered leave-one-out CV when
+sample sizes are small; QMaxent's *Buffered LOO</em> option implements this.*</p>
+<p><strong>Valavi, R., Elith, J., Lahoz-Monfort, J. J., &amp; Guillera-Arroita, G.
+(2019).</strong> blockCV: An R package for generating spatially or
+environmentally separated folds for k-fold cross-validation of species
+distribution models. <em>Methods in Ecology and Evolution</em>, 10(2), 225–232.
+<em>The block-CV recipes implemented by QMaxent's Checkerboard option.</em></p>
+<p><strong>Muscarella, R., et al. (2014).</strong> ENMeval: An R package for conducting
+spatially independent evaluations and estimating optimal model
+complexity for Maxent ecological niche models. <em>Methods in Ecology and
+Evolution</em>, 5(11), 1198–1205.
+<em>The hyperparameter-tuning framework whose checkerboard partitioning is
+implemented as a QMaxent CV option.</em></p>
+<p><strong>Kass, J. M., et al. (2018).</strong> Wallace: A flexible platform for
+reproducible modeling of species niches and distributions built for
+community expansion. <em>Methods in Ecology and Evolution</em>, 9(4),
+1151–1156.
+<em>The interactive ENM platform whose hyperparameter-tuning workflow QMaxent
+intentionally complements rather than duplicates.</em></p>
+<h2 id="sample-bias-correction">Sample bias correction<a class="headerlink" href="#sample-bias-correction" title="Permanent link">&para;</a></h2>
+<p><strong>Phillips, S. J., et al. (2009).</strong> Sample selection bias and
+presence-only distribution models: implications for background and
+pseudo-absence data. <em>Ecological Applications</em>, 19(1), 181–197.
+<em>The paper underlying QMaxent's *Down-weight spatially clustered points</em>
+option in the Parameters → Advanced section.*</p>
+<p><strong>Boria, R. A., Olson, L. E., Goodman, S. M., &amp; Anderson, R. P.
+(2014).</strong> Spatial filtering to reduce sampling bias can improve the
+performance of ecological niche models. <em>Ecological Modelling</em>, 275,
+73–77.
+<em>Cited in <a href="../data-tab/">Data tab</a> as the reason to spatially-thin
+presence layers before modeling.</em></p>
+<p><strong>Elith, J., Kearney, M., &amp; Phillips, S. (2010).</strong> The art of modelling
+range-shifting species. <em>Methods in Ecology and Evolution</em>, 1(4),
+330–342.
+<em>The MESS-style extrapolation analysis whose logic underlies QMaxent's
+unified projection-preflight dialog.</em></p>
+<h2 id="sdm-best-practice-reviews">SDM best-practice reviews<a class="headerlink" href="#sdm-best-practice-reviews" title="Permanent link">&para;</a></h2>
+<p><strong>Elith, J., et al. (2011).</strong> A statistical explanation of MaxEnt for
+ecologists. <em>Diversity and Distributions</em>, 17(1), 43–57.
+<em>The standard pedagogical reference for understanding what Maxent does
+and does not assume.</em></p>
+<p><strong>Merow, C., Smith, M. J., &amp; Silander Jr, J. A. (2013).</strong> A practical
+guide to MaxEnt for modeling species' distributions: what it does, and
+why inputs and settings matter. <em>Ecography</em>, 36(10), 1058–1069.
+<em>The companion practical guide to Elith et al. 2011.</em></p>
+<p><strong>Araújo, M. B., et al. (2019).</strong> Standards for distribution models in
+biodiversity assessments. <em>Science Advances</em>, 5(1), eaat4858.
+<em>The IPBES-aligned reporting standard QMaxent's XLSX export was designed
+to satisfy. Cited throughout this manual.</em></p>
+<p><strong>Radosavljevic, A., &amp; Anderson, R. P. (2014).</strong> Making better Maxent
+models of species distributions: complexity, overfitting and evaluation.
+<em>Journal of Biogeography</em>, 41(4), 629–643.
+<em>The empirical paper documenting how feature-class tuning without
+spatial CV inflates AUC; underlies the warning text in the
+<a href="../parameters-tab/">Parameters tab</a> about the Auto rule.</em></p>
+<h2 id="survey-design">Survey design<a class="headerlink" href="#survey-design" title="Permanent link">&para;</a></h2>
+<p><strong>Williams, J. N., et al. (2009).</strong> Using species distribution models
+to predict new occurrences for rare plants. <em>Diversity and
+Distributions</em>, 15(4), 565–576.
+<em>The original *Discovery</em>-mode survey-design paper whose workflow QMaxent
+implements in the Priority Sites tab.*</p>
+<p><strong>Rhoden, C. M., Peterman, W. E., &amp; Taylor, C. A. (2017).</strong> Maxent-
+directed field surveys identify new populations of narrowly endemic
+habitat specialists. <em>PeerJ</em>, 5, e3632.
+<em>The model-validation companion to Williams et al. 2009; QMaxent's
+*Model validation</em> mode reproduces this design.*</p>
+<p><strong>Stevens, D. L. Jr., &amp; Olsen, A. R. (2004).</strong> Spatially balanced
+sampling of natural resources. <em>Journal of the American Statistical
+Association</em>, 99(465), 262–278.
+<em>The spatially-balanced-sampling theory underlying QMaxent's
+between-candidate spacing constraint.</em></p>
+<p><strong>Robinson, N. M., et al. (2018).</strong> Refining survey effort: how
+detection probability shapes the design of biodiversity surveys.
+<em>Methods in Ecology and Evolution</em>, 9(3), 575–587.
+<em>Cited in <a href="../priority-sites/">Priority Sites</a> for typical survey-budget
+heuristics.</em></p>
+<h2 id="worked-example-reference">Worked example reference<a class="headerlink" href="#worked-example-reference" title="Permanent link">&para;</a></h2>
+<p><strong>Lee, S.-J., et al. (2025).</strong> Breeding habitat prediction and
+nest-site characteristics of the fairy pitta (<em>Pitta nympha</em>) in
+Geoje-si, South Korea — Insights from a species distribution model.
+<em>Global Ecology and Conservation</em>, 64, e03939.
+<em>The published Java-MaxEnt analysis reproduced in the
+<a href="../examples/pitta-nympha/">Pitta nympha worked example</a>.</em></p>
+<h2 id="how-qmaxent-cites-itself">How QMaxent cites itself<a class="headerlink" href="#how-qmaxent-cites-itself" title="Permanent link">&para;</a></h2>
+<p>If you publish a study using QMaxent, please cite:</p>
+<blockquote>
+<p>Yu, B.-H. (2026). QMaxent: Maxent species distribution modeling in
+QGIS. <em>Software</em>. https://github.com/osgeokr/qmaxent</p>
+</blockquote>
+<p>The exact CITATION.cff is the canonical source on the repository.</p>
 
 
 

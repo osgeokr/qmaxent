@@ -1211,22 +1211,23 @@
 
 
 <h1 id="example-datasets">Example datasets<a class="headerlink" href="#example-datasets" title="Permanent link">&para;</a></h1>
-<p>QMaxent ships a one-click downloader for two canonical SDM example datasets,
-accessed from <strong>Plugins → QMaxent → Download Example Dataset</strong>. They are the
-same datasets the broader Maxent literature has used for almost two decades,
-which means you can compare your results directly with published benchmarks.</p>
+<p>QMaxent ships a one-click downloader for two canonical SDM example
+datasets, accessed from <strong>Plugins → QMaxent → Download Example Dataset</strong>.
+They are the same datasets the broader Maxent literature has used for
+almost two decades, which means you can compare your results directly
+with published benchmarks.</p>
 <h2 id="opening-the-dialog">Opening the dialog<a class="headerlink" href="#opening-the-dialog" title="Permanent link">&para;</a></h2>
 <p>Choose <strong>Plugins → QMaxent → Download Example Dataset</strong>.</p>
 <p><img alt="Download Example Dataset dialog with Bradypus selected" src="../images/ui/dialog-download-example-dataset.png" /></p>
-<p>Two datasets are offered. Pick one of the radio buttons, choose where to save
-the files (the default is a <code>qmaxent_examples</code> folder under your home
-directory), and click <strong>Download</strong>. The plugin fetches the data, unpacks it,
-and <strong>automatically adds the layers to your current QGIS project</strong> so you can
-start modeling right away.</p>
+<p>Two datasets are offered. Pick one of the radio buttons, choose where to
+save the files (the default is a <code>qmaxent_examples</code> folder under your
+home directory), and click <strong>Download</strong>. The plugin fetches the data,
+unpacks it, and <strong>automatically adds the layers to your current QGIS
+project</strong> so you can start modeling right away.</p>
 <h2 id="bradypus-variegatus-dataset">Bradypus variegatus dataset<a class="headerlink" href="#bradypus-variegatus-dataset" title="Permanent link">&para;</a></h2>
 <p><em>The brown-throated three-toed sloth</em>. This is the canonical Maxent test
-dataset published with Phillips, Anderson &amp; Schapire (2006) and reused in
-virtually every subsequent Maxent paper.</p>
+dataset published with Phillips, Anderson &amp; Schapire (2006) and reused
+in virtually every subsequent Maxent paper.</p>
 <table>
 <thead>
 <tr>
@@ -1252,18 +1253,29 @@ virtually every subsequent Maxent paper.</p>
 <p>After download the layers appear immediately in the QGIS canvas:</p>
 <p><img alt="Bradypus presence points overlaid on the bio17 raster across Central and South America" src="../images/maps/example-bradypus-loaded.png" /></p>
 <p>The dataset is small (well under 100 MB) and the resulting Maxent runs
-typically finish in under 30 seconds, so it is ideal for first runs and for
-working through this manual.</p>
+typically finish in under 30 seconds, so it is ideal for first runs and
+for working through this manual.</p>
 <h2 id="ariolimax-dataset">Ariolimax dataset<a class="headerlink" href="#ariolimax-dataset" title="Permanent link">&para;</a></h2>
-<p><em>The Pacific banana slug</em>. This is the default test dataset that ships with
-<a href="https://github.com/earth-chris/elapid">elapid</a> and demonstrates a different
-challenge: the supplied environmental rasters do <strong>not</strong> share a common CRS,
-extent, or resolution. We use this dataset specifically to show off
-QMaxent's <strong>Check Raster Consistency</strong> and <strong>Harmonize Rasters</strong> tools — see
-the <a href="../examples/ariolimax/">Ariolimax worked example</a>.</p>
+<p><em>The Pacific banana slug</em>. This is the default test dataset that ships
+with <a href="https://github.com/earth-chris/elapid">elapid</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">About the Ariolimax download vs the Ariolimax worked example</p>
+<p>The official Ariolimax download is <strong>already harmonised</strong> — all
+six rasters share a common CRS, extent, and resolution out of the
+box. So when you load it, <strong>Check Raster Consistency</strong> will pass
+immediately and you will not see the mismatch problem the
+<a href="../examples/ariolimax/">Ariolimax worked example</a> walks through.</p>
+<p>The worked example uses a <strong>deliberately desynchronised version</strong>
+of the same data — the author intentionally reprojected and
+resampled some rasters to mimic the silent-failure scenario that
+SDM users frequently encounter in real fieldwork. If you want to
+follow that example exactly, work from the desynchronised
+dataset described in the example chapter; the bundled download
+will not exhibit the mismatch.</p>
+</div>
 <h2 id="save-location-and-project-structure">Save location and project structure<a class="headerlink" href="#save-location-and-project-structure" title="Permanent link">&para;</a></h2>
-<p>Whichever dataset you choose, the downloader creates a sub-folder named after
-the species:</p>
+<p>Whichever dataset you choose, the downloader creates a sub-folder named
+after the species:</p>
 <p><code>text
 qmaxent_examples/
 ├── bradypus/
@@ -1278,14 +1290,15 @@ downloaded files, so it is safe to use as a "reset to defaults" button if
 you want to start a tutorial cleanly.</p>
 <h2 id="loading-the-layers-manually">Loading the layers manually<a class="headerlink" href="#loading-the-layers-manually" title="Permanent link">&para;</a></h2>
 <p>The plugin auto-adds layers, but if you ever need to reload them by hand,
-just drag the <code>.shp</code> and <code>.tif</code> files from QGIS's <strong>Browser</strong> panel into the
-<strong>Layers</strong> panel — exactly as you would for any other dataset.</p>
+just drag the <code>.shp</code> and <code>.tif</code> files from QGIS's <strong>Browser</strong> panel into
+the <strong>Layers</strong> panel — exactly as you would for any other dataset.</p>
 <h2 id="where-the-data-comes-from">Where the data comes from<a class="headerlink" href="#where-the-data-comes-from" title="Permanent link">&para;</a></h2>
-<p>Both datasets are pulled from their canonical archival URLs at download time;
-QMaxent does not ship them inside the plugin itself. This keeps the plugin
-package small and ensures you always get the upstream-canonical version. If
-you need offline access, run the downloader once on a connected machine and
-copy the <code>qmaxent_examples</code> folder onto offline workstations.</p>
+<p>Both datasets are pulled from their canonical archival URLs at download
+time; QMaxent does not ship them inside the plugin itself. This keeps
+the plugin package small and ensures you always get the upstream-canonical
+version. If you need offline access, run the downloader once on a
+connected machine and copy the <code>qmaxent_examples</code> folder onto offline
+workstations.</p>
 
 
 

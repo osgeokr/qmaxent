@@ -909,9 +909,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#configuring-the-model" class="md-nav__link">
+  <a href="#model-setup" class="md-nav__link">
     <span class="md-ellipsis">
-      Configuring the model
+      Model setup
     </span>
   </a>
   
@@ -980,16 +980,16 @@
         <li class="md-nav__item">
   <a href="#optional-priority-sites-for-survey" class="md-nav__link">
     <span class="md-ellipsis">
-      Optional: priority sites for survey
+      Optional: Priority sites for survey
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#where-to-go-next" class="md-nav__link">
+  <a href="#next-steps" class="md-nav__link">
     <span class="md-ellipsis">
-      Where to go next
+      Next steps
     </span>
   </a>
   
@@ -1208,9 +1208,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#configuring-the-model" class="md-nav__link">
+  <a href="#model-setup" class="md-nav__link">
     <span class="md-ellipsis">
-      Configuring the model
+      Model setup
     </span>
   </a>
   
@@ -1279,16 +1279,16 @@
         <li class="md-nav__item">
   <a href="#optional-priority-sites-for-survey" class="md-nav__link">
     <span class="md-ellipsis">
-      Optional: priority sites for survey
+      Optional: Priority sites for survey
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#where-to-go-next" class="md-nav__link">
+  <a href="#next-steps" class="md-nav__link">
     <span class="md-ellipsis">
-      Where to go next
+      Next steps
     </span>
   </a>
   
@@ -1315,12 +1315,13 @@
 <h1 id="bradypus-variegatus">Bradypus variegatus<a class="headerlink" href="#bradypus-variegatus" title="Permanent link">&para;</a></h1>
 <p>The brown-throated three-toed sloth — <em>Bradypus variegatus</em> — is the
 canonical Maxent test dataset, originally published with
-<a href="../../references/#maxent-core-methodology">Phillips, Anderson &amp; Schapire (2006)</a>
-and reused in virtually every subsequent Maxent paper. We use it here as a
-<strong>guided tour of every QMaxent feature</strong>: data loading, parameter selection,
-spatial cross-validation, jackknife importance, projection, and survey
-planning. By the end of this chapter you will have produced — and be able
-to defend — a complete Bradypus habitat-suitability model.</p>
+<a href="../../references/">Phillips, Anderson &amp; Schapire 2006</a> and reused in
+virtually every subsequent Maxent paper. We use it here as a
+<strong>guided tour of every QMaxent feature</strong>: data loading, parameter
+selection, spatial cross-validation, jackknife importance, projection,
+and survey planning. By the end of this chapter you will have produced
+— and be able to defend academically — a complete Bradypus habitat-
+suitability model.</p>
 <h2 id="dataset">Dataset<a class="headerlink" href="#dataset" title="Permanent link">&para;</a></h2>
 <p>The Phillips et al. (2006) dataset contains:</p>
 <table>
@@ -1334,7 +1335,7 @@ to defend — a complete Bradypus habitat-suitability model.</p>
 <tbody>
 <tr>
 <td><code>bradypus.shp</code></td>
-<td>Vector points</td>
+<td>Vector point</td>
 <td>116 occurrence records across South and Central America</td>
 </tr>
 <tr>
@@ -1354,39 +1355,46 @@ to defend — a complete Bradypus habitat-suitability model.</p>
 </tr>
 </tbody>
 </table>
-<p>All rasters share the same grid: EPSG:4326, 0.5° × 0.5° cells, covering
-the Americas. Total dataset size is well under 100 MB.</p>
+<p>All rasters share the same grid: EPSG:4326, 0.5° × 0.5° cells, full
+Americas coverage. Total dataset size &lt;100 MB.</p>
 <p>Download via <strong>Plugins → QMaxent → Download Example Dataset → Bradypus
 variegatus</strong>. Layers are added to the QGIS project automatically:</p>
-<p><img alt="Bradypus presence points overlaid on bio17 across Latin America" src="../../images/maps/example-bradypus-loaded.png" /></p>
+<p><img alt="Bradypus presence overlaid on bio17 across Central and South America" src="../../images/maps/example-bradypus-loaded.png" /></p>
 <h2 id="loading-data-into-the-analysis-dock">Loading data into the Analysis dock<a class="headerlink" href="#loading-data-into-the-analysis-dock" title="Permanent link">&para;</a></h2>
-<p>Open <strong>Plugins → QMaxent → QMaxent Analysis</strong>. On the <strong>① Data</strong> tab, choose
-<code>bradypus</code> from the <strong>Presence Points Layer</strong> drop-down — QMaxent reports
-<code>116 presence points loaded</code> immediately.</p>
-<p>Click <strong>Add from project</strong> to add all the loaded raster layers in one step,
-then mark <code>biome</code> as <code>[categorical]</code>. Click <strong>Check Raster Consistency</strong> to
-verify the grid:</p>
-<p><img alt="Data tab with Bradypus presence layer, 7 environmental rasters, biome marked categorical, and Check Raster Consistency: All 9 rasters share grid" src="../../images/ui/dock-1-data-with-bradypus.png" /></p>
-<p>The status line reports
+<p>Open <strong>Plugins → QMaxent → QMaxent Analysis</strong>. On <strong>① Data</strong>, pick
+<code>bradypus</code> from the <strong>Presence Points Layer</strong> drop-down — QMaxent
+immediately reports <code>116 presence points loaded</code>.</p>
+<p>Click <strong>Add from project</strong> to register every loaded raster at once. The
+<code>biome</code> row gets a <code>[categorical]</code> tag (its sidecar PAM metadata says
+so). Click <strong>Check Raster Consistency</strong> to verify the grid:</p>
+<p><img alt="Bradypus presence layer, 9 environmental rasters, biome categorical, Check Raster Consistency passed" src="../../images/ui/dock-1-data-with-bradypus.png" /></p>
+<p>The status line reads
 <code>✓ All 9 rasters share grid (CRS: EPSG:4326, resolution: 0.5 × 0.5)</code> —
-exactly what we expect from the bundled dataset.</p>
-<h2 id="configuring-the-model">Configuring the model<a class="headerlink" href="#configuring-the-model" title="Permanent link">&para;</a></h2>
-<p>Switch to <strong>② Parameters</strong>. For this tour we accept every default:</p>
+exactly what you expect from the bundled dataset.</p>
+<h2 id="model-setup">Model setup<a class="headerlink" href="#model-setup" title="Permanent link">&para;</a></h2>
+<p>Switch to <strong>② Parameters</strong>. For this tour we accept every default — each
+default is the literature-recommended value, and accepting them lets us
+inspect what those choices produce:</p>
 <ul>
-<li><strong>Feature Types</strong>: Auto (with 116 presences, the maxnet rule selects all
-    of LQPHT)</li>
-<li><strong>Regularization multiplier</strong>: 1.0</li>
-<li><strong>Spatial evaluation</strong>: Geographic K-Fold, 5 folds, fixed seed = 0</li>
+<li><strong>Feature classes</strong>: Auto (the maxnet rule of
+  <a href="../../references/">Phillips &amp; Dudík 2008</a> selects all of LQPHT for
+  116 presences)</li>
+<li><strong>Regularization multiplier</strong>: 1.0
+  (<a href="../../references/">Phillips &amp; Dudík 2008</a> recommendation)</li>
+<li><strong>Spatial CV</strong>: Geographic K-Fold, 5 folds, fixed seed = 0
+  (<a href="../../references/">Roberts et al. 2017</a> default)</li>
 <li><strong>Jackknife variable importance</strong>: enabled</li>
-<li><strong>Output Files</strong>: <code>qmaxent_output/model.pkl</code> and <code>qmaxent_output/results.xlsx</code></li>
+<li><strong>Output files</strong>: <code>qmaxent_output/model.pkl</code> and
+  <code>qmaxent_output/results.xlsx</code></li>
 </ul>
-<p>The fixed random seed means <strong>anyone re-running this tutorial gets bitwise
-identical results</strong> — important for reproducibility.</p>
+<p>The fixed random seed means <strong>anyone re-running this tutorial will get
+bit-identical results</strong> — central to computational reproducibility
+(<a href="../../references/">Araújo et al. 2019</a>).</p>
 <h2 id="running-training-and-cross-validation">Running training and cross-validation<a class="headerlink" href="#running-training-and-cross-validation" title="Permanent link">&para;</a></h2>
-<p>Click <strong>▶ Run Maxent</strong>. The Training tab takes over and the run completes
-in ~30 seconds:</p>
-<p><img alt="Training tab at 100% with full log" src="../../images/ui/dock-3-training-completed.png" /></p>
-<p>Reading the log top-down tells the entire story:</p>
+<p>Click <strong>▶ Run Maxent</strong>. The <strong>③ Training</strong> tab takes over and finishes
+in about 30 seconds:</p>
+<p><img alt="Training tab at 100% with the full log" src="../../images/ui/dock-3-training-completed.png" /></p>
+<p>Reading the log top-to-bottom tells the whole story:</p>
 <p><code>text
 → 10,000 background points sampled
 Extracting raster covariates for presence points…
@@ -1403,102 +1411,116 @@ Running cross-validation…
   Fold 2: 21 test presences, AUC = 0.7839
   Fold 3: 39 test presences, AUC = 0.8097
   Fold 4: 26 test presences, AUC = 0.8614
-  Fold 5: 8 test presences, AUC = 0.5903
+  Fold 5:  8 test presences, AUC = 0.5903
 → CV AUC = 0.7581 ± 0.0920  (n=5 fold(s))</code></p>
-<p><strong>Train AUC = 0.956</strong> while <strong>CV AUC = 0.758 ± 0.092</strong>. The gap is the cost
-of holding out spatially distinct test sets — a more honest measure of
-real-world predictive performance than the inflated training AUC alone.</p>
-<p>Fold 5 has the lowest AUC (0.59) and the smallest test set (8 presences):
-in spatial CV the folds are deliberately uneven by area, so a fold can land
-on a small, atypical pocket. The pooled CV AUC averages out this variation.</p>
+<p><strong>Train AUC = 0.956</strong> while <strong>CV AUC = 0.758 ± 0.092</strong>. That gap is the
+cost of holding out spatially-distinct validation sets — and a far more
+honest measure of real-world predictive performance than looking at the
+inflated training AUC alone, exactly the point
+<a href="../../references/">Roberts et al. 2017</a> make.</p>
+<p>Fold 5 has the lowest AUC (0.59) and the smallest validation set (8
+presences) — in spatial CV, folds are intentionally uneven in area, and
+one fold can land on a small, atypical region. The pooled CV AUC
+averages over this variance.</p>
 <h2 id="inspecting-variable-behaviour">Inspecting variable behaviour<a class="headerlink" href="#inspecting-variable-behaviour" title="Permanent link">&para;</a></h2>
 <h3 id="response-curves">Response curves<a class="headerlink" href="#response-curves" title="Permanent link">&para;</a></h3>
-<p>On <strong>④ Results → Response Curves</strong>, pick <code>bio1</code> (annual mean temperature):</p>
-<p><img alt="Response curve for bio1 with training range shaded" src="../../images/ui/dock-4-response-curve-bio1.png" /></p>
-<p>The response is non-monotonic, with peaks around 150 and 290 (units of 0.1 °C
-following WorldClim convention) and a depression near 240. The model used
-hinge features to capture these breaks. The shaded "Training range" band
-covers the values actually present in the dataset; the prediction near
-−50 (extreme cold) and beyond 320 should be regarded as pure extrapolation.</p>
-<p>Try other variables from the drop-down to see which features Maxent
-recruited for each. Smooth U- or hump-shaped curves suggest quadratic
-terms; sharp angled breaks come from hinge or threshold features.</p>
+<p>On <strong>④ Results → Response Curves</strong>, pick <code>bio1</code> (mean annual
+temperature):</p>
+<p><img alt="Response curve for bio1 with shaded training range" src="../../images/ui/dock-4-response-curve-bio1.png" /></p>
+<p>The response is non-monotonic — peaks near 150 and 290 (in 0.1 °C units
+per WorldClim convention) with a trough around 240. The model recruited
+hinge features to capture this discontinuity. The shaded <strong>Training
+range</strong> band covers the values actually present in the dataset —
+predictions near −50 (extreme cold) and beyond 320 should be considered
+pure extrapolation in the
+<a href="../../references/">Elith, Kearney &amp; Phillips 2010</a> sense.</p>
+<p>Try other variables in the drop-down — you can see which features
+Maxent recruited for each. Smooth U- or peak-shaped curves suggest
+quadratic terms; sharp angular discontinuities come from hinge or
+threshold features.</p>
 <h3 id="jackknife-importance-and-roc">Jackknife importance and ROC<a class="headerlink" href="#jackknife-importance-and-roc" title="Permanent link">&para;</a></h3>
-<p>The <strong>Jackknife Importance</strong> sub-tab combines the ROC and the per-variable
-bars in a single figure:</p>
-<p><img alt="ROC plus Jackknife panel for the 9 Bradypus variables" src="../../images/ui/dock-4-jackknife-bars.png" /></p>
-<p>ROC reading:</p>
+<p>The <strong>Jackknife Importance</strong> sub-tab combines the ROC and per-variable
+bars in one figure — the canonical Maxent summary plot since
+<a href="../../references/">Phillips, Anderson &amp; Schapire 2006</a>:</p>
+<p><img alt="ROC and Jackknife panels for the 9 Bradypus variables" src="../../images/ui/dock-4-jackknife-bars.png" /></p>
+<p>Reading the ROC:</p>
 <ul>
-<li><strong>Training ROC</strong> (solid, AUC 0.956): the in-sample fit</li>
-<li><strong>Mean CV ROC</strong> (dashed, AUC 0.758): five spatial folds averaged</li>
-<li><strong>Per-fold ROC</strong> (faint): the spread is the model's stability across
-    spatial subsamples</li>
+<li><strong>Training ROC</strong> (solid, AUC 0.956): in-sample fit</li>
+<li><strong>Mean CV ROC</strong> (dashed, AUC 0.758): mean across 5 spatial folds</li>
+<li><strong>Per-fold ROC</strong> (faint): variance is the model's spatial sub-sample
+  stability</li>
 </ul>
-<p>Jackknife reading:</p>
-<p>The dark bars (model with <strong>only this variable</strong>) and light bars (model
-<strong>without this variable</strong>) tell you each variable's <em>unique</em> contribution.
+<p>Reading the Jackknife:</p>
+<p>The dark bars (model with this variable only) and light bars (model
+without this variable) tell you each variable's <em>unique</em> contribution.
 For Bradypus:</p>
 <ul>
-<li><strong><code>biome</code></strong> (categorical) carries the strongest univariate signal (AUC ≈ 0.78),
-    and the model loses meaningfully when it is removed — biome boundaries
-    map closely onto sloth distribution.</li>
-<li><strong><code>bio7</code></strong> (temperature annual range) comes second.</li>
-<li><strong><code>bio1</code></strong> is informative on its own but redundant with several others
-    (small drop when removed).</li>
-<li><strong><code>bio5</code></strong> has the lowest stand-alone signal (~0.54) — close to random.</li>
+<li><strong><code>biome</code></strong> (categorical) has the strongest univariate signal
+  (AUC ≈ 0.78) and the model loses meaningfully when it is removed —
+  biome boundaries map closely to sloth distribution.</li>
+<li><strong><code>bio7</code></strong> (annual temperature range) is second.</li>
+<li><strong><code>bio1</code></strong> alone is informative but redundant with several others
+  (small drop on removal).</li>
+<li><strong><code>bio5</code></strong> has the lowest stand-alone signal (~0.54), close to
+  random.</li>
 </ul>
-<p>This is exactly how the original Phillips et al. (2006) paper used the
-jackknife to argue that biome and seasonality jointly carry the most
-information for Bradypus.</p>
+<p>This is exactly how the original <a href="../../references/">Phillips et al. 2006</a>
+paper used jackknife to argue that biome and seasonality jointly carry
+the most information about Bradypus.</p>
 <h2 id="spatial-projection">Spatial projection<a class="headerlink" href="#spatial-projection" title="Permanent link">&para;</a></h2>
-<p>Switch to <strong>Spatial Projection</strong> in the same Results tab. With <strong>cloglog</strong>
-output and <strong>Auto-load result as QGIS layer</strong> ticked, click
-<strong>▶ Run Spatial Projection</strong>:</p>
-<p><img alt="Projection sub-tab after running, output GeoTIFF path reported as Done" src="../../images/ui/dock-4-projection-done.png" /></p>
-<p>The map appears in QGIS, auto-styled white-to-green:</p>
-<p><img alt="Bradypus habitat-suitability map across Latin America" src="../../images/maps/quickstart-final-suitability.png" /></p>
-<p>The high-suitability core covers the Atlantic Forest of southeast Brazil
-and the Amazon basin — both well known sloth strongholds — with secondary
-patches across Central America. The model correctly identifies the
-unsuitability of the Andes (cold, high elevation) and the very dry
-northeastern Brazil (caatinga).</p>
+<p>Switch to <strong>Spatial Projection</strong> in the same Results tab. Leave
+<strong>cloglog</strong> as the output transform (the <a href="../../references/">Phillips et al. 2017</a>
+recommended default) and <strong>Auto-load result as QGIS layer</strong> ticked, then
+click <strong>▶ Run Spatial Projection</strong>:</p>
+<p><img alt="Projection sub-tab after a successful run — output GeoTIFF path shown" src="../../images/ui/dock-4-projection-done.png" /></p>
+<p>The map appears in QGIS with auto-styled white-to-green ramping:</p>
+<p><img alt="Bradypus habitat-suitability map across Central and South America" src="../../images/maps/quickstart-final-suitability.png" /></p>
+<p>The high-suitability core covers Brazil's southeastern Atlantic Forest
+and the Amazon basin — both well-known sloth strongholds — plus
+secondary patches across Central America. The model correctly
+identifies the unsuitability of the Andes (cold, high altitude) and
+the very dry Brazilian Northeast (Caatinga).</p>
 <h2 id="saving-outputs">Saving outputs<a class="headerlink" href="#saving-outputs" title="Permanent link">&para;</a></h2>
-<p>Two files were produced automatically:</p>
+<p>Two files were written automatically:</p>
 <ul>
-<li><code>qmaxent_output/model.pkl</code> — the serialized trained model. Reload it
-    later from the <strong>Load existing model (.pkl)…</strong> button on the Data tab,
-    or share it with collaborators. See <a href="../../saving-models/">Saving and reusing models</a>
-    for the security considerations.</li>
-<li><code>qmaxent_output/results.xlsx</code> — a multi-sheet Excel supplement with
-    experimental setup, variable inventory, cross-validation, jackknife,
-    and response-curve breakpoints. See <a href="../../exporting-results/">Exporting results</a>
-    for the sheet-by-sheet description.</li>
+<li><code>qmaxent_output/model.pkl</code> — the serialised trained model. Reload it
+  later from the Data tab's <strong>Load existing model (.pkl)…</strong> button or
+  share it with collaborators. Security note in
+  <a href="../../saving-models/">Saving and reusing models</a>.</li>
+<li><code>qmaxent_output/results.xlsx</code> — the multi-sheet supplementary table
+  containing experimental setup, variable list, CV results, jackknife,
+  and response-curve breakpoints. See
+  <a href="../../exporting-results/">Exporting results</a> for the sheet-by-sheet
+  layout.</li>
 </ul>
-<p>If you ticked <strong>Save analysis charts as PNG</strong> before running projection,
-you also have publication-ready 300-dpi PNGs of the response curves, ROC,
-and jackknife panels next to the GeoTIFF.</p>
-<h2 id="optional-priority-sites-for-survey">Optional: priority sites for survey<a class="headerlink" href="#optional-priority-sites-for-survey" title="Permanent link">&para;</a></h2>
-<p>A natural next step is to use the trained model to plan a follow-up
-survey. Switch to <strong>⑤ Priority Sites for Survey</strong>, choose <strong>Discovery</strong>
-mode, leave the auto-set Minimum suitability at 0.9, and click
+<p>If you ticked <strong>Save analysis charts as PNG</strong> before projection, three
+additional 300-dpi PNGs of the response curves, ROC, and jackknife
+panels are written next to the GeoTIFF — sized for direct paste into a
+single-column manuscript figure.</p>
+<h2 id="optional-priority-sites-for-survey">Optional: Priority sites for survey<a class="headerlink" href="#optional-priority-sites-for-survey" title="Permanent link">&para;</a></h2>
+<p>A natural next step is to use the trained model to plan follow-up
+surveys. Switch to <strong>⑤ Priority Sites for Survey</strong>, choose <strong>Discovery</strong>
+mode, leave the auto-set minimum suitability of 0.9, and click
 <strong>▶ Extract Priority Sites</strong>:</p>
 <p><img alt="Priority Sites tab in Discovery mode after extraction" src="../../images/ui/dock-5-priority-sites-extracted.png" /></p>
-<p>Twenty candidate locations (red dots) appear on top of the suitability map,
-with addresses populated by Nominatim reverse geocoding:</p>
-<p><img alt="Priority sites overlaid as red dots on the Bradypus suitability map" src="../../images/maps/priority-sites-on-canvas.png" /></p>
-<p>Each candidate is at least 1 km from any known presence and at least 500 m
-from every other candidate, so a single field trip can plausibly cover
-several of them.</p>
-<h2 id="where-to-go-next">Where to go next<a class="headerlink" href="#where-to-go-next" title="Permanent link">&para;</a></h2>
+<p>20 candidate locations (red dots) appear on the suitability map, with
+addresses populated by Nominatim reverse geocoding:</p>
+<p><img alt="Priority sites overlaid on the Bradypus suitability map" src="../../images/maps/priority-sites-on-canvas.png" /></p>
+<p>Each candidate is at least 1 km from any known occurrence and at least
+500 m from any other candidate, so a single field trip can plausibly
+cover several at once.</p>
+<h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Same workflow with messy rasters</strong>: the <a href="../ariolimax/">Ariolimax example</a>
-    starts from rasters that don't share a CRS or resolution, exercising the
-    Check + Harmonize tools.</li>
-<li><strong>Same workflow against a published study</strong>: the <a href="../pitta-nympha/">Pitta nympha example</a>
-    reproduces a published Java MaxEnt analysis in QMaxent and discusses
-    where the two pipelines agree or diverge.</li>
-<li><strong>Deeper theory</strong>: <a href="../../methodological-background/">Methodological background</a>
-    explains why each default we accepted in this tour is the right choice.</li>
+<li><strong>The same workflow with messy rasters</strong>:
+  <a href="../ariolimax/">Ariolimax example</a> starts from rasters that do not
+  share a CRS or resolution — exercising the Check + Harmonize tools.</li>
+<li><strong>Compare your workflow to a published study</strong>:
+  <a href="../pitta-nympha/">Pitta nympha example</a> reproduces a published Java
+  MaxEnt analysis in QMaxent and discusses where the two pipelines
+  agree and differ.</li>
+<li><strong>Deeper theory</strong>:
+  <a href="../../methodological-background/">Methodological background</a> explains
+  why each default we accepted in this tour is the right choice.</li>
 </ul>
 
 

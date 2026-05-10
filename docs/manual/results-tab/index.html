@@ -754,30 +754,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Jackknife Importance">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#roc-panel-left" class="md-nav__link">
-    <span class="md-ellipsis">
-      ROC panel (left)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#jackknife-panel-right" class="md-nav__link">
-    <span class="md-ellipsis">
-      Jackknife panel (right)
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -791,27 +767,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#output-transforms" class="md-nav__link">
+  <a href="#the-unified-preflight-dialog" class="md-nav__link">
     <span class="md-ellipsis">
-      Output transforms
+      The unified preflight dialog
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#auto-load-result-as-qgis-layer" class="md-nav__link">
+  <a href="#after-the-projection" class="md-nav__link">
     <span class="md-ellipsis">
-      Auto-load result as QGIS layer
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#save-analysis-charts-as-png" class="md-nav__link">
-    <span class="md-ellipsis">
-      Save analysis charts as PNG
+      After the projection
     </span>
   </a>
   
@@ -823,9 +790,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#memory-and-performance" class="md-nav__link">
+  <a href="#next" class="md-nav__link">
     <span class="md-ellipsis">
-      Memory and performance
+      Next
     </span>
   </a>
   
@@ -1193,30 +1160,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Jackknife Importance">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#roc-panel-left" class="md-nav__link">
-    <span class="md-ellipsis">
-      ROC panel (left)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#jackknife-panel-right" class="md-nav__link">
-    <span class="md-ellipsis">
-      Jackknife panel (right)
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -1230,27 +1173,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#output-transforms" class="md-nav__link">
+  <a href="#the-unified-preflight-dialog" class="md-nav__link">
     <span class="md-ellipsis">
-      Output transforms
+      The unified preflight dialog
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#auto-load-result-as-qgis-layer" class="md-nav__link">
+  <a href="#after-the-projection" class="md-nav__link">
     <span class="md-ellipsis">
-      Auto-load result as QGIS layer
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#save-analysis-charts-as-png" class="md-nav__link">
-    <span class="md-ellipsis">
-      Save analysis charts as PNG
+      After the projection
     </span>
   </a>
   
@@ -1262,9 +1196,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#memory-and-performance" class="md-nav__link">
+  <a href="#next" class="md-nav__link">
     <span class="md-ellipsis">
-      Memory and performance
+      Next
     </span>
   </a>
   
@@ -1317,109 +1251,92 @@
 cloglog suitability across the variable's actual training range (shaded
 band) with the mean as a vertical reference line:</p>
 <p><img alt="Response curve for bio1 showing predicted cloglog suitability across the training range" src="../images/ui/dock-4-response-curve-bio1.png" /></p>
-<p>How to read a response curve:</p>
-<ul>
-<li><strong>Y-axis</strong> is the cloglog probability of suitability (0–1).</li>
-<li><strong>X-axis</strong> is the variable's value in its native units. The shaded
-    "Training range" band marks the data range the model actually saw;
-    extending the curve outside that band means extrapolation, which should
-    be interpreted cautiously (see the discussion in
-    <a href="../methodological-background/">Methodological background</a>).</li>
-<li><strong>Sharp peaks or steps</strong> are usually hinge or threshold features at work.
-    Smooth curves come from linear and quadratic features.</li>
-<li><strong>Per-variable interpretation</strong>: the curve marginalizes over all other
-    variables, so it shows the partial response <em>holding the others at their
-    mean</em>. Use it for ecological interpretation, not for prediction.</li>
-</ul>
-<p>Switch variables freely from the drop-down — the plot redraws each time
-without re-running the model.</p>
+<p>For continuous variables the curve is a marginal-effect plot in the sense
+of <a href="../references/">Elith et al. 2011</a>: suitability is computed at the
+sweep of values for the focal variable while every other variable is held
+at its mean (or, for categoricals, its modal level).</p>
+<p>For categorical variables, QMaxent renders a bar chart with one bar per
+class, ordered by predicted suitability — visually clearer than the
+ramped curve a Java-MaxEnt run would produce.</p>
+<p>The shaded <strong>Training range</strong> band is important: predictions outside this
+band are pure extrapolation. Whenever your eventual spatial projection
+reaches values outside the band, QMaxent shows a one-off
+<a href="#">Multivariate Environmental Similarity Surface</a>-style warning (see
+<a href="../references/">Elith, Kearney &amp; Phillips 2010</a>) before writing the
+output GeoTIFF.</p>
+<p><img alt="Response Curves sub-tab grid view of all variables" src="../images/ui/dock-4-results-response-curves.png" /></p>
+<p>The grid view across all variables is the standard
+<a href="../references/">Phillips et al. 2006</a> summary plot used in publications.
+QMaxent saves it as <code>prediction_response_curves.png</code> (300 dpi) when the
+<strong>Save analysis charts as PNG</strong> checkbox is on at projection time — see
+<a href="../exporting-results/">Exporting results</a>.</p>
 <h2 id="jackknife-importance">Jackknife Importance<a class="headerlink" href="#jackknife-importance" title="Permanent link">&para;</a></h2>
-<p>The Jackknife sub-tab is the most information-dense view in the plugin: it
-combines the ROC analysis (training and per-fold CV) with the variable
-importance bars in a single side-by-side figure:</p>
-<p><img alt="ROC curve plus Jackknife variable importance for the 9 Bradypus variables" src="../images/ui/dock-4-jackknife-bars.png" /></p>
-<h3 id="roc-panel-left">ROC panel (left)<a class="headerlink" href="#roc-panel-left" title="Permanent link">&para;</a></h3>
+<p>This sub-tab combines the ROC curve and per-variable Jackknife bars in a
+single panel — the canonical Maxent figure since
+<a href="../references/">Phillips, Anderson &amp; Schapire 2006</a>:</p>
+<p><img alt="ROC and Jackknife panels in the Results tab" src="../images/ui/dock-4-results-jackknife.png" /></p>
+<p><strong>Reading the ROC panel:</strong></p>
 <ul>
-<li><strong>Training ROC</strong> (solid line): the in-sample fit. Always optimistic.</li>
-<li><strong>Mean CV ROC</strong> (dashed): the average across all CV folds. This is the
-    headline performance estimate for the model.</li>
-<li><strong>Per-fold ROC</strong> (faint lines): each spatial CV fold's ROC. The spread
-    visualizes how stable the model is across spatial subsamples.</li>
-<li><strong>Random</strong> (diagonal): the no-skill baseline.</li>
+<li><strong>Training ROC</strong> (solid) — in-sample fit</li>
+<li><strong>Mean CV ROC</strong> (dashed) — across-fold mean of held-out folds</li>
+<li><strong>Per-fold ROC</strong> (faint) — variance across folds is the model's
+  spatial sub-sample stability</li>
 </ul>
-<p>The Bradypus example shows training AUC of 0.956 with mean CV AUC of 0.758 —
-a typical, healthy gap that indicates the model has learned a real signal
-without being grossly over-fitted.</p>
-<h3 id="jackknife-panel-right">Jackknife panel (right)<a class="headerlink" href="#jackknife-panel-right" title="Permanent link">&para;</a></h3>
-<p>For each variable, two bars:</p>
+<p><strong>Reading the Jackknife bars:</strong></p>
 <ul>
-<li><strong>With only variable</strong> (dark): how well a model with <em>just this variable</em>
-    predicts. High = the variable carries strong univariate signal.</li>
-<li><strong>Without variable</strong> (light): how well the model performs <em>without it</em>.
-    Low (compared to the full-model AUC) = the variable carries unique
-    information not redundant with others.</li>
+<li><strong>With-only</strong> (dark) — AUC of a model fit on this variable alone</li>
+<li><strong>Without</strong> (light) — AUC of the full model with this variable removed</li>
+<li>A variable with a high <em>with-only</em> and a high <em>without</em> drop carries
+  a unique signal not redundant with the others (the most informative kind).</li>
 </ul>
-<p>A variable that <strong>scores high on dark and creates a noticeable drop on
-light</strong> is unambiguously important. A variable that scores high on dark
-but barely changes light is informative but redundant with others (likely
-correlated). The test/train split for each bar is shown in the same view —
-the value labels are the held-out test AUCs from the CV folds.</p>
+<p>The bars are sorted by <strong>Test AUC drop</strong> by default. The same numbers are
+exported into Table 4 of the XLSX — see
+<a href="../exporting-results/">Exporting results</a> for the sheet layout.</p>
 <h2 id="spatial-projection">Spatial Projection<a class="headerlink" href="#spatial-projection" title="Permanent link">&para;</a></h2>
-<p>This sub-tab applies the trained model to the entire raster stack to
-produce a continuous habitat-suitability surface.</p>
-<p><img alt="Spatial Projection sub-tab after running, with the output GeoTIFF path reported as Done" src="../images/ui/dock-4-projection-done.png" /></p>
-<h3 id="output-transforms">Output transforms<a class="headerlink" href="#output-transforms" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Transform</th>
-<th>Range</th>
-<th>Interpretation</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>cloglog</strong> <em>(default)</em></td>
-<td>0–1</td>
-<td>Probability of presence at average prevalence (Phillips et al. 2017)</td>
-</tr>
-<tr>
-<td><strong>logistic</strong></td>
-<td>0–1</td>
-<td>Older logistic transform; included for backward compatibility</td>
-</tr>
-<tr>
-<td><strong>raw</strong></td>
-<td>unbounded</td>
-<td>Relative occurrence rate; sums to 1 over the study area</td>
-</tr>
-</tbody>
-</table>
-<p><code>cloglog</code> is the recommended default for almost all studies — it has a
-proper probabilistic interpretation, scales linearly with relative occurrence
-rate, and is what the modern Maxent literature reports.</p>
-<h3 id="auto-load-result-as-qgis-layer">Auto-load result as QGIS layer<a class="headerlink" href="#auto-load-result-as-qgis-layer" title="Permanent link">&para;</a></h3>
-<p>Leave this on (the default) and the resulting GeoTIFF is added to your
-QGIS project the moment it is written, with an auto-applied continuous
-white-to-green color ramp. For Bradypus the result is:</p>
-<p><img alt="Bradypus habitat-suitability map across Latin America, white=low, green=high" src="../images/maps/quickstart-final-suitability.png" /></p>
-<p>You can override the color ramp afterward via the layer's <strong>Symbology</strong>
-panel; QMaxent's auto-styling is just a sensible default.</p>
-<h3 id="save-analysis-charts-as-png">Save analysis charts as PNG<a class="headerlink" href="#save-analysis-charts-as-png" title="Permanent link">&para;</a></h3>
-<p>When checked, QMaxent also writes high-resolution PNG copies of the
-Response Curves, ROC, and Jackknife plots next to the GeoTIFF. These are
-publication-ready and match the figures you see in this tab. They are
-sized for direct paste into a manuscript figure (300 dpi).</p>
-<h2 id="memory-and-performance">Memory and performance<a class="headerlink" href="#memory-and-performance" title="Permanent link">&para;</a></h2>
-<p>Spatial projection reads each raster cell-by-cell and applies the model.
-For very large rasters (continental scale at 30 m resolution), expect the
-projection step to dominate runtime. Two tips:</p>
+<p>The third sub-tab projects the trained model across all the input rasters,
+producing a habitat-suitability GeoTIFF.</p>
+<p><img alt="Spatial Projection sub-tab before clicking Run" src="../images/ui/dock-4-results-spatial-projection.png" /></p>
+<p>Controls:</p>
 <ul>
-<li><strong>Pre-tile the rasters</strong> to your true study extent before projection; use
-    QGIS's <code>Clip raster by extent</code> or <code>Warp</code> algorithms.</li>
-<li><strong>Coarsen</strong> if appropriate — a 30 m climate raster is rarely meaningful;
-    250 m–1 km is usually fine for SDM and runs much faster.</li>
+<li><strong>Output transform</strong>:</li>
+<li><code>cloglog</code> (default) — interpretable as probability of presence
+    given a typical sample of the species, the form
+    <a href="../references/">Phillips et al. 2017</a> recommend as the new default.</li>
+<li><code>logistic</code> — the older (<a href="../references/">Phillips &amp; Dudík 2008</a>)
+    parameterisation; still used in some published baselines.</li>
+<li><code>raw</code> — the unnormalised exponential output, mostly useful for
+    advanced post-processing.</li>
+<li><strong>Auto-load result as QGIS layer</strong> (default on) — the GeoTIFF appears
+  on the canvas with a default white-to-green ramp.</li>
+<li><strong>Save analysis charts as PNG</strong> — when on, three additional 300-dpi
+  PNGs (ROC, Jackknife, response-curve grid) are written next to the
+  GeoTIFF. Sized for direct paste into a single-column manuscript figure.</li>
 </ul>
+<h3 id="the-unified-preflight-dialog">The unified preflight dialog<a class="headerlink" href="#the-unified-preflight-dialog" title="Permanent link">&para;</a></h3>
+<p>Before writing the projection, QMaxent runs <strong>two safety checks</strong> in a
+single combined dialog:</p>
+<ol>
+<li><strong>Categorical-code coverage</strong> — any class code present in the
+   projection rasters but unseen during training is auto-masked to NoData
+   (rather than silently extrapolated to a random class probability).</li>
+<li><strong>Continuous-variable extrapolation</strong> — if any continuous variable's
+   projection range exceeds its training range
+   (<a href="../references/">Elith, Kearney &amp; Phillips 2010</a>), the dialog reports
+   the affected variables and the magnitude of the excursion.</li>
+</ol>
+<p><img alt="Unified preflight dialog combining both safety checks" src="../images/ui/dialog-preflight-unified.png" /></p>
+<p>Click <strong>Yes</strong> to proceed; <strong>No</strong> aborts the projection so you can revise
+the input rasters.</p>
+<h3 id="after-the-projection">After the projection<a class="headerlink" href="#after-the-projection" title="Permanent link">&para;</a></h3>
+<p>A success message appears in the panel:</p>
+<p><img alt="Projection sub-tab after a successful run" src="../images/ui/dock-4-projection-done.png" /></p>
+<p>The GeoTIFF is loaded into QGIS with a default white-to-green ramp keyed
+to the cloglog 0–1 range, ready to compose into a publication map.</p>
+<h2 id="next">Next<a class="headerlink" href="#next" title="Permanent link">&para;</a></h2>
+<p>Move to the <a href="../priority-sites/">⑤ Priority Sites for Survey tab</a> to turn
+the suitability raster into a field-ready candidate point layer, or skip
+ahead to <a href="../exporting-results/">Exporting results</a> to learn what is in
+the output workbook.</p>
 
 
 

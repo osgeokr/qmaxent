@@ -881,7 +881,16 @@
         <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
-      따라하기 안내
+      따라하는 방법
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      재현성
     </span>
   </a>
   
@@ -1114,7 +1123,16 @@
         <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
-      따라하기 안내
+      따라하는 방법
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      재현성
     </span>
   </a>
   
@@ -1139,11 +1157,62 @@
 
 
 <h1 id="_1">실전 예제<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
-<p>QMaxent의 서로 다른 측면을 강조하는 세 가지 사례 분석을 제공합니다.</p>
+<p>QMaxent의 서로 다른 측면과 서로 다른 실제 워크플로를 강조하는 세 가지
+종단간 사례 연구.</p>
 <h2 id="_2">예제 개요<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
-<h2 id="_3">따라하기 안내<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<table>
+<thead>
+<tr>
+<th>예제</th>
+<th>종</th>
+<th>주안점</th>
+<th>배우는 내용</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="bradypus/">Bradypus variegatus</a></td>
+<td>세발가락나무늘보</td>
+<td>번들 데이터셋; 9 변수, 116 출현</td>
+<td>QMaxent 전체 기능 투어 — 원 Maxent 논문과 동일한 워크플로</td>
+</tr>
+<tr>
+<td><a href="ariolimax/">Ariolimax</a></td>
+<td>태평양 바나나 슬러그</td>
+<td>정렬되지 않은 래스터</td>
+<td><strong>Check Raster Consistency</strong> + <strong>Harmonize to Folder…</strong> preflight</td>
+</tr>
+<tr>
+<td><a href="pitta-nympha/">Pitta nympha</a></td>
+<td>팔색조</td>
+<td><a href="../references/">Lee et al. 2025</a> 재현</td>
+<td>발표된 Java-MaxEnt 연구를 QMaxent에서 재현하고 결과 비교하는 방법</td>
+</tr>
+</tbody>
+</table>
+<p>세 예제는 <strong>순서대로 완료</strong>하도록 설계되었습니다: Bradypus는
+워크플로를 소개하고, Ariolimax는 래스터 조화를 추가하며, Pitta
+nympha는 학술 비교가 포함된 발표 품질의 재현을 추가합니다.</p>
+<h2 id="_3">따라하는 방법<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>모든 예제는 <a href="../installation/">설치</a>를 완료했고 <strong>QMaxent
+environment ready</strong> 배너가 녹색이라고 가정합니다.</p>
+<p>세 데이터셋 중 둘은 플러그인에 번들로 제공되어 — <strong>Plugins → QMaxent
+→ Download Example Dataset → \&lt;species name&gt;</strong>으로 로드합니다:</p>
+<ul>
+<li><strong>Bradypus variegatus</strong> — 9 변수, 116 출현, 플러그인에 번들. Phillips
+  et al. 2006 데이터셋과 비트 단위 동일.</li>
+<li><strong>Ariolimax</strong> — 6 변수, 3,732 출현, elapid 라이브러리 기본 태평양
+  연안 슬러그 데이터셋. <strong>공식 다운로드는 사전 정렬됨</strong> — Ariolimax
+  실전 예제를 정확히 따르려면 예제 헤더에 설명된 의도적으로 비동기화된
+  버전을 사용해야 합니다.</li>
+<li><strong>Pitta nympha</strong> — 10 변수, 한국 거제시 47개 둥지. Lee et al. 2025
+  보충 아카이브에서 가져옴; 라이선스 고려로 플러그인에 번들되지 않음.</li>
+</ul>
+<h2 id="_4">재현성<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>세 예제는 모두 <strong>고정된 무작위 시드</strong>로 실행되므로 스크린샷의 숫자가
+사용자 컴퓨터에서 보일 것과 정확히 일치합니다. AUC에서 0.001을 초과하는
+차이는 어떤 설정이 예제 지침과 다르다는 신호입니다; <strong>② Parameters</strong>
+탭 구성을 한 줄씩 확인하세요.</p>
 
 
 

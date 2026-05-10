@@ -727,27 +727,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#progress-bar" class="md-nav__link">
+  <a href="#reading-the-log" class="md-nav__link">
     <span class="md-ellipsis">
-      Progress bar
+      Reading the log
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#training-log" class="md-nav__link">
+  <a href="#completion" class="md-nav__link">
     <span class="md-ellipsis">
-      Training log
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#common-warnings-and-what-they-mean" class="md-nav__link">
-    <span class="md-ellipsis">
-      Common warnings and what they mean
+      Completion
     </span>
   </a>
   
@@ -763,9 +754,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#clear-log-button" class="md-nav__link">
+  <a href="#common-warnings" class="md-nav__link">
     <span class="md-ellipsis">
-      Clear log button
+      Common warnings
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next
     </span>
   </a>
   
@@ -1148,27 +1148,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#progress-bar" class="md-nav__link">
+  <a href="#reading-the-log" class="md-nav__link">
     <span class="md-ellipsis">
-      Progress bar
+      Reading the log
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#training-log" class="md-nav__link">
+  <a href="#completion" class="md-nav__link">
     <span class="md-ellipsis">
-      Training log
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#common-warnings-and-what-they-mean" class="md-nav__link">
-    <span class="md-ellipsis">
-      Common warnings and what they mean
+      Completion
     </span>
   </a>
   
@@ -1184,9 +1175,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#clear-log-button" class="md-nav__link">
+  <a href="#common-warnings" class="md-nav__link">
     <span class="md-ellipsis">
-      Clear log button
+      Common warnings
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next
     </span>
   </a>
   
@@ -1222,87 +1222,96 @@ log:</p>
 <pre class="mermaid"><code>flowchart TD
     A["Sample background points"] --&gt; B["Extract raster covariates&lt;br/&gt;(presence + background)"]
     B --&gt; C["Apply maxnet auto-rule&lt;br/&gt;(or your manual feature choice)"]
-    C --&gt; D["Fit full Maxent model&lt;br/&gt;(all data)"]
-    D --&gt; E["Save model (.pkl)"]
-    D --&gt; F["Compute training ROC / AUC"]
-    F --&gt; G{"Spatial CV&lt;br/&gt;method?"}
-    G --&gt;|Geographic K-Fold| H["Build folds, fit per-fold,&lt;br/&gt;collect held-out scores"]
-    G --&gt;|Checkerboard / Random / Buffered LOO| H
-    G --&gt;|None| I[Skip CV]
-    H --&gt; J["Compute jackknife importance&lt;br/&gt;across folds (if enabled)"]
-    I --&gt; J
-    J --&gt; K["Write results XLSX"]</code></pre>
-<p>The whole pipeline typically completes in <strong>15–60 seconds</strong> on a modern
-laptop for a moderately sized dataset (~100 presences, 10 rasters, 10,000
-background points). Larger datasets scale roughly linearly with presence
-count.</p>
-<h2 id="progress-bar">Progress bar<a class="headerlink" href="#progress-bar" title="Permanent link">&para;</a></h2>
-<p>The bar at the top reports overall pipeline progress (0–100 %). Major
-milestones — full-model fit, each CV fold, jackknife pass — each advance
-the bar a measurable amount, so you can tell at a glance whether the run is
-healthy.</p>
-<h2 id="training-log">Training log<a class="headerlink" href="#training-log" title="Permanent link">&para;</a></h2>
-<p>Below the progress bar, the log panel records every step. After a successful
-Bradypus run it looks like this:</p>
-<p><img alt="Training tab at 100% with full log: 116 presences, 9,997 background, train AUC = 0.9562, CV AUC = 0.7581 ± 0.0920, jackknife per variable" src="../images/ui/dock-3-training-completed.png" /></p>
-<p>Read the log top-down — it is the most complete record of what happened in
-the run. From the screenshot:</p>
+    C --&gt; D["Fit full Maxent model"]
+    D --&gt; E["Compute training ROC + AUC"]
+    E --&gt; F["Run spatial K-Fold CV&lt;br/&gt;(repeat fit per fold)"]
+    F --&gt; G["Compute pooled CV AUC"]
+    G --&gt; H["(optional) Jackknife loop:&lt;br/&gt;2N additional fits"]
+    H --&gt; I["Save .pkl + results.xlsx"]</code></pre>
+<p>The fit is performed by
+<a href="https://github.com/earth-chris/elapid">elapid</a>'s <code>MaxentModel</code>, a faithful
+Python port of the original Java MaxEnt
+(<a href="../references/">Phillips et al. 2006</a>;
+<a href="../references/">Phillips et al. 2017</a>) that delegates the regularized
+likelihood maximisation to scikit-learn
+(<a href="../references/">Pedregosa et al. 2011</a>). The result is numerically very
+close to Java MaxEnt for identical inputs and identical hyperparameters
+— the residual difference comes mostly from how each implementation
+handles ties in the optimisation step.</p>
+<h2 id="reading-the-log">Reading the log<a class="headerlink" href="#reading-the-log" title="Permanent link">&para;</a></h2>
+<p>A typical successful run produces a log like:</p>
+<p><code>text
+→ 10,000 background points sampled
+Extracting raster covariates for presence points…
+Extracting raster covariates for background points…
+→ Presence: 116, Background: 9,997
+→ Feature types: ['linear', 'quadratic', 'product', 'hinge', 'threshold']
+Training MaxentModel…
+→ Model training complete
+→ Model saved: …/model.pkl
+Computing ROC curve…
+→ Training AUC = 0.9562
+Running cross-validation…
+  Fold 1: 22 test presences, AUC = 0.7453
+  Fold 2: 21 test presences, AUC = 0.7839
+  Fold 3: 39 test presences, AUC = 0.8097
+  Fold 4: 26 test presences, AUC = 0.8614
+  Fold 5:  8 test presences, AUC = 0.5903
+→ CV AUC = 0.7581 ± 0.0920  (n=5 fold(s))</code></p>
+<p>A few patterns to recognise:</p>
 <ul>
-<li><code>→ 10,000 background points sampled</code> — sampling completed</li>
-<li><code>→ Presence: 116, Background: 9,997</code> — final counts (slightly under the
-    request because of NaN cells)</li>
-<li><code>→ Feature types: ['linear', 'quadratic', 'product', 'hinge', 'threshold']</code>
-    — the auto-rule chose all five LQPHT for n = 116</li>
-<li><code>→ Training AUC = 0.9562</code></li>
-<li>Per-fold CV AUCs (5 folds, ranging 0.59 – 0.86)</li>
-<li><code>→ CV AUC = 0.7581 ± 0.0920</code> — mean ± standard deviation across folds</li>
-<li>Jackknife block: <code>only_tr / only_te / without_tr / without_te</code> for each of
-    the 9 variables</li>
-<li><code>→ Results XLSX saved: …</code> — final artifact location</li>
+<li><strong>Background = 9,997 instead of 10,000</strong> — points that fell on
+  NoData cells were dropped. Normal and not a cause for concern unless
+  the loss is large (&gt;5 %).</li>
+<li><strong>Per-fold AUC well below the mean</strong> — for example Fold 5 above
+  (AUC = 0.59 with only 8 presences). Geographic K-Fold deliberately
+  produces uneven folds, and a small fold can land on an atypical region
+  of the study area. The pooled mean smooths this out.</li>
+<li><strong>Train AUC ≫ CV AUC</strong> — the spatial-CV gap. A <em>good</em> sign in the
+  sense that it tells you the model has not been silently over-fitted to
+  the training presences (<a href="../references/">Roberts et al. 2017</a>). A train
+  AUC of 0.95 with a CV AUC of 0.55 is the warning sign — the CV is
+  telling you the model does not generalise.</li>
 </ul>
-<p>The same headline numbers (<code>train AUC=0.9562</code>, <code>CV AUC=0.7581</code>) are echoed
-in the dock's permanent status bar so they remain visible after you switch
-tabs.</p>
-<h2 id="common-warnings-and-what-they-mean">Common warnings and what they mean<a class="headerlink" href="#common-warnings-and-what-they-mean" title="Permanent link">&para;</a></h2>
+<h2 id="completion">Completion<a class="headerlink" href="#completion" title="Permanent link">&para;</a></h2>
+<p>When the run finishes, you see the green <strong>Done</strong> state:</p>
+<p><img alt="Training tab at 100% with the full log" src="../images/ui/dock-3-training-completed.png" /></p>
+<p>The dock's footer status bar populates with <code>train AUC=… CV AUC=…</code> and the
+<strong>④ Results</strong> tab unlocks.</p>
+<h2 id="cancelling-a-run">Cancelling a run<a class="headerlink" href="#cancelling-a-run" title="Permanent link">&para;</a></h2>
+<p>Click <strong>Cancel</strong> to abort. QMaxent terminates the current fold cleanly,
+discards the in-memory model, and leaves disk outputs untouched. You can
+restart by clicking <strong>▶ Run Maxent</strong> again.</p>
+<h2 id="common-warnings">Common warnings<a class="headerlink" href="#common-warnings" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Log message</th>
+<th>Message</th>
 <th>Meaning</th>
-<th>What to do</th>
+<th>Action</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>Some background points overlap presences (n=…)</code></td>
-<td>Expected with <em>Add presences to background</em> on. Just a count, not an error.</td>
-<td>Ignore unless n is very large</td>
+<td><code>⚠ Removed 312 presences with NoData covariate values</code></td>
+<td>Some points fell on NoData cells</td>
+<td>Inspect the raster stack; may indicate the wrong CRS or a clipped raster</td>
 </tr>
 <tr>
-<td><code>Categorical variable has only one level in fold k</code></td>
-<td>One CV fold ended up with no variation in a categorical raster</td>
-<td>Use a coarser categorical scheme, or switch CV method</td>
+<td><code>⚠ Background points cap reduced from 10,000 to N</code></td>
+<td>Study area too small for the requested background size</td>
+<td>Reduce the background-points field on Data tab</td>
 </tr>
 <tr>
-<td><code>Failed to converge after 200 iterations</code></td>
-<td>Numerical issue, usually caused by collinear variables</td>
-<td>Drop the most collinear pair (correlation matrix in the XLSX helps)</td>
-</tr>
-<tr>
-<td><code>Some rasters have NaN cells inside the study extent</code></td>
-<td>Missing-data cells were excluded</td>
-<td>Confirm your study area mask is intentional</td>
+<td><code>⚠ Convergence not reached after 500 iterations</code></td>
+<td>Hard-to-fit model (often very few presences)</td>
+<td>Increase the regularization multiplier or simplify the feature set</td>
 </tr>
 </tbody>
 </table>
-<h2 id="cancelling-a-run">Cancelling a run<a class="headerlink" href="#cancelling-a-run" title="Permanent link">&para;</a></h2>
-<p>The QGIS task manager (bottom of the QGIS main window) lists the QMaxent
-training task. Use its <strong>Cancel</strong> button to abort. Partial outputs are not
-written.</p>
-<h2 id="clear-log-button">Clear log button<a class="headerlink" href="#clear-log-button" title="Permanent link">&para;</a></h2>
-<p>The <strong>Clear log</strong> button at the bottom of the panel wipes the log text. The
-saved <code>.pkl</code> and XLSX are not affected. This is just a convenience for
-multi-run sessions where you want a clean slate before the next experiment.</p>
+<h2 id="next">Next<a class="headerlink" href="#next" title="Permanent link">&para;</a></h2>
+<p>Move to the <a href="../results-tab/">④ Results tab</a> to inspect response curves,
+Jackknife importance, and run a spatial projection.</p>
 
 
 

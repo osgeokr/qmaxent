@@ -799,18 +799,36 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-variable-mapping-dialog" class="md-nav__link">
+  <a href="#the-variable-mapping-dialog-in-detail" class="md-nav__link">
     <span class="md-ellipsis">
-      The variable-mapping dialog
+      The variable-mapping dialog in detail
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#security-note-on-pickle-files" class="md-nav__link">
+  <a href="#re-projecting-onto-an-updated-raster-stack" class="md-nav__link">
     <span class="md-ellipsis">
-      Security note on pickle files
+      Re-projecting onto an updated raster stack
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-note-on-python-pickle-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Security note on Python pickle files
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next
     </span>
   </a>
   
@@ -1139,18 +1157,36 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-variable-mapping-dialog" class="md-nav__link">
+  <a href="#the-variable-mapping-dialog-in-detail" class="md-nav__link">
     <span class="md-ellipsis">
-      The variable-mapping dialog
+      The variable-mapping dialog in detail
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#security-note-on-pickle-files" class="md-nav__link">
+  <a href="#re-projecting-onto-an-updated-raster-stack" class="md-nav__link">
     <span class="md-ellipsis">
-      Security note on pickle files
+      Re-projecting onto an updated raster stack
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-note-on-python-pickle-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Security note on Python pickle files
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next
     </span>
   </a>
   
@@ -1175,15 +1211,97 @@
 
 
 <h1 id="saving-and-reusing-models">Saving and reusing models<a class="headerlink" href="#saving-and-reusing-models" title="Permanent link">&para;</a></h1>
-<p>Persisting a trained model to .pkl and loading it back later with confidence that variables map correctly.</p>
+<p>Persisting a trained model and loading it back later — with confidence
+that variables map to rasters correctly — is what enables collaboration,
+re-projection onto updated environmental data, and long-term
+reproducibility of published QMaxent results.</p>
 <h2 id="saving-a-trained-model">Saving a trained model<a class="headerlink" href="#saving-a-trained-model" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>Every successful Maxent run writes a <code>model.pkl</code> file to the path you
+specified on the <strong>② Parameters</strong> tab (default
+<code>&lt;project&gt;/qmaxent_output/model.pkl</code>). This is a Python pickle of the
+trained <code>elapid.MaxentModel</code> instance — it carries:</p>
+<ul>
+<li>The fitted regularized-likelihood coefficients</li>
+<li>The complete list of variable names (in order)</li>
+<li>For each variable: type (<code>continuous</code> / <code>categorical</code>), training data
+  range (continuous) or class set (categorical)</li>
+<li>The full set of hyperparameters (feature classes, RM, CV scheme,
+  random seeds)</li>
+<li>A QMaxent build-version stamp</li>
+</ul>
+<p>Treat the <code>.pkl</code> as the <strong>canonical record of the trained model</strong>.
+Distribute it alongside the <code>results.xlsx</code> workbook when sharing with
+collaborators or publishing supplementary material — that is the pair
+of files <a href="../references/">Araújo et al. 2019</a> cite as the minimum
+reproducibility unit for a published SDM.</p>
 <h2 id="reloading-a-saved-model">Reloading a saved model<a class="headerlink" href="#reloading-a-saved-model" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
-<h2 id="the-variable-mapping-dialog">The variable-mapping dialog<a class="headerlink" href="#the-variable-mapping-dialog" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
-<h2 id="security-note-on-pickle-files">Security note on pickle files<a class="headerlink" href="#security-note-on-pickle-files" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>On the <strong>① Data</strong> tab, click <strong>Load existing model (.pkl)…</strong> and select
+the saved file. QMaxent reads the variable list out of the pickle and
+opens a <strong>variable-mapping dialog</strong>:</p>
+<p><img alt="Map model variables to rasters dialog" src="../images/ui/dialog-load-existing-model.png" /></p>
+<p>The dialog has one row per saved variable. For each row, QMaxent picks
+a default raster from the current QGIS project by matching variable
+names to layer names. When the names match exactly, the dialog is just
+a confirmation step. When they differ, the dialog <strong>forces an explicit
+mapping</strong> — the only way to load a <code>.pkl</code> whose variable names do not
+match the current naming convention is to <em>consciously</em> re-state which
+raster maps to which saved variable.</p>
+<p>This safeguard prevents the silent ordering errors that have been
+documented as a recurring source of "but it worked yesterday" bugs in
+collaborative SDM projects.</p>
+<h2 id="the-variable-mapping-dialog-in-detail">The variable-mapping dialog in detail<a class="headerlink" href="#the-variable-mapping-dialog-in-detail" title="Permanent link">&para;</a></h2>
+<p>The dialog renders three columns:</p>
+<ul>
+<li><strong>Saved variable name</strong> — read from the pickle, not editable.</li>
+<li><strong>Type</strong> — <code>continuous</code> or <code>categorical</code>, also from the pickle. A
+  variable saved as categorical can only be mapped to a raster the
+  current project has marked as categorical.</li>
+<li><strong>Mapped raster</strong> — a drop-down listing the rasters in the current
+  project. Pick one for each row.</li>
+</ul>
+<p>A footer status line reads <code>0 of N mapped</code> and updates live as you
+populate the drop-downs. The <strong>OK</strong> button enables only when all rows
+are mapped.</p>
+<p>After confirmation, QMaxent rewires the dock as if you had just trained
+the model fresh — the <strong>③ Training</strong> tab is skipped and <strong>④ Results</strong>
+is enabled directly. You can immediately run a spatial projection or
+extract priority sites against the new raster stack.</p>
+<h2 id="re-projecting-onto-an-updated-raster-stack">Re-projecting onto an updated raster stack<a class="headerlink" href="#re-projecting-onto-an-updated-raster-stack" title="Permanent link">&para;</a></h2>
+<p>The most common reason to reload a model is to <strong>apply it to a more
+recent or higher-resolution version of the same environmental layers</strong>
+without re-fitting. Because re-fitting on different rasters would
+produce a different model, this is the only correct way to ask "what
+does the original model predict about the new data?".</p>
+<p>The workflow:</p>
+<ol>
+<li>Train the model once on the original rasters; save <code>model.pkl</code>.</li>
+<li>Load the new raster stack into QGIS.</li>
+<li><strong>Load existing model (.pkl)…</strong>, map saved variables to the new
+   rasters in the dialog, click <strong>OK</strong>.</li>
+<li>Switch to <strong>④ Results → Spatial Projection</strong> and run.</li>
+</ol>
+<p>The preflight dialog will flag any extrapolation introduced by the new
+data — particularly important when the new rasters extend the
+geographic extent or include time periods outside the original
+training range.</p>
+<h2 id="security-note-on-python-pickle-files">Security note on Python pickle files<a class="headerlink" href="#security-note-on-python-pickle-files" title="Permanent link">&para;</a></h2>
+<p><code>.pkl</code> files are <strong>executable Python bytecode</strong>. Loading a malicious
+<code>.pkl</code> can run arbitrary code on your machine. Only load <code>.pkl</code> files
+that you produced yourself or that come from trusted collaborators.</p>
+<p>QMaxent has no way to verify the provenance of a third-party <code>.pkl</code>
+beyond what Python's <code>pickle</code> module itself does (which is nothing).
+For published QMaxent results, the safe pattern is:</p>
+<ul>
+<li>Distribute the <code>model.pkl</code> alongside the <code>results.xlsx</code> workbook so
+  reviewers have the deterministic seed, hyperparameters, and inputs
+  needed to <strong>re-train an equivalent model from scratch</strong> if they
+  prefer not to load the pickle.</li>
+<li>Sign the <code>.pkl</code> with a SHA-256 hash in your supplementary materials.</li>
+</ul>
+<h2 id="next">Next<a class="headerlink" href="#next" title="Permanent link">&para;</a></h2>
+<p>The companion document is <a href="../exporting-results/">Exporting results</a>,
+which describes the multi-sheet XLSX workbook that ships alongside
+every <code>model.pkl</code>.</p>
 
 
 

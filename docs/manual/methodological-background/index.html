@@ -1063,6 +1063,33 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#treatment-of-categorical-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      Treatment of categorical variables
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bias-correction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bias correction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-these-choices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why these choices
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1210,6 +1237,33 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#treatment-of-categorical-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      Treatment of categorical variables
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bias-correction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bias correction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-these-choices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why these choices
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1229,21 +1283,192 @@
 
 
 <h1 id="methodological-background">Methodological background<a class="headerlink" href="#methodological-background" title="Permanent link">&para;</a></h1>
-<p>This chapter collects the <em>why</em> behind the <em>how</em> — the academic reasoning that justifies QMaxent's defaults. It is intended for users who want to understand or cite the model choices, not for first-time users (who should read the User guide chapters first).</p>
+<p>This chapter collects the <em>why</em> behind the <em>how</em> — the academic reasoning
+that justifies QMaxent's defaults. It is intended for users who want to
+understand or cite the model choices, not for first-time users (who should
+read the User guide chapters first).</p>
 <h2 id="maxent-and-the-principle-of-maximum-entropy">Maxent and the principle of maximum entropy<a class="headerlink" href="#maxent-and-the-principle-of-maximum-entropy" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>Maxent fits the <strong>maximum-entropy distribution</strong> consistent with the
+empirical moments observed at the presence locations
+(<a href="../references/">Phillips, Anderson &amp; Schapire 2006</a>). Intuitively: among
+all distributions over the study area that produce the same average value
+of each environmental variable as the presence sample, the maximum-
+entropy distribution is the <em>least informative</em> — the one that adds no
+assumptions beyond what the data actually says.</p>
+<p>The estimator is mathematically equivalent to a regularized inhomogeneous
+Poisson point-process model fit to the presence-background contrast
+(<a href="../references/">Fithian &amp; Hastie 2013</a>) — and that equivalence is what
+elapid's implementation exploits to delegate the optimisation to
+scikit-learn's logistic-regression routines
+(<a href="../references/">Anderson 2023</a>;
+<a href="../references/">Pedregosa et al. 2011</a>).</p>
 <h2 id="the-maxnet-auto-rule-for-feature-selection">The maxnet auto-rule for feature selection<a class="headerlink" href="#the-maxnet-auto-rule-for-feature-selection" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>The Maxent feature classes (Linear, Quadratic, Product, Hinge, Threshold)
+trade off <strong>flexibility</strong> against <strong>over-fit risk</strong>. The
+<a href="../references/">Phillips &amp; Dudík 2008</a> benchmark on hundreds of species
+established a sample-size-based rule that has held up across
+benchmarks since:</p>
+<table>
+<thead>
+<tr>
+<th>Sample size</th>
+<th>Allowed features</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>≤ 10</td>
+<td>L</td>
+</tr>
+<tr>
+<td>≤ 30</td>
+<td>L, Q</td>
+</tr>
+<tr>
+<td>≤ 80</td>
+<td>L, Q, H</td>
+</tr>
+<tr>
+<td>&gt; 80</td>
+<td>L, Q, P, H, T</td>
+</tr>
+</tbody>
+</table>
+<p>QMaxent's <strong>Auto</strong> mode applies this rule directly. The benchmark
+underlying the rule is the most extensively replicated tuning
+recommendation in the Maxent literature; deviating from it without an
+ENMeval-style (<a href="../references/">Muscarella et al. 2014</a>) hyperparameter
+search is hard to defend in a publication.</p>
 <h2 id="why-spatial-cross-validation-matters">Why spatial cross-validation matters<a class="headerlink" href="#why-spatial-cross-validation-matters" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>Random K-Fold CV gives over-optimistic AUCs on spatial data because
+random folds are likely to contain points geographically <em>adjacent to</em>
+training points. Spatial autocorrelation makes the held-out points
+trivially predictable.</p>
+<p><a href="../references/">Roberts et al. 2017</a> demonstrate this empirically across
+many SDM benchmarks: random-K-Fold AUCs systematically over-estimate the
+performance you would actually see on a new region by 0.05–0.15. They
+recommend spatially-blocked CV as the default for any spatial model.</p>
+<p>QMaxent therefore defaults to <strong>Geographic K-Fold (k = 5, fixed seed)</strong>
+— the recommended Roberts et al. design. <em>Random</em> K-Fold is offered only
+to allow exact reproduction of older studies.</p>
 <h2 id="pooled-vs-per-fold-auc">Pooled vs per-fold AUC<a class="headerlink" href="#pooled-vs-per-fold-auc" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>Two summary statistics across folds are commonly reported:</p>
+<ul>
+<li><strong>Per-fold AUC then averaged</strong> — compute AUC inside each fold,
+  average across folds, report mean ± SD.</li>
+<li><strong>Pooled AUC</strong> — concatenate all held-out predictions across folds
+  and compute a single AUC.</li>
+</ul>
+<p>QMaxent reports the <strong>per-fold mean ± SD</strong> as the headline number
+because it carries the across-fold variance, which is itself an
+informative diagnostic — high variance signals that the model's
+geographic transferability is unstable. The pooled-AUC alternative is
+included in Table 3 of the XLSX as a secondary metric.</p>
 <h2 id="jackknife-variable-importance">Jackknife variable importance<a class="headerlink" href="#jackknife-variable-importance" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>The classical Maxent jackknife
+(<a href="../references/">Phillips, Anderson &amp; Schapire 2006</a>) fits, for each
+variable, two extra models: one with that variable alone (<em>with-only</em>)
+and one with that variable removed (<em>without</em>). The drop in test AUC
+from full to <em>without</em> identifies variables whose unique contribution
+is hard to recover from the others.</p>
+<p>QMaxent reports four AUCs per variable (only-train, only-test,
+without-train, without-test) plus the test-side drop column, sorted by
+descending drop so the most uniquely-informative variables are at the
+top. This is the format used in the published Maxent literature since
+Phillips et al. 2006.</p>
 <h2 id="threshold-methods-mtp-t10-maxsss">Threshold methods (MTP / T10 / MaxSSS)<a class="headerlink" href="#threshold-methods-mtp-t10-maxsss" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>When you need a binary suitable/unsuitable map (e.g. for reserve-design
+applications), you must choose a threshold of the cloglog output. The
+SDM literature standardises on three options
+(<a href="../references/">Liu, Newell &amp; White 2013</a>):</p>
+<ul>
+<li><strong>MTP — Minimum Training Presence</strong> — the lowest cloglog value at
+  any training presence. Most permissive; favours sensitivity.</li>
+<li><strong>T10 — 10<sup>th</sup> percentile training presence</strong> — drops the bottom 10%
+  of training presences as outliers. The classical Java-MaxEnt default.</li>
+<li><strong>MaxSSS — Max Sensitivity + Specificity</strong> — the threshold that
+  maximises the sum of sensitivity and specificity on the training
+  ROC. Best calibration in most published comparisons.</li>
+</ul>
+<p>QMaxent reports all three thresholds in Table 3 of the XLSX export.
+Choose <strong>MaxSSS</strong> unless you are reproducing a Java-MaxEnt study (T10)
+or have a specific reason to prefer permissive (MTP) or strict
+classification.</p>
 <h2 id="output-transforms-compared">Output transforms compared<a class="headerlink" href="#output-transforms-compared" title="Permanent link">&para;</a></h2>
-<p><em>Coming soon — this section is under construction.</em></p>
+<p>Three output transforms are available on <strong>Spatial Projection</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Transform</th>
+<th>Range</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>cloglog</strong></td>
+<td>0–1</td>
+<td>Probability of presence given a typical sample, <a href="../references/">Phillips et al. 2017</a> recommended default</td>
+</tr>
+<tr>
+<td><strong>logistic</strong></td>
+<td>0–1</td>
+<td>Older, <a href="../references/">Phillips &amp; Dudík 2008</a> parameterisation; still used in some baselines</td>
+</tr>
+<tr>
+<td><strong>raw</strong></td>
+<td>unbounded</td>
+<td>Unnormalised exponential output; advanced post-processing</td>
+</tr>
+</tbody>
+</table>
+<p>QMaxent defaults to <strong>cloglog</strong> because it is the form
+<a href="../references/">Phillips et al. 2017</a> explicitly recommend as the
+modern default and because its "probability of presence" interpretation
+is the most directly communicable to non-modelling stakeholders.</p>
+<h2 id="treatment-of-categorical-variables">Treatment of categorical variables<a class="headerlink" href="#treatment-of-categorical-variables" title="Permanent link">&para;</a></h2>
+<p>Java MaxEnt encodes categorical rasters via the raster's attribute
+table; elapid encodes them via <strong>one-hot expansion</strong> internally
+(<a href="../references/">Anderson 2023</a>). The two approaches are equivalent for
+training but diverge at projection time when the raster contains class
+codes the model has not seen during training:</p>
+<ul>
+<li><strong>Java MaxEnt</strong> silently maps unseen codes to a random class,
+  producing arbitrary suitability values at affected cells.</li>
+<li><strong>QMaxent</strong> detects unseen codes via the unified preflight dialog
+  and <strong>auto-masks them to NoData</strong> rather than extrapolating.</li>
+</ul>
+<p>This is the recommended practice
+(<a href="../references/">Elith, Kearney &amp; Phillips 2010</a>) — extrapolation
+beyond the training domain is fundamentally undefined and should be
+flagged, not silently filled in.</p>
+<h2 id="bias-correction">Bias correction<a class="headerlink" href="#bias-correction" title="Permanent link">&para;</a></h2>
+<p>When occurrences are spatially clustered (e.g. road-bias, citizen-
+science clusters), the model fits the <em>bias surface</em> as well as the
+species' habitat preference. Two complementary corrections exist:</p>
+<ul>
+<li><strong>Sample-weight down-weighting</strong> (<a href="../references/">Phillips et al. 2009</a>)
+  — applies fractional weights to clustered presences. QMaxent
+  implements this as the <em>Down-weight spatially clustered points</em> option.</li>
+<li><strong>External KDE bias raster</strong> — a raster representing the survey
+  effort, used as an explicit covariate. Not implemented in QMaxent
+  v0.1.x; the closest analog is the down-weight option, which performs
+  comparably for many published studies.</li>
+</ul>
+<p>For a more comprehensive treatment, <a href="../references/">Boria et al. 2014</a>
+recommend <strong>spatial thinning</strong> of the presence layer before modeling
+as a complementary step — implementable in QGIS via the <em>NNJoin</em>
+plugin or the standalone <em>spThin</em> tool.</p>
+<h2 id="why-these-choices">Why these choices<a class="headerlink" href="#why-these-choices" title="Permanent link">&para;</a></h2>
+<p>The defaults assembled in QMaxent are the union of (a) what the
+benchmark literature shows works well across many species and study
+areas, and (b) what minimises the silent-failure modes documented in
+<a href="../references/">Roberts et al. 2017</a>, <a href="../references/">Araújo et al. 2019</a>,
+and <a href="../references/">Elith, Kearney &amp; Phillips 2010</a>. Diverging from
+them is sometimes the right move for a specific study; the
+<a href="../examples/pitta-nympha/">Pitta nympha worked example</a> shows what that
+looks like for the LQH/RM=4 fixed-hyperparameter setting of
+<a href="../references/">Lee et al. 2025</a>.</p>
 
 
 

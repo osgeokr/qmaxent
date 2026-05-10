@@ -1193,10 +1193,10 @@
 
 
 <h1 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h1>
-<p>QMaxent installs as a regular QGIS plugin. After the plugin itself is in place,
-a one-time dependency setup downloads the Python libraries Maxent needs into
-an isolated virtual environment that does not affect your system Python or
-QGIS itself.</p>
+<p>QMaxent installs as a regular QGIS plugin. After the plugin itself is in
+place, a one-time dependency setup downloads the Python libraries Maxent
+needs into an isolated virtual environment that does not affect your
+system Python or QGIS itself.</p>
 <h2 id="system-requirements">System requirements<a class="headerlink" href="#system-requirements" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>QGIS</strong> 3.44 LTR or later</li>
@@ -1206,11 +1206,12 @@ QGIS itself.</p>
     dependencies; routine model fitting and projection run fully offline.</li>
 </ul>
 <h2 id="install-from-the-qgis-plugin-repository">Install from the QGIS Plugin Repository<a class="headerlink" href="#install-from-the-qgis-plugin-repository" title="Permanent link">&para;</a></h2>
-<p>QMaxent is published on the <a href="https://plugins.qgis.org/plugins/qmaxent/">official QGIS Plugin Repository</a>.</p>
+<p>QMaxent is published on the
+<a href="https://plugins.qgis.org/plugins/qmaxent/">official QGIS Plugin Repository</a>.</p>
 <ol>
 <li>Open QGIS and choose <strong>Plugins → Manage and Install Plugins…</strong></li>
-<li>In the <strong>All</strong> tab, type <code>qmaxent</code> in the search box. The plugin appears
-    in the result list.</li>
+<li>In the <strong>All</strong> tab, type <code>qmaxent</code> in the search box. The plugin
+    appears in the result list.</li>
 <li>Click <strong>Install Plugin</strong>.</li>
 </ol>
 <p>Once installed, three entry points appear under <strong>Plugins → QMaxent</strong>:</p>
@@ -1233,27 +1234,28 @@ QGIS itself.</p>
 </tr>
 <tr>
 <td><strong>Download Example Dataset</strong></td>
-<td>Bundled SDM datasets for tutorials (covered in <em>Example datasets</em>)</td>
+<td>Bundled SDM datasets for tutorials (see <em>Example datasets</em>)</td>
 </tr>
 </tbody>
 </table>
 <h2 id="verifying-the-installation">Verifying the installation<a class="headerlink" href="#verifying-the-installation" title="Permanent link">&para;</a></h2>
-<p>Choose <strong>Plugins → QMaxent → QMaxent Dependencies</strong>. If the dialog opens, the
-plugin is correctly installed. The <strong>Environment Status</strong> banner will most
-likely read <em>Dependencies not installed</em> the first time — that is expected and
-is dealt with in the next chapter.</p>
+<p>Choose <strong>Plugins → QMaxent → QMaxent Dependencies</strong>. If the dialog opens,
+the plugin is correctly installed. The <strong>Environment Status</strong> banner will
+most likely read <em>Dependencies not installed</em> the first time — that is
+expected and is dealt with in the next chapter.</p>
 <h2 id="updating-to-a-newer-version">Updating to a newer version<a class="headerlink" href="#updating-to-a-newer-version" title="Permanent link">&para;</a></h2>
 <p>When a new release ships, the QGIS Plugin Manager will mark QMaxent as
 upgradable. Click <strong>Upgrade Plugin</strong> in the <strong>Installed</strong> tab. Dependencies
-generally do not need to be reinstalled across patch releases (0.1.x → 0.1.y);
-QMaxent will alert you in the <strong>Dependencies</strong> dialog if anything has changed.</p>
+generally do not need to be reinstalled across patch releases (0.1.x →
+0.1.y); QMaxent will alert you in the <strong>Dependencies</strong> dialog if anything
+has changed.</p>
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
 <details class="warning">
 <summary>QMaxent does not appear in the search results</summary>
 <p>Make sure your QGIS version is 3.44 or later (<code>Help → About QGIS</code>).
 On older versions QMaxent is filtered out as incompatible. Also confirm
-the <strong>Show experimental plugins</strong> option in <strong>Settings</strong> is set to your
-preference — QMaxent's stable releases do not require it.</p>
+the <strong>Show experimental plugins</strong> option in <strong>Settings</strong> is set to
+your preference — QMaxent's stable releases do not require it.</p>
 </details>
 <details class="warning">
 <summary>Plugin installs but the menu entry does not appear</summary>
@@ -1262,11 +1264,13 @@ entries from new plugins to register.</p>
 </details>
 <details class="warning">
 <summary>Corporate proxy or restricted network</summary>
-<p>The plugin install itself uses QGIS's network stack and respects QGIS's
-proxy settings. The dependency installer (next chapter) downloads from
-<a href="https://pypi.org">PyPI</a>; if your organisation blocks PyPI, ask your
-network administrator to allow <code>pypi.org</code> and <code>files.pythonhosted.org</code>.</p>
+<p>The plugin install itself uses QGIS's network stack and respects
+QGIS's proxy settings. The dependency installer (next chapter)
+downloads from <a href="https://pypi.org">PyPI</a>; if your organisation blocks
+PyPI, ask your network administrator to allow <code>pypi.org</code> and
+<code>files.pythonhosted.org</code>.</p>
 </details>
+<p>Once installed, continue to <a href="../dependencies/">Dependencies</a>.</p>
 
 
 

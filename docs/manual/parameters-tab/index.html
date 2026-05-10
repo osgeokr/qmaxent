@@ -703,71 +703,23 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Feature Types">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#auto-recommended" class="md-nav__link">
-    <span class="md-ellipsis">
-      Auto (recommended)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#manual-selection" class="md-nav__link">
-    <span class="md-ellipsis">
-      Manual selection
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
-  <a href="#regularization" class="md-nav__link">
+  <a href="#regularization-multiplier" class="md-nav__link">
     <span class="md-ellipsis">
-      Regularization
+      Regularization multiplier
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#advanced" class="md-nav__link">
+  <a href="#spatial-cross-validation" class="md-nav__link">
     <span class="md-ellipsis">
-      Advanced
+      Spatial cross-validation
     </span>
   </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#spatial-evaluation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Spatial evaluation
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Spatial evaluation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#folds-grid-size-buffer-fix-random-seed" class="md-nav__link">
-    <span class="md-ellipsis">
-      Folds, Grid size, Buffer, Fix random seed
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -781,9 +733,27 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#output-files" class="md-nav__link">
+  <a href="#output-paths" class="md-nav__link">
     <span class="md-ellipsis">
-      Output Files
+      Output paths
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced options
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next
     </span>
   </a>
   
@@ -1184,71 +1154,23 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Feature Types">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#auto-recommended" class="md-nav__link">
-    <span class="md-ellipsis">
-      Auto (recommended)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#manual-selection" class="md-nav__link">
-    <span class="md-ellipsis">
-      Manual selection
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
-  <a href="#regularization" class="md-nav__link">
+  <a href="#regularization-multiplier" class="md-nav__link">
     <span class="md-ellipsis">
-      Regularization
+      Regularization multiplier
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#advanced" class="md-nav__link">
+  <a href="#spatial-cross-validation" class="md-nav__link">
     <span class="md-ellipsis">
-      Advanced
+      Spatial cross-validation
     </span>
   </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#spatial-evaluation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Spatial evaluation
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Spatial evaluation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#folds-grid-size-buffer-fix-random-seed" class="md-nav__link">
-    <span class="md-ellipsis">
-      Folds, Grid size, Buffer, Fix random seed
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1262,9 +1184,27 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#output-files" class="md-nav__link">
+  <a href="#output-paths" class="md-nav__link">
     <span class="md-ellipsis">
-      Output Files
+      Output paths
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced options
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next
     </span>
   </a>
   
@@ -1297,7 +1237,9 @@ and when to override the default.</p>
 <p><img alt="Parameters tab with default settings" src="../images/ui/dock-2-parameters-defaults.png" /></p>
 <h2 id="feature-types">Feature Types<a class="headerlink" href="#feature-types" title="Permanent link">&para;</a></h2>
 <p>Maxent's "features" are the basis functions it uses to express the response
-of suitability to each environmental variable. The five classes (LQPHT) are:</p>
+of suitability to each environmental variable
+(<a href="../references/">Phillips, Anderson &amp; Schapire 2006</a>;
+<a href="../references/">Phillips et al. 2017</a>). The five classes (LQPHT) are:</p>
 <table>
 <thead>
 <tr>
@@ -1309,226 +1251,147 @@ of suitability to each environmental variable. The five classes (LQPHT) are:</p>
 <tbody>
 <tr>
 <td><strong>Linear</strong></td>
-<td><code>bio1</code></td>
+<td><code>L</code></td>
 <td>Monotonic linear response</td>
 </tr>
 <tr>
 <td><strong>Quadratic</strong></td>
-<td><code>bio1²</code></td>
-<td>Optimum-shaped response</td>
-</tr>
-<tr>
-<td><strong>Hinge</strong></td>
-<td><code>max(0, bio1 - threshold)</code></td>
-<td>Piecewise linear; very flexible</td>
+<td><code>Q</code></td>
+<td>Optimum-shaped (∩) or U-shaped (∪) response</td>
 </tr>
 <tr>
 <td><strong>Product</strong></td>
-<td><code>bio1 × bio7</code></td>
-<td>Pairwise interactions</td>
+<td><code>P</code></td>
+<td>Pairwise interactions between two variables</td>
+</tr>
+<tr>
+<td><strong>Hinge</strong></td>
+<td><code>H</code></td>
+<td>Piecewise-linear "kink" — sharp changes at threshold values</td>
 </tr>
 <tr>
 <td><strong>Threshold</strong></td>
-<td><code>1[bio1 &gt; threshold]</code></td>
-<td>Step response</td>
+<td><code>T</code></td>
+<td>Step-function — a hard cut-off at some value</td>
 </tr>
 </tbody>
 </table>
-<h3 id="auto-recommended">Auto (recommended)<a class="headerlink" href="#auto-recommended" title="Permanent link">&para;</a></h3>
-<p>The default. QMaxent uses the <strong>maxnet auto-rule</strong> — the same rule the R
-<code>maxnet</code> package uses — to enable subsets of LQPHT based on the number of
-presence points:</p>
-<table>
-<thead>
-<tr>
-<th>Presence count</th>
-<th>Features enabled</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>≥ 80</td>
-<td>All five (LQPHT)</td>
-</tr>
-<tr>
-<td>15–79</td>
-<td>LQH (no Product or Threshold)</td>
-</tr>
-<tr>
-<td>10–14</td>
-<td>LQ</td>
-</tr>
-<tr>
-<td>&lt; 10</td>
-<td>L only</td>
-</tr>
-</tbody>
-</table>
-<p>This conservative scaling prevents overfitting on small datasets. For most
-studies — including the 116-point Bradypus example — the default is exactly
-what published practice recommends (Radosavljevic &amp; Anderson 2014).</p>
-<h3 id="manual-selection">Manual selection<a class="headerlink" href="#manual-selection" title="Permanent link">&para;</a></h3>
-<p>Select <strong>Manual selection</strong> to enable / disable any combination of LQPHT
-yourself. Useful when you want to:</p>
+<p>QMaxent offers two modes:</p>
 <ul>
-<li><strong>Reproduce another publication</strong> that used a specific feature subset.</li>
-<li><strong>Diagnose overfitting</strong>: turning off Hinge and Threshold often produces
-    smoother response curves at the cost of some AUC.</li>
-<li><strong>Run sensitivity analyses</strong> to understand which feature classes drive
-    your predictions.</li>
+<li><strong>Auto</strong> (default) — applies the
+  <a href="../references/">Phillips &amp; Dudík 2008</a> sample-size rule used by maxnet:
+  <em>L only</em> for ≤10 presences, <em>L+Q</em> for ≤30, <em>L+Q+H</em> for ≤80, and <em>L+Q+P+H+T</em>
+  above 80. This is the <strong>single most extensively benchmarked rule in the
+  Maxent literature</strong> and is the safe default.</li>
+<li><strong>Manual</strong> — pick any subset of LQPHT explicitly. Useful only when you
+  are reproducing a published study that fixed a particular feature
+  combination (e.g. the <a href="../examples/pitta-nympha/">Pitta nympha example</a>
+  fixes feature classes to <strong>LQH</strong> to match Lee et al. 2025).</li>
 </ul>
-<h2 id="regularization">Regularization<a class="headerlink" href="#regularization" title="Permanent link">&para;</a></h2>
-<p>Regularization controls how strongly Maxent shrinks coefficients toward
-zero — directly trading variance for bias. The <strong>multiplier</strong> scales the
-default regularization; values &gt; 1 produce smoother, simpler models, values
-&lt; 1 fit more closely.</p>
-<table>
-<thead>
-<tr>
-<th>Multiplier</th>
-<th>Effect</th>
-<th>When to use</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>0.5</strong></td>
-<td>More flexible, higher AUC, higher overfit risk</td>
-<td>Only if you have a strong reason and a large CV-based sanity check</td>
-</tr>
-<tr>
-<td><strong>1.0</strong> <em>(default)</em></td>
-<td>Standard Maxent regularization</td>
-<td>Most studies</td>
-</tr>
-<tr>
-<td><strong>2.0–4.0</strong></td>
-<td>Smoother responses, better extrapolation</td>
-<td>Small datasets, projection across wide environmental gradients</td>
-</tr>
-</tbody>
-</table>
-<p>If you are unsure, leave it at 1.0 and check the cross-validated AUC. A
-much-higher <em>training</em> AUC than <em>CV</em> AUC suggests overfitting and rewards
-trying a larger multiplier.</p>
-<h2 id="advanced">Advanced<a class="headerlink" href="#advanced" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Control</th>
-<th>Default</th>
-<th>Notes</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Hinge knots</strong></td>
-<td>50</td>
-<td>Number of knot points for hinge features. Rarely needs changing.</td>
-</tr>
-<tr>
-<td><strong>Threshold knots</strong></td>
-<td>50</td>
-<td>Same for threshold features.</td>
-</tr>
-<tr>
-<td><strong>Add presences to background</strong></td>
-<td>✓ on</td>
-<td>Following Phillips et al. (2017): including presences in the background sample is statistically the more correct formulation.</td>
-</tr>
-<tr>
-<td><strong>Down-weight spatially clustered points</strong></td>
-<td>off</td>
-<td>Enable for surveys with strong spatial sampling bias (e.g. roadside observations). Implements the distance-weight bias correction from Phillips et al. (2009).</td>
-</tr>
-</tbody>
-</table>
-<h2 id="spatial-evaluation">Spatial evaluation<a class="headerlink" href="#spatial-evaluation" title="Permanent link">&para;</a></h2>
-<p>This is the single most important academic decision in the dialog: how the
-model's predictive performance is measured. QMaxent offers five methods.</p>
-<p><img alt="Spatial evaluation method drop-down showing all five options" src="../images/ui/dock-2-parameters-cv-dropdown.png" /></p>
+<div class="admonition tip">
+<p class="admonition-title">When in doubt, leave it on Auto</p>
+<p>Repeatedly tuning feature classes without spatially-blocked CV is the
+primary source of optimistic AUCs flagged by
+<a href="../references/">Roberts et al. 2017</a>. The auto rule sidesteps that
+failure mode entirely.</p>
+</div>
+<h2 id="regularization-multiplier">Regularization multiplier<a class="headerlink" href="#regularization-multiplier" title="Permanent link">&para;</a></h2>
+<p>Maxent fits a <em>regularized</em> maximum-entropy distribution — the regularization
+multiplier (RM) controls how strongly the fit is penalised for complexity.
+- <strong>RM = 1</strong> (default) — the value
+  <a href="../references/">Phillips &amp; Dudík 2008</a> showed yields the best held-out
+  AUC across the full Maxent benchmark.
+- <strong>RM &gt; 1</strong> (e.g. 2–4) — smoother responses, less over-fit, lower
+  training AUC but often higher CV AUC. Use when occurrences are small
+  in number, spatially clustered, or biased.
+- <strong>RM &lt; 1</strong> — only justified by a formal hyperparameter search such as
+  ENMeval (<a href="../references/">Muscarella et al. 2014</a>) or Wallace
+  (<a href="../references/">Kass et al. 2018</a>).</p>
+<h2 id="spatial-cross-validation">Spatial cross-validation<a class="headerlink" href="#spatial-cross-validation" title="Permanent link">&para;</a></h2>
+<p>A drop-down picks the spatial CV scheme used to split presences into
+folds:</p>
 <table>
 <thead>
 <tr>
 <th>Method</th>
-<th>Recommended for</th>
+<th>Best for</th>
 <th>Reference</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>None</strong></td>
-<td>Quick sanity checks only — no held-out evaluation</td>
-<td>—</td>
-</tr>
-<tr>
-<td><strong>Geographic K-Fold</strong> <em>(default)</em></td>
-<td>General use; ≥ 25 presences</td>
-<td>Anderson 2023</td>
+<td><strong>Geographic K-Fold</strong> (default)</td>
+<td>General-purpose</td>
+<td><a href="../references/">Roberts et al. 2017</a></td>
 </tr>
 <tr>
 <td><strong>Random K-Fold</strong></td>
-<td>Reproducing classic Maxent papers</td>
-<td>Phillips 2006</td>
+<td>Reproducing studies that used random splits</td>
+<td><a href="../references/">Phillips et al. 2017</a></td>
 </tr>
 <tr>
 <td><strong>Checkerboard</strong></td>
-<td>Single deterministic split with spatial structure</td>
-<td>Muscarella 2014 (ENMeval)</td>
+<td>Strong spatial autocorrelation in presences</td>
+<td><a href="../references/">Muscarella et al. 2014</a></td>
 </tr>
 <tr>
-<td><strong>Buffered LOO</strong></td>
-<td>Small datasets (≤ 25 presences)</td>
-<td>Pearson 2007; Ploton 2020</td>
+<td><strong>Buffered Leave-One-Out</strong></td>
+<td>Very small datasets (n &lt; 30)</td>
+<td><a href="../references/">Hijmans 2012</a>; <a href="../references/">Valavi et al. 2019</a></td>
 </tr>
 </tbody>
 </table>
-<p>Why default to <strong>Geographic K-Fold</strong> rather than Random? When presences are
-spatially autocorrelated — which is almost always — random folds let
-training and test points sit next to each other and inflate AUC by a wide
-margin (Roberts 2017). Geographic folds force test sets to be spatially
-separated from training sets and yield much more honest performance
-estimates. See <a href="../methodological-background/">Methodological background</a> for
-the deeper discussion.</p>
-<h3 id="folds-grid-size-buffer-fix-random-seed">Folds, Grid size, Buffer, Fix random seed<a class="headerlink" href="#folds-grid-size-buffer-fix-random-seed" title="Permanent link">&para;</a></h3>
-<p>These four numeric inputs are conditionally enabled depending on the chosen
-method:</p>
-<ul>
-<li><strong>Folds</strong>: how many splits for K-Fold methods. 5 (default) balances bias
-    and variance for most datasets.</li>
-<li><strong>Grid size</strong>: cell size for Checkerboard, in the rasters' units. Match it
-    to the typical separation between presences.</li>
-<li><strong>Buffer</strong>: exclusion radius around each held-out presence in Buffered
-    LOO, in metres. 50 km is a sensible default for terrestrial vertebrates;
-    use a finer or coarser value depending on dispersal distance.</li>
-<li><strong>Fix random seed</strong> <em>(checkbox + value)</em>: enable for reproducibility.
-    QMaxent uses the seed for fold construction and background sampling, so
-    re-running with the same seed gives bitwise-identical results.</li>
-</ul>
+<p><img alt="CV-method drop-down expanded" src="../images/ui/dock-2-parameters-cv-dropdown.png" /></p>
+<p>The default <strong>Geographic K-Fold (k = 5, fixed seed = 0)</strong> strikes a balance
+recommended by <a href="../references/">Roberts et al. 2017</a>: geographic blocks
+break the spatial-autocorrelation cheating that random K-Fold permits,
+yet keep the held-out folds large enough for a stable AUC.</p>
+<p>The fixed seed makes every run <strong>bit-for-bit reproducible</strong> — a property
+cited as essential by the SDM-best-practice review of
+<a href="../references/">Araújo et al. 2019</a>.</p>
 <h2 id="jackknife-variable-importance">Jackknife variable importance<a class="headerlink" href="#jackknife-variable-importance" title="Permanent link">&para;</a></h2>
-<p>When checked, QMaxent computes the standard Maxent jackknife: for each
-variable it fits two extra models (with <strong>only</strong> that variable, and <strong>without</strong>
-that variable) and reports the resulting AUCs. This produces the
-characteristic per-variable bar plot (see <a href="../results-tab/">④ Results tab</a>)
-and adds a Jackknife sheet to the results XLSX.</p>
-<p>For models with many variables this multiplies training time roughly by
-<code>2 × (number of variables) + 1</code>, but for the typical case of &lt; 15 variables
-the extra cost is small enough that we leave it on by default.</p>
-<h2 id="output-files">Output Files<a class="headerlink" href="#output-files" title="Permanent link">&para;</a></h2>
-<p>Two files are written when you run the model:</p>
+<p>When the <strong>Jackknife</strong> checkbox is on, QMaxent fits 2 × <em>N</em> additional
+single-predictor and leave-one-out models to estimate each variable's
+unique contribution. The cost is roughly <em>2 × N × training time</em>; for the
+Bradypus dataset (9 variables, 116 presences) this adds about 30 seconds.</p>
+<p>Jackknife output is rendered in two places:
+1. The <strong>④ Results → Jackknife Importance</strong> sub-tab as a paired-bar plot.
+2. <strong>Table 4</strong> of the exported XLSX workbook, with all four AUC columns
+   plus computed <em>Train AUC drop</em> and <em>Test AUC drop</em>.</p>
+<p>The interpretation follows the original
+<a href="../references/">Phillips, Anderson &amp; Schapire 2006</a> reading: "with-only"
+bars show univariate signal; "without" bars show how dependent the full
+model is on each variable.</p>
+<h2 id="output-paths">Output paths<a class="headerlink" href="#output-paths" title="Permanent link">&para;</a></h2>
+<p>Two file paths default to a <code>qmaxent_output/</code> subdirectory of the current
+QGIS project:</p>
 <ul>
-<li><strong>Model (.pkl)</strong>: the serialized trained Maxent model (the elapid
-    <code>MaxentModel</code> instance via Python pickle). Reload it from the
-    <a href="../data-tab/">① Data tab</a>. See <a href="../saving-models/">Saving and reusing models</a>
-    for the security note on pickle.</li>
-<li><strong>Results XLSX</strong>: a multi-sheet Excel workbook capturing experimental
-    setup, variable inventory, cross-validation results, jackknife
-    importance, and (if you run priority sites) the survey-planning output.
-    Format follows the academic-paper Supplementary Table convention. See
-    <a href="../exporting-results/">Exporting results</a>.</li>
+<li><strong>Model file (.pkl)</strong> — the serialised trained model, reloadable from
+  the Data tab. See <a href="../saving-models/">Saving and reusing models</a> for the
+  security note on Python pickle files.</li>
+<li><strong>Results workbook (.xlsx)</strong> — multi-sheet supplementary table. See
+  <a href="../exporting-results/">Exporting results</a> for the sheet-by-sheet layout.</li>
 </ul>
-<p>Both paths default to a <code>qmaxent_output</code> folder under your home directory,
-but you can browse to any writeable location.</p>
+<p>Clear either field to <strong>skip writing that file</strong>. The model object remains
+in memory for the rest of the session even when not saved to disk.</p>
+<h2 id="advanced-options">Advanced options<a class="headerlink" href="#advanced-options" title="Permanent link">&para;</a></h2>
+<p>A collapsible <strong>Advanced</strong> section exposes:</p>
+<ul>
+<li><strong>Background sample seed</strong> — separate from the CV seed, this fixes the
+  pseudo-random draw of background points so the same study is reproducible
+  even when the user changes the CV scheme.</li>
+<li><strong>Down-weight spatially clustered points</strong> — applies the
+  <a href="../references/">Phillips et al. 2009</a> sample-bias correction by giving
+  duplicates and very-near-duplicate occurrences less weight in the
+  likelihood. Recommended whenever the presence layer was assembled from
+  ad-hoc records (museum specimens, citizen-science sightings, etc.).</li>
+<li><strong>Add presences to background</strong> — on by default, matching Java MaxEnt
+  convention. Required for the Maxent likelihood to be well-defined
+  (<a href="../references/">Phillips &amp; Dudík 2008</a>).</li>
+</ul>
+<h2 id="next">Next<a class="headerlink" href="#next" title="Permanent link">&para;</a></h2>
+<p>When everything is configured, click <strong>▶ Run Maxent</strong> at the dock footer.
+Focus shifts to the <a href="../training-tab/">③ Training tab</a>.</p>
 
 
 
