@@ -1,0 +1,34 @@
+/* Styling for the locale-aware PDF download button. The button lives
+   in the Material header and is injected by pdf-download.js. */
+.qmaxent-pdf-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0 0.6rem;
+  margin: 0 0.2rem;
+  height: 2.4rem;
+  border-radius: 0.2rem;
+  text-decoration: none;
+  color: inherit;
+  font-size: 0.7rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color 120ms ease;
+}
+
+.qmaxent-pdf-link:hover,
+.qmaxent-pdf-link:focus {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.qmaxent-pdf-link svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+}
+
+/* Hide the text on narrow screens — keep just the icon. */
+@media (max-width: 60em) {
+  .qmaxent-pdf-link__label { display: none; }
+  .qmaxent-pdf-link { padding: 0 0.4rem; }
+}
