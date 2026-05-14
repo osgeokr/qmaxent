@@ -4,6 +4,11 @@
    workflow and committed alongside the rendered site. */
 (function () {
   function injectPdfButton() {
+    // Idempotency: never inject twice (defense-in-depth in case the
+    // script is loaded more than once or Material's instant navigation
+    // re-fires DOMContentLoaded later).
+    if (document.querySelector(".qmaxent-pdf-link")) { return; }
+
     var headerInner = document.querySelector(".md-header__inner") ||
                       document.querySelector(".md-header");
     if (!headerInner) { return; }
@@ -24,12 +29,14 @@
 
     var link = document.createElement("a");
     link.href = pdfUrl;
-    link.className = "md-header__button md-icon qmaxent-pdf-link";
+    // Note: do NOT include `md-header__button` — that class forces an
+    // icon-sized square box that crops the text label.
+    link.className = "qmaxent-pdf-link";
     link.title = label;
     link.setAttribute("aria-label", label);
     link.setAttribute("download", pdfFile);
     link.innerHTML =
-      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">' +
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">' +
         '<path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 ' +
         '2 2h12a2 2 0 0 0 2-2V8l-6-6Zm-1 7V3.5L18.5 9H13Zm-1 4v6l-2.5-2.5' +
         'L9 18l4 4 4-4-1.5-1.5L13 19v-6h-1Z"/>' +

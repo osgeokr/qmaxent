@@ -1,17 +1,21 @@
 /* Styling for the locale-aware PDF download button. The button lives
-   in the Material header and is injected by pdf-download.js. */
+   in the Material header (.md-header__inner) and is injected by
+   pdf-download.js. */
+
 .qmaxent-pdf-link {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  align-self: center;            /* center vertically within Material header */
   gap: 0.4rem;
-  padding: 0 0.6rem;
+  padding: 0.35rem 0.7rem;
   margin: 0 0.2rem;
-  height: 2.4rem;
   border-radius: 0.2rem;
   text-decoration: none;
   color: inherit;
   font-size: 0.7rem;
   font-weight: 500;
+  line-height: 1;
   white-space: nowrap;
   transition: background-color 120ms ease;
 }
@@ -22,13 +26,13 @@
 }
 
 .qmaxent-pdf-link svg {
-  width: 1.1rem;
-  height: 1.1rem;
+  width: 1.05rem;
+  height: 1.05rem;
   flex-shrink: 0;
 }
 
-/* Hide the text on narrow screens — keep just the icon. */
+/* Narrow viewports: keep just the icon. */
 @media (max-width: 60em) {
   .qmaxent-pdf-link__label { display: none; }
-  .qmaxent-pdf-link { padding: 0 0.4rem; }
+  .qmaxent-pdf-link { padding: 0.35rem 0.45rem; }
 }
