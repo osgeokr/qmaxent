@@ -1,14 +1,5 @@
+{# Theme override placeholder. CSS and JS are loaded via extra_css /
+   extra_javascript in mkdocs.yml, so this file intentionally adds
+   nothing on top of the base Material template. Kept around as a hook
+   for future overrides. #}
 {% extends "base.html" %}
-
-{# Inject a small "Download PDF" button next to the GitHub icon. The
-   actual filename is decided client-side based on whether the visitor
-   is browsing the EN root or the /ko/ subtree — see pdf-download.js. #}
-{% block content %}
-  {{ super() }}
-{% endblock %}
-
-{% block extrahead %}
-  {{ super() }}
-  <link rel="stylesheet" href="{{ 'stylesheets/pdf-download.css' | url }}">
-  <script defer src="{{ 'javascripts/pdf-download.js' | url }}"></script>
-{% endblock %}
