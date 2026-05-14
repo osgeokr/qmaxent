@@ -1,0 +1,82 @@
+# PDF-only build for the Korean manual.
+# Run with (after copying images/stylesheets into docs/ko/):
+#   ENABLE_PDF_EXPORT=1 mkdocs build -f manual/mkdocs.pdf.ko.yml
+# Inherits everything from mkdocs.yml, then swaps docs_dir to the KO tree
+# and strips the i18n plugin (incompatible with mkdocs-with-pdf).
+
+INHERIT: mkdocs.yml
+
+site_name: "QMaxent 매뉴얼"
+site_description: "QGIS용 Maxent 종 분포 모델링 플러그인 QMaxent 사용자 매뉴얼"
+
+docs_dir: docs/ko
+site_dir: ../.pdf-build-ko
+
+theme:
+  name: material
+  language: ko
+  logo: images/logo.png
+  favicon: images/logo.png
+  custom_dir: overrides
+  palette:
+    - scheme: default
+      primary: custom
+      accent: custom
+  features:
+    - navigation.sections
+    - toc.follow
+
+exclude_docs: |
+  images/_inbox/
+
+plugins:
+  - search
+  - with-pdf:
+      enabled_if_env: ENABLE_PDF_EXPORT
+      output_path: ../docs/manual/qmaxent-manual-ko.pdf
+      cover_logo: images/logo.png
+      custom_template_path: pdf_templates
+      cover_title: "QMaxent — 매뉴얼"
+      cover_subtitle: "QGIS에서 끝내는 Maxent 종 분포 모델링"
+      author: "유병혁 (Byeong-Hyeok Yu)"
+      copyright: "© 2026 Byeong-Hyeok Yu · MIT License"
+      toc_title: "목차"
+      heading_shift: false
+      ordered_chapter_level: 2
+      two_columns_level: 0
+      render_js: false
+      verbose: false
+      debug_html: false
+
+# Nav uses KO labels but the same file paths as the EN build, since
+# docs/ko/ mirrors docs/ one-for-one.
+nav:
+  - 홈: index.md
+  - 시작하기:
+      - 소개: introduction.md
+      - 설치: installation.md
+      - 의존성 관리: dependencies.md
+      - 예제 데이터: example-datasets.md
+      - 빠른 시작: quick-start.md
+  - 사용 가이드:
+      - Analysis 도크: analysis-dock.md
+      - "① 데이터 탭": data-tab.md
+      - "② 파라미터 탭": parameters-tab.md
+      - "③ 학습 탭": training-tab.md
+      - "④ 결과 탭": results-tab.md
+      - "⑤ 우선조사 후보지": priority-sites.md
+      - 모델 저장 및 재사용: saving-models.md
+      - 결과 내보내기: exporting-results.md
+  - 실전 예제:
+      - 개요: examples/index.md
+      - "Bradypus variegatus": examples/bradypus.md
+      - "Ariolimax": examples/ariolimax.md
+      - "Pitta nympha": examples/pitta-nympha.md
+  - 참고:
+      - 방법론 해설: methodological-background.md
+      - 참고문헌: references.md
+      - FAQ: faq.md
+
+extra_css:
+  - stylesheets/qmaxent.css
+  - stylesheets/pdf.css

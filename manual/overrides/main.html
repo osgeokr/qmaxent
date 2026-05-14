@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{# Inject a small "Download PDF" button next to the GitHub icon. The
+   actual filename is decided client-side based on whether the visitor
+   is browsing the EN root or the /ko/ subtree — see pdf-download.js. #}
+{% block content %}
+  {{ super() }}
+{% endblock %}
+
+{% block extrahead %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ 'stylesheets/pdf-download.css' | url }}">
+  <script defer src="{{ 'javascripts/pdf-download.js' | url }}"></script>
+{% endblock %}

@@ -1,0 +1,26 @@
+{#
+  QMaxent cover page template (custom override for mkdocs-with-pdf).
+  Uses a plain <img> instead of background-image so WeasyPrint renders
+  the logo reliably without depending on flexbox height resolution.
+#}
+<article id="doc-cover">
+    {% if cover_logo is defined %}
+        <div class="qm-cover-logo">
+            <img src="{{ cover_logo | to_url }}" alt="QMaxent">
+        </div>
+    {% endif %}
+
+    <div class="qm-cover-title">
+        <h1>{{ cover_title | e }}</h1>
+        <h2>{{ cover_subtitle | e }}</h2>
+    </div>
+
+    <div class="qm-cover-meta">
+        {% if author is defined %}
+            <p class="qm-cover-author">{{ author | e }}</p>
+        {% endif %}
+        {% if copyright is defined %}
+            <p class="qm-cover-copyright">{{ copyright | e }}</p>
+        {% endif %}
+    </div>
+</article>

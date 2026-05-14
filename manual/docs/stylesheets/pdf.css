@@ -1,0 +1,247 @@
+/* ------------------------------------------------------------------
+   QMaxent — print stylesheet (mkdocs-with-pdf / WeasyPrint)
+   Used only by mkdocs.pdf.{en,ko}.yml. Pulls the same brand palette
+   as qmaxent.css so the PDF and the live site share a visual identity.
+------------------------------------------------------------------ */
+
+:root {
+  /* Brand palette — kept in sync with manual/docs/stylesheets/qmaxent.css. */
+  --qm-teal:        #3A7E94;
+  --qm-teal-dark:   #275C70;
+  --qm-teal-light:  #5A9EAF;
+  --qm-orange:      #E68A2C;
+  --qm-orange-soft: rgba(230, 138, 44, 0.10);
+  --qm-cream:       #FBF7E8;
+  --qm-cream-soft:  #F5EFDC;
+
+  --qm-ink:         #1f2937;
+  --qm-muted:       #6b7280;
+  --qm-rule:        #d8e2e6;
+}
+
+/* ------------------------- Page chrome --------------------------- */
+
+@page {
+  size: A4;
+  margin: 22mm 18mm 22mm 18mm;
+
+  @top-left {
+    content: "QMaxent — Manual";
+    font-family: "Noto Sans", "Inter", "Noto Sans CJK KR", sans-serif;
+    font-size: 8pt;
+    color: var(--qm-teal-dark);
+  }
+  @top-right {
+    content: counter(page) " / " counter(pages);
+    font-family: "Noto Sans", "Inter", "Noto Sans CJK KR", sans-serif;
+    font-size: 8pt;
+    color: var(--qm-teal-dark);
+  }
+  @bottom-center {
+    content: "© 2026 Byeong-Hyeok Yu · MIT License";
+    font-family: "Noto Sans", "Inter", "Noto Sans CJK KR", sans-serif;
+    font-size: 7.5pt;
+    color: var(--qm-muted);
+  }
+}
+
+/* Cover page strips header/footer. */
+@page :first {
+  @top-left   { content: ""; }
+  @top-right  { content: ""; }
+  @bottom-center { content: ""; }
+}
+
+/* --------------------- Body typography --------------------------- */
+
+html, body, .md-typeset {
+  font-family:
+    "Noto Sans", "Inter",
+    "Noto Sans CJK KR", "Noto Sans KR",
+    "Apple SD Gothic Neo", "Malgun Gothic",
+    system-ui, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.55;
+  color: var(--qm-ink);
+}
+
+code, pre, .md-typeset code {
+  font-family: "JetBrains Mono", "Noto Sans Mono CJK KR", monospace;
+  font-size: 9pt;
+}
+
+.md-typeset code {
+  background: var(--qm-cream-soft);
+  border-radius: 3px;
+  padding: 0 0.25em;
+}
+
+.md-typeset a {
+  color: var(--qm-teal-dark);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--qm-teal-light);
+}
+
+/* --------------------- Headings (brand teal) --------------------- */
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4 {
+  page-break-after: avoid;
+  break-after: avoid;
+  font-weight: 600;
+  color: var(--qm-teal-dark);
+}
+
+.md-typeset h1 {
+  font-size: 22pt;
+  margin-top: 0;
+  padding-bottom: 0.3em;
+  border-bottom: 2pt solid var(--qm-teal);
+  page-break-before: always;
+  break-before: page;
+}
+
+.md-typeset h2 {
+  font-size: 15pt;
+  margin-top: 1.4em;
+  padding-bottom: 0.15em;
+  border-bottom: 0.5pt solid var(--qm-rule);
+  color: var(--qm-teal);
+}
+
+.md-typeset h3 {
+  font-size: 12.5pt;
+  color: var(--qm-teal);
+}
+
+/* ----------------------- Block elements -------------------------- */
+
+.md-typeset table,
+.md-typeset pre,
+.md-typeset figure {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.md-typeset table:not([class]) {
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 9.5pt;
+}
+.md-typeset table:not([class]) th {
+  background: var(--qm-teal);
+  color: white;
+  padding: 0.4em 0.6em;
+  text-align: left;
+}
+.md-typeset table:not([class]) td {
+  border-bottom: 0.5pt solid var(--qm-rule);
+  padding: 0.4em 0.6em;
+}
+
+.md-typeset img {
+  max-width: 100%;
+  height: auto;
+  page-break-inside: avoid;
+}
+
+/* Admonition: subtle accent stripe in brand orange. */
+.md-typeset .admonition {
+  border-left: 3pt solid var(--qm-orange);
+  background: var(--qm-orange-soft);
+  border-radius: 4px;
+  padding: 0.6em 0.9em;
+  margin: 1em 0;
+}
+.md-typeset .admonition-title {
+  font-weight: 600;
+  color: var(--qm-teal-dark);
+  margin-bottom: 0.3em;
+}
+
+/* Drop on-screen chrome. */
+.md-header, .md-tabs, .md-sidebar, .md-footer, .md-search { display: none; }
+
+/* ============================ COVER ============================== */
+
+/* Use a simple block layout rather than flex/vh — both are quirky under
+   WeasyPrint pagination. Each block is sized in absolute units (mm). */
+#doc-cover {
+  text-align: center;
+  background: var(--qm-cream);
+  /* Soft cream wash that fades toward white above the title. */
+  background-image:
+    linear-gradient(180deg, var(--qm-cream) 0%, #ffffff 60%);
+  padding: 0 22mm;
+}
+
+#doc-cover .qm-cover-logo {
+  margin: 38mm 0 8mm 0;
+}
+#doc-cover .qm-cover-logo img {
+  width: 56mm;
+  height: 56mm;
+  object-fit: contain;
+}
+
+#doc-cover .qm-cover-title h1 {
+  font-size: 30pt;
+  line-height: 1.2;
+  color: var(--qm-teal-dark);
+  font-weight: 700;
+  margin: 0 0 4mm 0;
+  border: none;
+  /* Override body H1's forced page-break so the cover stays one page. */
+  page-break-before: avoid;
+  break-before: avoid;
+}
+#doc-cover .qm-cover-title h2 {
+  font-size: 13pt;
+  font-weight: 400;
+  color: var(--qm-teal);
+  margin: 0;
+  border: none;
+}
+
+/* Brand-orange rule under the subtitle. */
+#doc-cover .qm-cover-title h2::after {
+  content: "";
+  display: block;
+  width: 26mm;
+  height: 2pt;
+  background: var(--qm-orange);
+  margin: 7mm auto 0 auto;
+}
+
+/* Author / copyright sit near the bottom of the page. */
+#doc-cover .qm-cover-meta {
+  margin-top: 70mm;
+}
+#doc-cover .qm-cover-author {
+  font-size: 11pt;
+  font-weight: 500;
+  color: var(--qm-teal-dark);
+  margin: 0 0 2mm 0;
+}
+#doc-cover .qm-cover-copyright {
+  font-size: 9pt;
+  color: var(--qm-muted);
+  margin: 0;
+}
+
+/* ====================== Table of contents ======================== */
+
+#doc-toc h1 {
+  page-break-before: auto;
+  border-bottom: 2pt solid var(--qm-teal);
+  color: var(--qm-teal-dark);
+}
+#doc-toc a {
+  border-bottom: none;
+}
+#doc-toc a::after {
+  content: leader('.') target-counter(attr(href), page);
+  color: var(--qm-muted);
+}

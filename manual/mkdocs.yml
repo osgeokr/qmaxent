@@ -51,6 +51,10 @@ theme:
 
 extra_css:
   - stylesheets/qmaxent.css
+  - stylesheets/pdf-download.css
+
+extra_javascript:
+  - javascripts/pdf-download.js
 
 extra:
   social:

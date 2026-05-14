@@ -1,0 +1,39 @@
+# PDF-only build for the English manual.
+# Run with:
+#   ENABLE_PDF_EXPORT=1 mkdocs build -f manual/mkdocs.pdf.en.yml
+# Inherits everything from mkdocs.yml, then strips the i18n plugin
+# (incompatible with mkdocs-with-pdf) and adds with-pdf.
+
+INHERIT: mkdocs.yml
+
+# Throwaway site dir — we only care about the PDF output_path below.
+site_dir: ../.pdf-build-en
+
+# Exclude the Korean translation tree from this build so the EN PDF has no KO pages.
+exclude_docs: |
+  ko/
+  images/_inbox/
+
+# Replace the plugins list (INHERIT replaces, not merges, top-level keys).
+plugins:
+  - search
+  - with-pdf:
+      enabled_if_env: ENABLE_PDF_EXPORT
+      output_path: ../docs/manual/qmaxent-manual-en.pdf
+      cover_logo: images/logo.png
+      custom_template_path: pdf_templates
+      cover_title: "QMaxent — Manual"
+      cover_subtitle: "Maxent species distribution modeling in QGIS"
+      author: "Byeong-Hyeok Yu"
+      copyright: "© 2026 Byeong-Hyeok Yu · MIT License"
+      toc_title: "Table of contents"
+      heading_shift: false
+      ordered_chapter_level: 2
+      two_columns_level: 0
+      render_js: false
+      verbose: false
+      debug_html: false
+
+extra_css:
+  - stylesheets/qmaxent.css
+  - stylesheets/pdf.css
