@@ -61,7 +61,9 @@ priority-sites tool — all without leaving QGIS.
 ## Requirements
 
 - QGIS **3.44** or later.
-- Python 3.9+ (bundled with recent QGIS releases).
+- Python **3.10+** (QGIS 3.44 bundles Python **3.12** on Windows
+  and macOS; Linux distribution installs vary but ship 3.10 or
+  newer for QGIS 3.44).
 - Internet access on first run to install dependencies into an isolated
   virtual environment (~590 MB after full install).
 
