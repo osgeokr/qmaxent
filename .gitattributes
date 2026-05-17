@@ -14,3 +14,89 @@
 *.pkl   binary
 *.tif   binary
 *.tiff  binary
+
+# ----------------------------------------------------------------------
+# QGIS plugin release-ZIP exclusions (from v0.1.8 onward).
+#
+# Files / directories tagged `export-ignore` are excluded by
+# `git archive`, which is the canonical way to build the ZIP uploaded
+# to the QGIS Plugin Repository:
+#
+#     git archive --format=zip --prefix=qmaxent/ HEAD > qmaxent-0.1.8.zip
+#
+# The deployed plugin's runtime only needs:
+#   __init__.py, qmaxent_plugin.py, metadata.txt, LICENSE, README.md,
+#   bridge/, core/, dialogs/, i18n/, icons/, workers/
+#
+# Everything below is GitHub / Zenodo / contributor-facing metadata
+# that does not need to be installed into the user's QGIS profile.
+# ----------------------------------------------------------------------
+
+# Citation, governance, third-party notices.
+CITATION.cff      export-ignore
+NOTICE            export-ignore
+CONTRIBUTING.md   export-ignore
+CODE_OF_CONDUCT.md export-ignore
+.zenodo.json     export-ignore
+
+# Repo plumbing the plugin runtime doesn't need.
+.gitignore        export-ignore
+.gitattributes    export-ignore
+.github/          export-ignore
+
+# Test + dev tooling.
+tests/             export-ignore
+pyproject.toml     export-ignore
+requirements-test.txt export-ignore
+
+# Website + manual sources (the rendered output is served from GitHub
+# Pages — the user's QGIS install does not need the source tree).
+docs/              export-ignore
+manual/            export-ignore
+
+# Repository setup scripts used once at GitHub configuration time.
+github_setup.ps1   export-ignore
+github_setup.sh    export-ignore
+
+# ----------------------------------------------------------------------
+# QGIS plugin release-ZIP exclusions (from v0.1.8 onward).
+#
+# Files / directories tagged `export-ignore` are excluded by
+# `git archive`, which is the canonical way to build the ZIP uploaded
+# to the QGIS Plugin Repository:
+#
+#     git archive --format=zip --prefix=qmaxent/ HEAD > qmaxent-0.1.8.zip
+#
+# The deployed plugin's runtime only needs:
+#   __init__.py, qmaxent_plugin.py, metadata.txt, LICENSE, README.md,
+#   bridge/, core/, dialogs/, i18n/, icons/, workers/
+#
+# Everything below is GitHub / Zenodo / contributor-facing metadata
+# that does not need to be installed into the user's QGIS profile.
+# ----------------------------------------------------------------------
+
+# Citation, governance, third-party notices.
+CITATION.cff           export-ignore
+NOTICE                 export-ignore
+CONTRIBUTING.md        export-ignore
+CODE_OF_CONDUCT.md     export-ignore
+.zenodo.json           export-ignore
+
+# Repo plumbing the plugin runtime doesn't need.
+.gitignore             export-ignore
+.gitattributes         export-ignore
+.github/               export-ignore
+
+# Test + dev tooling.
+tests/                 export-ignore
+pyproject.toml         export-ignore
+requirements-test.txt  export-ignore
+
+# Website + manual sources (the rendered output is served from GitHub
+# Pages — the user's QGIS install does not need the source tree).
+docs/                  export-ignore
+manual/                export-ignore
+
+# Repository setup scripts used once at GitHub configuration time.
+github_setup.ps1       export-ignore
+github_setup.sh        export-ignore
