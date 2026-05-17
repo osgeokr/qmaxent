@@ -23,17 +23,16 @@ keywords:
   - spatial cross-validation
   - habitat suitability
 identifiers:
-  # Concept DOI (all versions). Issued by Zenodo on the first GitHub
-  # release; the value below is a PLACEHOLDER and will be replaced with
-  # the actual DOI just before publication of the accompanying
-  # manuscript (see docs/zenodo-release.md).
+  # Concept DOI (all versions). Always resolves to the latest version on
+  # Zenodo, so this is the right DOI for "cite this software" references
+  # that should track future releases.
   - type: doi
-    value: 10.5281/zenodo.XXXXXXX
+    value: 10.5281/zenodo.20259146
     description: "Concept DOI (all versions) — Zenodo archive of the QMaxent source code."
-  # Version-specific DOI for v0.1.7. Also a PLACEHOLDER, populated once
-  # the v0.1.7 GitHub tag is archived by Zenodo.
+  # Version-specific DOI for v0.1.7. Use this for citations that must
+  # pin a specific, immutable archive state.
   - type: doi
-    value: 10.5281/zenodo.XXXXXXX
+    value: 10.5281/zenodo.20259146
     description: "Version DOI for v0.1.7."
 abstract: >
   QMaxent integrates the elapid Python library into QGIS to provide

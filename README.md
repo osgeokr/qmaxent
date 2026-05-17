@@ -3,7 +3,7 @@
 [![CI](https://github.com/osgeokr/qmaxent/actions/workflows/ci.yml/badge.svg)](https://github.com/osgeokr/qmaxent/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![QGIS plugin](https://img.shields.io/badge/QGIS-3.44%2B-green.svg)](https://plugins.qgis.org/plugins/qmaxent/)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20259146.svg)](https://doi.org/10.5281/zenodo.20259146)
 
 **Species Distribution Modeling with Maxent in QGIS.**
 
@@ -14,13 +14,6 @@ environmental rasters, evaluate it with spatial cross-validation, inspect
 variable importance via jackknife and permutation, project the model to a
 habitat suitability map, and design field surveys with the integrated
 priority-sites tool — all without leaving QGIS.
-
-> The Zenodo DOI badge above is a placeholder until the first GitHub
-> release is archived. The CITATION.cff file is the canonical source
-> for citation metadata and will be updated with the issued DOI when
-> the release is published; see
-> [`docs/zenodo-release.md`](docs/zenodo-release.md) for the release
-> workflow.
 
 ## Features
 
@@ -121,14 +114,13 @@ covariate ordering at projection time.
 ## Citation
 
 If you use QMaxent in your research, please cite the software using
-the metadata below. The DOI placeholder will be replaced with the
-issued value when the corresponding GitHub tag is archived by Zenodo.
+the metadata below.
 
 **Software (CITATION.cff is the canonical source)**
 
 > Yu, B.-H. (2026). *QMaxent: A QGIS plugin for Maxent species
 > distribution modeling* (Version 0.1.7) [Computer software].
-> Zenodo. https://doi.org/10.5281/zenodo.XXXXXXX
+> Zenodo. https://doi.org/10.5281/zenodo.20259146
 
 **BibTeX**
 
@@ -139,7 +131,7 @@ issued value when the corresponding GitHub tag is archived by Zenodo.
   version = {0.1.7},
   date    = {2026-05-16},
   url     = {https://github.com/osgeokr/qmaxent},
-  doi     = {10.5281/zenodo.XXXXXXX},
+  doi     = {10.5281/zenodo.20259146},
   license = {MIT}
 }
 ```
@@ -206,8 +198,4 @@ All participants are expected to follow the
 [MIT](LICENSE) — Copyright © 2026 Byeong-Hyeok Yu.
 
 Third-party library licenses bundled at runtime are listed in
-[`NOTICE`](NOTICE).
-
-## Author
-
-**Byeong-Hyeok Yu** — bhyu@knps.or.kr (Korea National Park Service).
+[`
