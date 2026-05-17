@@ -1,0 +1,95 @@
+name: Bug report
+description: Something inside QMaxent's analysis flow behaves incorrectly.
+title: "[Bug]: "
+labels: ["bug", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report. Please fill in as
+        much of the form as you can — partial reports are still welcome,
+        but every empty field is one we'll have to ask about anyway.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: One or two sentences describing the symptom, then the
+        full traceback / log output below.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: How can we reproduce it?
+      description: Step-by-step list. If the bug appears with a built-in
+        example dataset (Bradypus / Ariolimax), say so — that lets us
+        reproduce it identically. If the bug only appears with your own
+        data, the smallest layer combination that triggers it.
+      placeholder: |
+        1. Open QMaxent Analysis.
+        2. ① Data: load the bundled Bradypus example.
+        3. ② Parameters: switch CV to Checkerboard.
+        4. Click Run Maxent.
+        5. Observe error in the training log.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: input
+    id: qmaxent-version
+    attributes:
+      label: QMaxent version
+      description: Visible in QGIS → Plugins → Manage and Install Plugins.
+      placeholder: "0.1.7"
+    validations:
+      required: true
+
+  - type: input
+    id: qgis-version
+    attributes:
+      label: QGIS version
+      description: Help → About in QGIS, copy the full version string.
+      placeholder: "3.44.1-Solothurn"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Windows 10
+        - Windows 11
+        - macOS (Intel)
+        - macOS (Apple Silicon)
+        - Linux (Ubuntu / Debian)
+        - Linux (Fedora / RHEL)
+        - Linux (other)
+    validations:
+      required: true
+
+  - type: textarea
+    id: log
+    attributes:
+      label: Relevant log output
+      description: Paste the contents of the **QMaxent** log channel from
+        View → Panels → Log Messages → QMaxent. Wrap long pastes in a
+        details block.
+      render: shell
+
+  - type: checkboxes
+    id: checked
+    attributes:
+      label: Sanity checks
+      options:
+        - label: I have verified that this also happens after **Plugins →
+            QMaxent → QMaxent Dependencies → Repair Environment**.
+        - label: I have checked the issue tracker for an existing report.

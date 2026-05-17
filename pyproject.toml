@@ -1,0 +1,61 @@
+# QMaxent is a QGIS plugin — it is NOT distributed as a PyPI package.
+# The QGIS plugin repository installs it directly from the published
+# ZIP, and runtime dependencies are managed by core/venv_manager.py
+# at first launch.
+#
+# This pyproject.toml exists only to configure development tooling
+# (pytest, ruff, coverage). It is intentionally project-name-less so
+# that no one accidentally tries `pip install .` on a QGIS plugin
+# tree (which would silently land the source under site-packages and
+# bypass QGIS entirely).
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+]
+filterwarnings = [
+    # rasterio + numpy 2.x emits a CRS deprecation we don't own.
+    "ignore::DeprecationWarning:rasterio",
+]
+markers = [
+    "needs_elapid: requires the elapid Python package",
+    "needs_rasterio: requires the rasterio Python package",
+    "needs_sklearn: requires the scikit-learn Python package",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["bridge", "core", "workers"]
+omit = [
+    # UI / Qt code paths are validated outside CI (see tests/README.md).
+    "dialogs/*",
+    "qmaxent_plugin.py",
+    "i18n/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+show_missing = true
+skip_empty = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = ["i18n/lang_ko.py"]  # auto-generated translations
+
+[tool.ruff.lint]
+# Conservative ruleset — we want signal, not noise.
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]
+ignore = [
+    "E501",  # line length handled by formatter
+    "B008",  # `Default(arg=Func())` is the Qt slot idiom
+]

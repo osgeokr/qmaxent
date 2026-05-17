@@ -1,0 +1,60 @@
+name: Release sanity check
+
+# Runs whenever a release tag is pushed. It does NOT publish anything
+# — Zenodo's GitHub integration handles the archive automatically the
+# moment the GitHub Release is published. This workflow's only job is
+# to catch tag/metadata drift before the Zenodo archive is minted (a
+# Zenodo archive cannot be recalled; the only fix for bad metadata is
+# a new tag + new DOI).
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  verify-tag-metadata:
+    name: Verify version metadata matches tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Extract tag version
+        id: tag
+        run: |
+          # Strip the leading 'v' from refs/tags/vX.Y.Z[...] to get a
+          # plain semver string. GITHUB_REF_NAME is e.g. "v0.1.7".
+          v="${GITHUB_REF_NAME#v}"
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+      - name: Assert __init__, metadata.txt, CITATION.cff all match tag
+        run: |
+          python - <<'PY'
+          import os, re
+          tag = os.environ["TAG"]
+          paths = {
+              "__init__.py":  r'__version__\s*=\s*[\'"]([^\'"]+)[\'"]',
+              "metadata.txt": r'(?m)^version\s*=\s*(\S+)\s*$',
+              "CITATION.cff": r'(?m)^version:\s*([0-9][\w.\-+]*)\s*$',
+          }
+          versions = {}
+          for fn, pat in paths.items():
+              with open(fn, encoding="utf-8") as f:
+                  m = re.search(pat, f.read())
+              assert m, f"{fn}: version not found"
+              versions[fn] = m.group(1)
+          print("Discovered versions:", versions, "tag:", tag)
+          for fn, v in versions.items():
+              if v != tag:
+                  raise SystemExit(
+                      f"Tag {tag!r} does not match {fn} version {v!r}. "
+                      f"Update all three before pushing the tag, or "
+                      f"delete the tag and start over."
+                  )
+          PY
+        env:
+          TAG: ${{ steps.tag.outputs.version }}
+      - name: Validate CITATION.cff
+        uses: dieghernan/cff-validator@v3
+        with:
+          install-r: false

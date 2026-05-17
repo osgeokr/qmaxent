@@ -1,0 +1,73 @@
+{
+  "_about": "Golden values for the maxent.jar v3.4.4 ↔ QMaxent v0.1.7 numerical comparison reported in § 3.3 (Table 3, Fig. 4) of the SoftwareX manuscript. These values were produced once, offline, by running both implementations on the Pitta nympha dataset of Lee et al. (2025, GECCO 60:e03939) with random_seed=42. The regression suite checks current QMaxent runs against these values with the documented tolerances.",
+  "dataset": {
+    "species": "Pitta nympha",
+    "study_area": "Geoje-si, South Korea",
+    "n_presence": 47,
+    "n_covariates": 10,
+    "covariates": [
+      "DEM", "SLOPE", "ASPECT", "TPI", "FORESTTYPE",
+      "AGECLASS", "DIST_WATER", "DIST_ROAD", "LULC", "SOILDRAIN"
+    ],
+    "random_seed": 42
+  },
+  "configurations": {
+    "default": {
+      "_label": "Default — β = 1, Geographic K-Fold (5-fold). Used to demonstrate the auto-feature rule + the default spatial CV scheme.",
+      "beta": 1,
+      "cv_scheme": "geographic_kfold",
+      "n_folds": 5,
+      "training_auc": {
+        "maxent_jar":  0.8825,
+        "qmaxent":     0.8813
+      },
+      "delta_training_auc": {
+        "value":     0.0012,
+        "tolerance": 0.005,
+        "manuscript_claim": "|Δ| < 0.005 (§ 3.3)"
+      },
+      "cv_auc_mean": {
+        "qmaxent": 0.5609,
+        "qmaxent_std": 0.2415
+      },
+      "permutation_importance_spearman_rho": {
+        "value": 0.818,
+        "p_value": 0.004,
+        "tolerance": 0.05,
+        "manuscript_claim": "ρ = 0.818 (p = 0.004) (§ 3.3)"
+      }
+    },
+    "lee_matched": {
+      "_label": "Lee-matched — β = 4, Random K-Fold (10-fold). Reproduces the configuration ENMeval selected in Lee et al. (2025).",
+      "beta": 4,
+      "cv_scheme": "random_kfold",
+      "n_folds": 10,
+      "training_auc": {
+        "maxent_jar":      0.8692,
+        "maxent_jar_std":  0.0230,
+        "qmaxent":         0.8669
+      },
+      "delta_training_auc": {
+        "value":     0.0023,
+        "tolerance": 0.005,
+        "manuscript_claim": "|Δ| < 0.005 (§ 3.3)"
+      },
+      "cv_auc_mean": {
+        "maxent_jar":      0.8128,
+        "maxent_jar_std":  0.1022
+      },
+      "permutation_importance_spearman_rho": {
+        "value": 0.067,
+        "tolerance": null,
+        "_note": "Discussed in § 3.3 as an expected consequence of β=4 + n=47 over-regularisation (Merow et al. 2013). NOT tolerance-checked — see manuscript discussion for interpretation."
+      }
+    }
+  },
+  "_tolerance_rationale": "Training-AUC tolerance is 0.005 because § 2.3 documents a micro-convergence gap between IWLR (elapid) and coordinate descent (maxnet R / maxent.jar) of comparable magnitude. Spearman ρ tolerance is 0.05 because we only assert qualitative rank agreement at β=1 — a 0.05 wobble does not change any of the manuscript's interpretations.",
+  "_provenance": {
+    "maxent_jar_version": "3.4.4",
+    "qmaxent_version":    "0.1.7",
+    "elapid_version":     "1.0.3",
+    "regenerated":        "before each minor release of QMaxent; see docs/golden-values.md"
+  }
+}

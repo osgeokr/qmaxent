@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or usage help
+    url: https://github.com/osgeokr/qmaxent/discussions
+    about: Ask the community via GitHub Discussions before filing an issue.
+  - name: User manual (EN / KO)
+    url: https://osgeokr.github.io/qmaxent/manual/
+    about: Most installation and usage questions are answered here.

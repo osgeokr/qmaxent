@@ -1,0 +1,54 @@
+name: Feature request
+description: Suggest a new capability, workflow improvement, or
+  documentation gap.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem is this trying to solve?
+      description: Start with the user-facing scenario. ("As a park
+        biologist running a quarterly survey, I need …".) Focusing on
+        the problem first makes it easier to evaluate alternatives.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: What would you like QMaxent to do? UI-level mock-ups
+        and references to similar features in other SDM tools (ENMeval,
+        Wallace, BIOMOD) are very welcome.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Existing workflows or workarounds you've tried, and
+        why they fall short.
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope of impact
+      options:
+        - Affects only my own use case
+        - Affects users in my organisation
+        - Would benefit the broader SDM / QGIS community
+
+  - type: checkboxes
+    id: roadmap
+    attributes:
+      label: Future-work alignment
+      description: The companion SoftwareX manuscript lists planned
+        future work in § 5 (ensemble modelling, Protected Planet /
+        GBIF / Microsoft Planetary Computer integrations). Tick if
+        applicable.
+      options:
+        - label: This idea fits the manuscript's future-work plan.
+        - label: This idea is outside the manuscript's future-work plan
+            and I'm aware that maintainer time is limited.

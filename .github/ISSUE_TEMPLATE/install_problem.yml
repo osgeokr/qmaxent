@@ -1,0 +1,78 @@
+name: Installation / dependency problem
+description: The plugin won't install, or the Install Dependencies step
+  fails.
+title: "[Install]: "
+labels: ["install", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Most install failures are network / proxy / antivirus related,
+        not bugs in QMaxent. Before filing, please:
+
+        1. Open QMaxent's dependency dialog and click **Repair
+           Environment**.
+        2. Check whether your network requires an HTTP/HTTPS proxy and,
+           if so, configure it in **QGIS → Settings → Options → Network**.
+        3. On Windows, temporarily disable real-time virus scanning of
+           the plugin venv directory (it lives under
+           `%USERPROFILE%\.qgis_qmaxent`).
+
+        If the issue persists after those steps, please fill in the
+        form below.
+
+  - type: input
+    id: qgis-version
+    attributes:
+      label: QGIS version
+      placeholder: "3.44.1-Solothurn"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Windows 10
+        - Windows 11
+        - macOS (Intel)
+        - macOS (Apple Silicon)
+        - Linux (Ubuntu / Debian)
+        - Linux (Fedora / RHEL)
+        - Linux (other)
+    validations:
+      required: true
+
+  - type: textarea
+    id: error
+    attributes:
+      label: Full error message
+      description: The complete failure message shown by the Dependency
+        Installer — include the section that names the failing
+        package and pip's output.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: network
+    attributes:
+      label: Network environment
+      description: Anything unusual about your network — corporate proxy,
+        firewall, offline / air-gapped install, content-filter SSL
+        interception, etc. "Plain home internet" is also a useful
+        answer.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: tried
+    attributes:
+      label: I have already tried
+      options:
+        - label: "**Repair Environment** in the Dependency Installer."
+        - label: "Disabling antivirus real-time scanning of the plugin
+            venv directory (Windows users only)."
+        - label: "Configuring the QGIS network proxy if my network
+            requires one."

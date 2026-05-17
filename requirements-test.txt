@@ -1,0 +1,33 @@
+# Test-only dependencies. The runtime dependencies are installed by
+# core/venv_manager.py when the plugin first runs inside QGIS — they
+# are NOT a project-level install. For the test suite (which runs
+# outside QGIS in CI) we pull in:
+#
+#   - the test runner and coverage reporter,
+#   - the runtime libraries that the unit + regression tiers actually
+#     import directly (numpy, rasterio, scikit-learn, elapid).
+#
+# We do NOT pin tightly here; the compatible-release ranges in
+# core/venv_manager.py:REQUIRED_PACKAGES are the canonical floor /
+# ceiling for the runtime side. This file mirrors them at the bare
+# minimum precision needed for the test tier.
+
+# --- test runner --------------------------------------------------------
+pytest>=8.0,<9
+pytest-cov>=5.0,<6
+
+# --- numerical stack mirroring runtime ----------------------------------
+numpy>=2.0,<3
+pandas>=2.0,<3
+scipy>=1.13,<2
+scikit-learn>=1.5,<1.6
+rasterio>=1.4,<2
+geopandas>=1.0,<2
+pyproj>=3.6,<4
+rtree>=1.0,<2
+matplotlib>=3.7,<4
+openpyxl>=3.1,<4
+tqdm>=4.60,<5
+
+# --- the IWLR Maxent backend the regression tier compares against ------
+elapid>=1.0.3,<2.0
