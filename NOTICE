@@ -1,0 +1,94 @@
+QMaxent — third-party software notice
+=====================================
+
+QMaxent itself is distributed under the MIT License (see LICENSE).
+
+This product bundles and/or depends on the following third-party
+Python libraries, each governed by its own permissive license. None
+of these libraries is modified by QMaxent; they are installed at
+first run into a plugin-private virtual environment under
+~/.qgis_qmaxent/venv_pyX.Y/.
+
+Mandatory runtime dependencies
+------------------------------
+
+- elapid               https://github.com/earth-chris/elapid
+                       MIT License
+                       (Anderson, C. B. 2023. JOSS 8(84):4930.
+                        doi:10.21105/joss.04930)
+
+- rasterio             https://github.com/rasterio/rasterio
+                       BSD 3-Clause License
+
+- geopandas            https://github.com/geopandas/geopandas
+                       BSD 3-Clause License
+
+- scikit-learn         https://github.com/scikit-learn/scikit-learn
+                       BSD 3-Clause License
+                       (Pedregosa et al. 2011. JMLR 12:2825-2830)
+
+- numpy                https://github.com/numpy/numpy
+                       BSD 3-Clause License
+                       (Harris et al. 2020. Nature 585:357-362.
+                        doi:10.1038/s41586-020-2649-2)
+
+- pandas               https://github.com/pandas-dev/pandas
+                       BSD 3-Clause License
+
+- scipy                https://github.com/scipy/scipy
+                       BSD 3-Clause License
+
+- pyproj               https://github.com/pyproj4/pyproj
+                       MIT License
+
+- rtree                https://github.com/Toblerity/rtree
+                       MIT License
+
+- matplotlib           https://github.com/matplotlib/matplotlib
+                       Matplotlib License (BSD-style, PSF-derived)
+
+- openpyxl             https://foss.heptapod.net/openpyxl/openpyxl
+                       MIT License
+
+- tqdm                 https://github.com/tqdm/tqdm
+                       MIT License + Mozilla Public License 2.0
+
+External services
+-----------------
+
+- OpenStreetMap Nominatim
+                       https://nominatim.openstreetmap.org/
+                       Nominatim itself is GPL-licensed, but QMaxent
+                       only consumes its public HTTP API (no source
+                       redistribution); use is governed by the
+                       Nominatim Usage Policy
+                       (https://operations.osmfoundation.org/policies/nominatim/).
+                       QMaxent honours the 1 request/second rate limit
+                       and identifies itself with a descriptive
+                       User-Agent header.
+
+Adapted patterns
+----------------
+
+The plugin-private virtual environment lifecycle in
+``core/venv_manager.py`` is adapted from the GeoAI QGIS plugin
+(Wu Q., 2026. JOSS 11(118):9605. doi:10.21105/joss.09605),
+licensed under the MIT License. The original implementation lives at
+https://github.com/opengeos/geoai.
+
+Acknowledgement of the host environment
+---------------------------------------
+
+QMaxent runs as a QGIS Desktop plugin. QGIS is distributed under the
+GNU GPL v2 (or later) by the QGIS Development Team
+(https://qgis.org/). Distributing QMaxent under MIT does not modify or
+relicense QGIS; QGIS users invoke QMaxent dynamically at runtime, the
+standard plugin-host relationship contemplated by the QGIS Plugin
+Repository.
+
+How to update this notice
+-------------------------
+
+When ``core/venv_manager.py`` is changed to add or remove a package
+from REQUIRED_PACKAGES, please update the corresponding entry above
+so the redistribution metadata stays accurate.

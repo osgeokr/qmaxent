@@ -1,0 +1,64 @@
+{
+  "title": "QMaxent: A QGIS plugin for Maxent species distribution modeling",
+  "description": "<p><strong>QMaxent</strong> is a QGIS plugin that integrates the elapid Python library to provide a reproducible, GIS-native Maxent species distribution modelling (SDM) environment. It supports model training, spatial projection, spatial cross-validation (Geographic K-Fold as the default; Checkerboard, Random K-Fold, Buffered Leave-One-Out), jackknife and permutation variable importance, export of QGIS-resident data to maxent.jar-compatible formats (SWD or ESRI ASCII Grid), and stratified priority-site selection for post-prediction field surveys &mdash; all within a single QGIS session. Dependencies are isolated in a plugin-private virtual environment that does not affect the host QGIS Python installation.</p><p><strong>QMaxent (한국어)</strong>— QGIS 내부에서 Maxent 기반 종 분포 모델링(SDM)의 전 과정—자료 준비·래스터 정합·모델 적합·공간 교차검증·잭나이프·치환 변수 중요도·공간 투영·신규 조사지 우선순위 산정—을 수행하는 재현 가능한 GIS-내장 SDM 운영 환경입니다. elapid Python 라이브러리를 백엔드로 사용하며, 의존성은 시스템 QGIS에 영향을 주지 않는 플러그인 전용 가상환경에 격리 설치됩니다.</p><p>The companion manuscript will be cited here once accepted.</p>",
+  "upload_type": "software",
+  "access_right": "open",
+  "license": "MIT",
+  "language": "eng",
+  "keywords": [
+    "species distribution model",
+    "maxent",
+    "SDM",
+    "QGIS",
+    "ecology",
+    "biogeography",
+    "spatial cross-validation",
+    "habitat suitability",
+    "conservation"
+  ],
+  "communities": [
+    { "identifier": "qgis" }
+  ],
+  "creators": [
+    {
+      "name": "Yu, Byeong-Hyeok",
+      "affiliation": "Korea National Park Service"
+    }
+  ],
+  "contributors": [
+    {
+      "name": "Lee, Soo-Dong",
+      "type": "Researcher",
+      "affiliation": "Gyeongsang National University"
+    },
+    {
+      "name": "Oh, Chung-Hyeon",
+      "type": "Researcher",
+      "affiliation": "Gyeongsang National University"
+    },
+    {
+      "name": "Lee, Jeong-Ho",
+      "type": "Researcher",
+      "affiliation": "Korea Aerospace Research Institute"
+    },
+    {
+      "name": "Lee, Sun-Gu",
+      "type": "Researcher",
+      "affiliation": "Korea Aerospace Research Institute"
+    }
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/osgeokr/qmaxent",
+      "relation": "isSupplementTo",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "10.21105/joss.04930",
+      "relation": "isDerivedFrom",
+      "resource_type": "publication-softwarepaper",
+      "scheme": "doi"
+    }
+  ],
+  "notes": "The companion SoftwareX manuscript (under review at submission time) describes the design, the maxent.jar numerical-compatibility benchmark on the Pitta nympha dataset (Lee et al. 2025, Global Ecology and Conservation 60:e03939), and the SDM-to-survey closed-loop demonstration. The maxent.jar input-export feature in § 2.2 enables GIS-native reproducibility audits of existing maxent.jar publications."
+}
