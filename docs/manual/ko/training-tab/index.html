@@ -1243,21 +1243,21 @@
 <h2 id="_2">학습 로그<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
 <p>진행률 바 아래 로그 패널이 모든 단계를 기록합니다. Bradypus 실행이 성공적으로
 끝난 후의 모습:</p>
-<p><img alt="100% 완료된 학습 탭과 전체 로그: 116 presence, 9,997 background, train AUC=0.9562, CV AUC=0.7581 ± 0.0920, 변수별 jackknife" src="../../images/ui/dock-3-training-completed.png" /></p>
+<p><img alt="100% 완료된 학습 탭과 전체 로그: 116 presence, 10,104 background, train AUC=0.9569, CV AUC=0.7436 ± 0.0750, 변수별 jackknife" src="../../images/ui/dock-3-training-completed.png" /></p>
 <p>로그를 위에서 아래로 읽으세요 — 실행에서 일어난 일의 가장 완전한 기록입니다.
 스크린샷에서:</p>
 <ul>
 <li><code>→ 10,000 background points sampled</code> — 표본 추출 완료</li>
-<li><code>→ Presence: 116, Background: 9,997</code> — 최종 개수 (NaN 셀 때문에 요청보다 약간 적음)</li>
+<li><code>→ Presence: 116, Background: 10,104</code> — 최종 개수 (NaN 셀 때문에 요청보다 약간 적음)</li>
 <li><code>→ Feature types: ['linear', 'quadratic', 'product', 'hinge', 'threshold']</code>
     — 자동 규칙이 n=116에 대해 모든 LQPHT 선택</li>
-<li><code>→ Training AUC = 0.9562</code></li>
+<li><code>→ Training AUC = 0.9569</code></li>
 <li>폴드별 CV AUC (5개 폴드, 0.59 – 0.86 범위)</li>
-<li><code>→ CV AUC = 0.7581 ± 0.0920</code> — 폴드 평균 ± 표준편차</li>
+<li><code>→ CV AUC = 0.7436 ± 0.0750</code> — 폴드 평균 ± 표준편차</li>
 <li>Jackknife 블록: 9개 변수 각각의 <code>only_tr / only_te / without_tr / without_te</code></li>
 <li><code>→ Results XLSX saved: …</code> — 최종 산출물 위치</li>
 </ul>
-<p>같은 핵심 수치(<code>train AUC=0.9562</code>, <code>CV AUC=0.7581</code>)가 도크의 영구 상태바에 그대로
+<p>같은 핵심 수치(<code>train AUC=0.9569</code>, <code>CV AUC=0.7436</code>)가 도크의 영구 상태바에 그대로
 표시되어 탭을 전환해도 계속 보입니다.</p>
 <h2 id="_3">자주 보는 경고와 의미<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
 <table>

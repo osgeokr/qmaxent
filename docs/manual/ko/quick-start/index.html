@@ -1321,7 +1321,7 @@
 <p><strong>Check Raster Consistency</strong> 를 클릭. 예제 데이터는 이미 정렬되어 있어 초록 ✓ 가
 표시됩니다:</p>
 <p><img alt="Bradypus 출현 레이어(116점)와 7개 환경 래스터, biome이 categorical로 표시되고, Check Raster Consistency 결과 모든 래스터가 그리드 일치" src="../../images/ui/dock-1-data-with-bradypus.png" /></p>
-<p>도크 하단 상태바에 <code>presence=116 background=10,113</code> 이 표시됩니다.</p>
+<p>도크 하단 상태바에 <code>presence=116 background=10,104</code> 이 표시됩니다.</p>
 <h2 id="3">3단계 · 기본 파라미터 사용<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
 <p><strong>② Parameters</strong> 로 이동합니다. 기본값은 거의 모든 첫 실행에 발표 가능한 수준이
 되도록 의도적으로 설정되어 있습니다: <strong>Auto</strong> 피처 선택(maxnet 규칙),
@@ -1334,16 +1334,16 @@
 <p>도크 하단의 초록색 <strong>▶ Run Maxent</strong> 버튼을 클릭합니다. <strong>③ Training</strong> 탭으로 전환되며
 진행 상황이 실시간으로 보고됩니다.</p>
 <p>약 30초 후 실행이 완료됩니다:</p>
-<p><img alt="100% 완료된 Training 탭과 전체 로그: 116 presence, 9,997 background, train AUC=0.9562, CV AUC=0.7581 ± 0.0920, 변수별 jackknife" src="../../images/ui/dock-3-training-completed.png" /></p>
+<p><img alt="100% 완료된 Training 탭과 전체 로그: 116 presence, 10,104 background, train AUC=0.9569, CV AUC=0.7436 ± 0.0750, 변수별 jackknife" src="../../images/ui/dock-3-training-completed.png" /></p>
 <p>로그를 위에서 아래로 읽으면 모델의 전체 이야기를 알 수 있습니다:</p>
 <ul>
 <li>배경 표본 추출과 공변량 추출 완료</li>
 <li>자동 규칙이 선택한 피처 유형: linear, quadratic, product, hinge, threshold</li>
-<li><strong>Training AUC = 0.9562</strong>(표본 내 적합)</li>
-<li><strong>CV AUC = 0.7581 ± 0.0920</strong>(5개 공간 폴드의 보류 검증 성능)</li>
+<li><strong>Training AUC = 0.9569</strong>(표본 내 적합)</li>
+<li><strong>CV AUC = 0.7436 ± 0.0750</strong>(5개 공간 폴드의 보류 검증 성능)</li>
 <li>9개 변수 각각의 Jackknife 결과</li>
 </ul>
-<p>도크 하단 상태바에 핵심 수치가 표시됩니다: <code>train AUC=0.9562 · CV AUC=0.7581</code>.</p>
+<p>도크 하단 상태바에 핵심 수치가 표시됩니다: <code>train AUC=0.9569 · CV AUC=0.7436</code>.</p>
 <h2 id="5">5단계 · 결과 확인<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>
 <p><strong>④ Results</strong> 탭이 활성화됩니다. 세 개의 하위 탭을 둘러보며 모델이 학습한 내용을
 이해해 보세요.</p>
