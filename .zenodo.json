@@ -56,7 +56,7 @@
     {
       "identifier": "10.21105/joss.04930",
       "relation": "isDerivedFrom",
-      "resource_type": "publication-softwarepaper",
+      "resource_type": "publication-article",
       "scheme": "doi"
     }
   ],
