@@ -46,7 +46,7 @@ STRINGS: dict[str, str] = {
 
     # ── Parameters tab ──────────────────────────────────────────────────────
     "Feature Types":                        "피처 타입",
-    "Auto (sample-size based, maxnet)":     "자동 (샘플 수 기반, maxnet 방식)",
+    "Auto (sample-size based, Phillips et al. 2017)":  "자동 (샘플 수 기반, Phillips et al. 2017)",
     "Manual selection":                     "수동 선택",
     "Regularization":                       "정규화",
     "Regularization multiplier:":           "정규화 배율:",
@@ -63,7 +63,7 @@ STRINGS: dict[str, str] = {
     # Spatial evaluation group
     "Spatial evaluation":                   "공간 평가",
     "Method:":                              "방법:",
-    "None (random hold-out, non-spatial)":  "None (random hold-out, non-spatial)",
+    "None (no cross-validation; training AUC only)":  "없음 (교차 검증 안 함, 훈련 AUC만 계산)",
     "Geographic K-Fold (Anderson 2023)":
         "Geographic K-Fold (Anderson 2023)",
     "Fix random seed:":                      "랜덤 시드 고정:",
@@ -109,8 +109,8 @@ STRINGS: dict[str, str] = {
     "Buffered LOO (Pearson 2007; Ploton 2020)":
         "Buffered LOO (Pearson 2007; Ploton 2020)",
     "Folds:":                               "Folds:",
-    "Grid size:":                           "Grid size:",
-    "Buffer:":                              "Buffer:",
+    "Grid size (m):":                       "그리드 크기 (m):",
+    "Buffer (m):":                          "버퍼 (m):",
     "Buffer distance in the CRS units of the presence layer "
     "(metres for projected CRSs; degrees for EPSG:4326). "
     "Choose a value appropriate to the species' dispersal range "
@@ -182,6 +182,7 @@ STRINGS: dict[str, str] = {
     "Add environmental raster layers.":     "환경변수 래스터 레이어를 추가하세요.",
     "Data error: {e}":                      "데이터 오류: {e}",
     "All analysis complete.":               "모든 분석이 완료됐습니다.",
+    "✓ All analysis complete.":             "✓ 모든 분석이 완료됐습니다.",
 
     # ── Setup dock ──────────────────────────────────────────────────────────
     "Environment Status":                   "환경 상태",
@@ -281,10 +282,18 @@ STRINGS: dict[str, str] = {
         "출력 폴더 생성 실패:\n{e}",
     "Harmonization failed:\n{msg}":
         "정합 실패:\n{msg}",
-    "Harmonized {n} raster(s) to:\n{path}\n\n"
-    "The raster list has been updated to use the aligned copies.":
-        "{n}개의 래스터를 다음 위치에 정합:\n{path}\n\n"
-        "래스터 목록이 정합된 사본으로 갱신되었습니다.",
+    "Harmonized {n} raster(s) to:\n{path}":
+        "{n}개의 래스터를 다음 위치에 정합:\n{path}",
+    "Replace the unaligned originals in this project with "
+    "the harmonized versions?":
+        "프로젝트의 정합되지 않은 원본을 정합된 버전으로 교체하시겠습니까?",
+    "Replace":
+        "교체",
+    "Add as additional layers":
+        "추가 레이어로 추가",
+    "Status: harmonized files written to {path}; "
+    "project not changed.":
+        "상태: 정합된 파일이 {path}에 작성됨, 프로젝트는 변경되지 않음.",
     "Status: not checked yet.":
         "상태: 아직 점검되지 않음.",
     "Status: ⚠ Could not read rasters ({err}).":
@@ -583,19 +592,21 @@ STRINGS: dict[str, str] = {
 
     # Spatial Projection — chart-export checkbox + tooltip.
     "Save analysis charts as PNG "
-    "(Response Curves, ROC, Jackknife)":
+    "(Response Curves, ROC, Jackknife, Permutation)":
         "분석 차트를 PNG로 저장 "
-        "(Response Curves, ROC, Jackknife)",
-    "When the projection finishes, three sets of PNG files are "
+        "(Response Curves, ROC, Jackknife, Permutation)",
+    "When the projection finishes, four sets of PNG files are "
     "written next to the GeoTIFF:\n"
     "  • <name>_response_curves.png — one image with all response curves\n"
     "  • <name>_roc.png — ROC panel (training + CV folds + mean)\n"
-    "  • <name>_jackknife.png — variable-importance bars\n"
+    "  • <name>_jackknife.png — variable-importance bars (jackknife)\n"
+    "  • <name>_permutation.png — variable-importance bars (permutation)\n"
     "Uncheck to skip this step entirely.":
-        "투영이 완료되면 GeoTIFF 옆에 3개 PNG 파일이 생성됩니다:\n"
+        "투영이 완료되면 GeoTIFF 옆에 4개 PNG 파일이 생성됩니다:\n"
         "  • <name>_response_curves.png — 모든 변수의 응답 곡선\n"
         "  • <name>_roc.png — ROC 패널 (학습 + CV folds + 평균)\n"
-        "  • <name>_jackknife.png — 변수 중요도 막대\n"
+        "  • <name>_jackknife.png — 변수 중요도 막대 (jackknife)\n"
+        "  • <name>_permutation.png — 변수 중요도 막대 (permutation)\n"
         "체크 해제 시 이 단계 전체를 건너뜁니다.",
 
     # Spatial Projection — pre-flight messages added in v0.1.0.
@@ -641,10 +652,10 @@ STRINGS: dict[str, str] = {
 
     # ── Discovery vs Validation mode (UI redesign) ──────────────────────────
     "Survey purpose":                        "조사 목적",
-    "Discovery — find new populations in unsurveyed areas":
-        "Discovery — 미조사 지역에서 새 개체군 발견",
-    "Model validation — test the suitability gradient":
-        "Model validation — 적합도 gradient 검증",
+    "Discovery mode — find new populations in unsurveyed areas":
+        "Discovery 모드 — 미조사 지역에서 새 개체군 발견",
+    "Validation mode — test the suitability gradient":
+        "Validation 모드 — 적합도 gradient 검증",
     "Sample sites within a high-suitability band, focused on "
     "the most likely habitat for the species.":
         "고적합도 구간 내에서 지점을 샘플링하여 가장 유력한 "
@@ -671,4 +682,147 @@ STRINGS: dict[str, str] = {
     "or pick a different threshold method.":
         "임계값이 0이거나 설정되지 않았습니다. 0보다 큰 값을 입력하거나 "
         "다른 임계값 방법을 선택하세요.",
+
+    # ── v0.1.7 additions ────────────────────────────────────────────────────
+    # Setup dock — About block (now with Homepage and Manual rows).
+    "<b>QMaxent</b> {version}<br>"
+    "Author: Byeong-Hyeok Yu &lt;bhyu@knps.or.kr&gt;<br>"
+    "License: MIT — Copyright © 2026 Byeong-Hyeok Yu<br>"
+    "Homepage: "
+    "<a href=\"https://osgeokr.github.io/qmaxent/\">"
+    "osgeokr.github.io/qmaxent</a><br>"
+    "Manual: "
+    "<a href=\"https://osgeokr.github.io/qmaxent/manual/\">"
+    "osgeokr.github.io/qmaxent/manual</a><br>"
+    "Repository: "
+    "<a href=\"https://github.com/osgeokr/qmaxent\">"
+    "github.com/osgeokr/qmaxent</a>":
+        "<b>QMaxent</b> {version}<br>"
+        "저자: Byeong-Hyeok Yu &lt;bhyu@knps.or.kr&gt;<br>"
+        "라이선스: MIT — Copyright © 2026 Byeong-Hyeok Yu<br>"
+        "홈페이지: "
+        "<a href=\"https://osgeokr.github.io/qmaxent/\">"
+        "osgeokr.github.io/qmaxent</a><br>"
+        "매뉴얼: "
+        "<a href=\"https://osgeokr.github.io/qmaxent/manual/\">"
+        "osgeokr.github.io/qmaxent/manual</a><br>"
+        "저장소: "
+        "<a href=\"https://github.com/osgeokr/qmaxent\">"
+        "github.com/osgeokr/qmaxent</a>",
+
+    # Setup dock — Dependencies block size update.
+    "<b>Dependencies:</b><br>"
+    "QMaxent installs its dependencies into an isolated virtual "
+    "environment so they do not affect QGIS.<br><br>"
+    "One-time setup installs:<br>"
+    "&nbsp;&nbsp;• elapid (Maxent engine)<br>"
+    "&nbsp;&nbsp;• rasterio, geopandas (spatial I/O)<br>"
+    "&nbsp;&nbsp;• scikit-learn, scipy, numpy<br>"
+    "&nbsp;&nbsp;• matplotlib (result plots)<br><br>"
+    "Approximate size: ~590 MB":
+        "<b>의존성:</b><br>"
+        "QMaxent는 QGIS에 영향을 주지 않도록 의존성을 격리된 가상 환경에 "
+        "설치합니다.<br><br>"
+        "최초 설치 항목:<br>"
+        "&nbsp;&nbsp;• elapid (Maxent 엔진)<br>"
+        "&nbsp;&nbsp;• rasterio, geopandas (공간 I/O)<br>"
+        "&nbsp;&nbsp;• scikit-learn, scipy, numpy<br>"
+        "&nbsp;&nbsp;• matplotlib (결과 플롯)<br><br>"
+        "디스크 용량: 약 590 MB",
+
+    # Data tab — Export for external Maxent radio labels (renamed).
+    "Samples + Raster (samples CSV + .asc layers)":
+        "Samples + Raster (샘플 CSV + .asc 레이어)",
+    "SWD (CSV pair, extracted values)":
+        "SWD (CSV 쌍, 추출된 값)",
+    "A short samples CSV (Species, Longitude, Latitude only) "
+    "plus one ESRI ASCII Grid (.asc) per environmental raster "
+    "in a layers/ folder. maxent.jar fits the model AND "
+    "produces a projection raster in a single run. Larger "
+    "files but ready to use without additional arguments.":
+        "샘플 CSV (Species, Longitude, Latitude만)와 환경 래스터마다 "
+        "하나씩 .asc (ESRI ASCII Grid) 파일을 layers/ 폴더에 저장합니다. "
+        "maxent.jar가 한 번의 실행으로 모델 적합과 예측 래스터 생성을 "
+        "모두 수행합니다. 파일 크기는 더 크지만 추가 인자 없이 바로 "
+        "사용할 수 있습니다.",
+    "Two CSVs (presence.csv + background.csv) with environmental "
+    "values pre-extracted at each point. maxent.jar will use "
+    "these exact points and values — no further sampling. "
+    "Smaller files, but produces no projection raster unless "
+    "you also pass projectionlayers= to maxent.jar.":
+        "두 개의 CSV 파일 (presence.csv + background.csv)에 각 지점의 "
+        "환경 값이 미리 추출되어 있습니다. maxent.jar는 이 정확한 지점과 "
+        "값을 그대로 사용하며 추가 샘플링을 하지 않습니다. 파일 크기는 "
+        "작지만 projectionlayers= 인자를 별도로 전달하지 않으면 예측 "
+        "래스터가 생성되지 않습니다.",
+    "Exporting samples + raster...":
+        "Samples + Raster 내보내는 중...",
+    "Samples + Raster export complete.\n\n"
+    "Samples:   {s} ({np} rows)\n"
+    "Layers:    {l} ({nr} ASCII grids)\n"
+    "README:    {r}\n\n"
+    "The README contains the maxent.jar command "
+    "line to run on this dataset.":
+        "Samples + Raster 내보내기 완료.\n\n"
+        "샘플:    {s} ({np}개 행)\n"
+        "레이어:  {l} ({nr}개 ASCII grid)\n"
+        "README:  {r}\n\n"
+        "이 데이터셋에 대한 maxent.jar 실행 명령은 "
+        "README 파일에 있습니다.",
+
+    # Results sub-tabs — explanation strips (Response Curves, Jackknife,
+    # Permutation Importance). All three render as plain prose in
+    # v0.1.7 — the grey background on the Permutation strip was
+    # removed for visual consistency.
+    "Marginal effect: how the predicted suitability changes "
+    "across the range of one variable while the other "
+    "variables are held at their training-set means. The "
+    "Y-axis reads as relative habitat suitability (cloglog: "
+    "0 to 1, saturates near 1 in the most suitable region). "
+    "The shaded green band marks the variable's training-data "
+    "range — curves outside it are extrapolation and should "
+    "be interpreted with caution; the dotted line marks the "
+    "training-data mean. Useful for inspecting whether the "
+    "model has learned ecologically plausible shapes (e.g. "
+    "unimodal temperature optima) and for spotting variables "
+    "whose curves are nearly flat — candidates for removal "
+    "in a parsimonious model.":
+        "주변 효과 (marginal effect): 다른 변수를 학습 데이터의 평균값으로 "
+        "고정한 상태에서, 하나의 변수가 변할 때 예측 적합도가 어떻게 "
+        "변하는지 보여줍니다. Y축은 상대적 서식지 적합도 (cloglog: 0~1, "
+        "가장 적합한 영역에서 1에 가까이 포화)입니다. 녹색 음영은 해당 "
+        "변수의 학습 데이터 범위로, 음영 밖의 곡선은 외삽 영역이므로 "
+        "해석에 주의해야 합니다. 점선은 학습 데이터의 평균값입니다. "
+        "모델이 생태학적으로 타당한 형태 (예: 단봉형 온도 최적값)를 "
+        "학습했는지 확인하고, 곡선이 거의 평평한 변수 — 단순화된 "
+        "모델에서 제거 후보 — 를 발견하는 데 유용합니다.",
+    "Retraining test: trains the model with each variable "
+    "alone (per-variable AUC) and with each variable removed "
+    "(per-variable drop in AUC), then averages across CV "
+    "folds. Robust to correlated variables — unlike "
+    "permutation importance — because each retrained model "
+    "sees a different variable set. Slower (requires N×2 "
+    "retrains) but the standard Maxent variable-importance "
+    "diagnostic since Phillips et al. (2006).":
+        "재학습 테스트: 각 변수 단독 (변수별 AUC), 각 변수 제외 "
+        "(변수별 AUC 감소량)으로 모델을 학습한 뒤 CV fold에 걸쳐 "
+        "평균을 냅니다. 매 재학습마다 변수 집합이 달라지므로 — "
+        "permutation importance와 달리 — 상관관계가 있는 변수들에도 "
+        "강건합니다. 학습 횟수가 많아 (N×2회 재학습) 느리지만 Phillips "
+        "et al. (2006) 이래 Maxent의 표준 변수 중요도 진단입니다.",
+    # The Permutation Importance description was already translated in
+    # earlier versions; no change needed here.
+
+    # Run Maxent finish — training log auto-save status line.
+    "Training log saved: {path}":
+        "훈련 로그 저장됨: {path}",
+    "(Could not save training log: {e})":
+        "(훈련 로그 저장 실패: {e})",
+
+    # Save log as... tooltip (auto-save location wording change).
+    "Save the entire training log to a text file at a "
+    "location of your choice. This is independent of the "
+    "auto-save next to model.pkl.":
+        "전체 훈련 로그를 원하는 위치에 텍스트 파일로 저장합니다. "
+        "model.pkl 옆에 자동 저장되는 파일과는 별개입니다.",
 }

@@ -33,6 +33,23 @@ class ProjectionWorker(QThread):
 
     def run(self):
         try:
+            # Auto-create the parent directory of the prediction raster
+            # so the user can type a fresh output path without first
+            # running mkdir — matches the same guarantee made by the
+            # MaxentWorker for model.pkl / results.xlsx.
+            try:
+                import os as _os
+                _d = _os.path.dirname(self._output_path)
+                if _d:
+                    _os.makedirs(_d, exist_ok=True)
+            except OSError as _e:
+                self.finished.emit(
+                    False,
+                    f"Could not create output directory: {_e}",
+                    "",
+                )
+                return
+
             # ── Disable tqdm's background monitor thread ─────────────────
             # tqdm starts a daemon Thread (TMonitor) the first time
             # tqdm.tqdm is instantiated — it wakes every `monitor_interval`

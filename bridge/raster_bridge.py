@@ -317,7 +317,7 @@ def harmonize_rasters(
                 f"Harmonizing {os.path.basename(src_path)} ({i+1}/{n})",
             )
         out_path = os.path.join(
-            output_dir, f"{i:02d}_{os.path.basename(src_path)}"
+            output_dir, os.path.basename(src_path)
         )
         # Force GeoTIFF output regardless of input driver — output paths
         # are temporary and need to be readable by elapid downstream.

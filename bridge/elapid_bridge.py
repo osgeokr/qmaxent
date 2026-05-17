@@ -175,3 +175,65 @@ def apply_model_to_rasters(model, raster_paths, output_path, **kwargs):
         output_path=output_path,
         **kwargs,
     )
+
+
+# ---------------------------------------------------------------------------
+# Permutation importance (added v0.1.3)
+# ---------------------------------------------------------------------------
+
+def permutation_importance_scores(model, x, y, n_repeats: int = 10,
+                                  n_jobs: int = 1, random_state=None):
+    """Compute permutation importance for each feature.
+
+    Thin wrapper around elapid.MaxentModel.permutation_importance_scores,
+    which itself wraps sklearn.inspection.permutation_importance. The
+    metric is the AUC drop when each feature's values are randomly
+    shuffled and the model re-applied. Returns an array of shape
+    (n_features, n_repeats) so the caller can report mean and std.
+
+    This is the same metric reported by maxent.jar as "permutation
+    importance" in its HTML output, normalized as percentage of total
+    (Phillips et al. 2006, 2017). Unlike maxent.jar's percent
+    contribution (which tracks lambda accumulation during training),
+    permutation importance is computed on the *trained* model and
+    therefore answers a different question: "how much does the model's
+    output depend on each feature" rather than "how much did each
+    feature contribute to learning".
+
+    References:
+        Phillips, S.J., Anderson, R.P., Dudik, M., Schapire, R.E., &
+            Blair, M.E. (2017). Opening the black box: an open-source
+            release of Maxent. Ecography, 40, 887-893.
+        Strobl, C., Boulesteix, A.-L., Zeileis, A., & Hothorn, T.
+            (2007). Bias in random forest variable importance measures:
+            illustrations, sources and a solution. BMC Bioinformatics,
+            8:25 — caveats on permutation importance under collinearity.
+
+    Args:
+        model: a fitted elapid MaxentModel.
+        x: design matrix used as the evaluation set (n_samples, n_features).
+            For an honest estimate, pass a held-out subset (e.g. the
+            test fold from CV); for a within-sample estimate, pass the
+            full training matrix.
+        y: target labels matching x.
+        n_repeats: number of shuffles per feature (sklearn default 10).
+        n_jobs: parallel jobs; default 1 to avoid nested-parallel issues
+            inside Qt worker threads.
+        random_state: optional int for reproducibility.
+
+    Returns:
+        importances: numpy array of shape (n_features, n_repeats).
+            Each entry is the AUC drop for one feature on one shuffle.
+    """
+    # elapid's SDMMixin.permutation_importance_scores does not accept
+    # random_state, but the underlying sklearn function does. We use
+    # sklearn directly so QMaxent runs are reproducible when the user
+    # has set a random seed in the ② Parameters tab.
+    from sklearn.inspection import permutation_importance
+    pi = permutation_importance(
+        model, x, y,
+        n_repeats=n_repeats,
+        n_jobs=n_jobs,
+        random_state=random_state,
+    )
+    return pi.importances

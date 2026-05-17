@@ -67,6 +67,7 @@ inline citations pointing to whichever item is most relevant.
             models. Nature Communications, 11, 4540.
 """
 
+import os
 import traceback
 
 import numpy as np
@@ -123,10 +124,14 @@ class MaxentWorker(QThread):
             self.finished.emit(False, f"{e}\n{traceback.format_exc()}", {})
 
     def _check(self, pct: int, msg: str):
+        # Update the progress bar only; the 6-block log structure
+        # already announces each phase via explicit header lines.
+        # Emitting progress messages into the log too would produce
+        # noisy duplicates ("Training MaxentModel..." right next to
+        # the "─── 2. Full-data model fit ───" header).
         if self._cancelled:
             raise InterruptedError("cancelled")
         self.progress.emit(pct, msg)
-        self.log.emit(msg)
 
     # -----------------------------------------------------------------------
     # Pipeline
@@ -150,6 +155,8 @@ class MaxentWorker(QThread):
         # separate beta_categorical regularisation scaler (Anderson 2023;
         # Phillips et al. 2017).
         categorical_indices = list(cfg.get("categorical_indices", []) or [])
+        # ─── 1. Data preparation ──────────────────────────────────────────
+        self.log.emit("─── 1. Data preparation ───")
         if categorical_indices:
             cat_names = ", ".join(feature_names[i] for i in categorical_indices)
             self.log.emit(f"  Categorical variables: {cat_names}")
@@ -159,6 +166,28 @@ class MaxentWorker(QThread):
         # appropriate for very small study areas; larger values rarely add
         # information once the environmental space is well sampled.
         n_background  = cfg.get("n_background", 10000)
+
+        # Auto-create parent directories for any configured save paths
+        # so the user can type a fresh output path (e.g. a new
+        # qmaxent_output/ folder) without first running mkdir. This
+        # prevents the cryptic FileNotFoundError that the elapid
+        # save_object call would otherwise raise mid-run, after the
+        # full training has already completed.
+        for _key in ("output_model", "output_xlsx"):
+            _p = cfg.get(_key)
+            if _p:
+                _d = os.path.dirname(_p)
+                if _d:
+                    try:
+                        os.makedirs(_d, exist_ok=True)
+                    except OSError as _e:
+                        # Surface the failure now instead of mid-save
+                        # (e.g. permission denied, path-too-long on
+                        # Windows). The user can fix the path before
+                        # waiting through training.
+                        raise RuntimeError(
+                            f"Could not create output directory '{_d}': {_e}"
+                        ) from _e
 
         # Compatibility check (informational; not fatal).
         ok, ver, msg = eb.check_elapid_version()
@@ -194,7 +223,7 @@ class MaxentWorker(QThread):
             ).format(mismatches=", ".join(mismatches)))
         else:
             self.log.emit(
-                "  → Rasters share grid (CRS, extent, resolution)."
+                "  Rasters share grid (CRS, extent, resolution). ✓"
             )
 
         # ── 0. CRS reconciliation ────────────────────────────────────────
@@ -236,7 +265,8 @@ class MaxentWorker(QThread):
             bg_gs = eb.sample_bias_file(cfg["bias_path"], count=n_background)
         else:
             bg_gs = eb.sample_raster(raster_paths[0], count=n_background)
-        self.log.emit(f"  → {len(bg_gs):,} background points sampled")
+        # (No log emit here — the consolidated "Presence: N, Background: N"
+        # line below covers both counts in one place.)
 
         # ── 2. Annotation ────────────────────────────────────────────────
         self._check(12, "Extracting raster covariates for presence points...")
@@ -304,7 +334,11 @@ class MaxentWorker(QThread):
             feature_types = cfg.get("feature_types", [
                 "linear", "quadratic", "hinge", "product", "threshold"
             ])
-        self.log.emit(f"  → Feature types: {feature_types}  (n_presence={n_presence})")
+        ft_origin = "auto-rule" if cfg.get("feature_types_auto", True) else "manual"
+        self.log.emit(
+            f"  → Feature types: {feature_types}  "
+            f"(n_presence={n_presence}, {ft_origin})"
+        )
 
         # Merge (presence FIRST — index order relied on by CV logic)
         presence_clean   = presence_clean.assign(**{"class": 1})
@@ -363,7 +397,11 @@ class MaxentWorker(QThread):
         #                            so QMaxent matches maxnet.
         #   use_lambdas/n_lambdas Friedman, Hastie & Tibshirani 2010 (glmnet)
         #   class_weights=100     Fithian & Hastie 2013 (IWLR equivalence)
+        # ─── 2. Full-data model fit ───────────────────────────────────────
+        self.log.emit("")
+        self.log.emit("─── 2. Full-data model fit ───")
         self._check(32, "Training MaxentModel...")
+        self.log.emit("  Training MaxentModel on full data...")
         model = eb.make_maxent_model(
             feature_types=feature_types,
             beta_multiplier=cfg.get("beta_mult",     1.0),
@@ -381,7 +419,8 @@ class MaxentWorker(QThread):
             categorical=categorical_indices or None,
             labels=feature_names,
         )
-        self.log.emit("  → Model training complete")
+        # (No "Model training complete" log line here — the Training AUC
+        # emit below is itself the completion signal.)
 
         # Attach metadata (response curves / projection)
         x_presence  = x[y == 1]
@@ -491,10 +530,6 @@ class MaxentWorker(QThread):
             "raster_paths":    raster_paths,
         }
 
-        if cfg.get("output_model"):
-            eb.save_object(model, cfg["output_model"])
-            self.log.emit(f"  → Model saved: {cfg['output_model']}")
-
         # ── 4. ROC curve (training data) ──────────────────────────────────
         # Must be computed immediately after training, before CV retraining.
         # Note: the AUC reported here is *training* AUC. It is shown only
@@ -514,6 +549,12 @@ class MaxentWorker(QThread):
         except Exception as e:
             self.log.emit(f"  → ROC computation skipped: {e}")
 
+        # Save model after the headline metric so the log reads
+        # "Training AUC = ...; Model saved: ..." in natural order.
+        if cfg.get("output_model"):
+            eb.save_object(model, cfg["output_model"])
+            self.log.emit(f"  → Model saved: {cfg['output_model']}")
+
         # Start building result dict — ROC data goes in right away
         result = {
             "model":          model,
@@ -530,6 +571,35 @@ class MaxentWorker(QThread):
         cv_method  = cfg.get("cv_method", 0)
         first_fold = None      # (train_mask, test_mask) for jackknife reuse
         if cv_method > 0:
+            # ─── 3. Cross-validation ──────────────────────────────────
+            # Header text adapts per-method: K-Fold methods report
+            # "n=N folds", Checkerboard reports "single split", BLOO
+            # reports the buffer distance (its splits are determined
+            # by buffer + n_presence, not a fold count).
+            seed_cfg = cfg.get("random_seed")
+            seed_str = (f", seed={int(seed_cfg)}"
+                        if seed_cfg is not None else ", seed=random")
+            if cv_method in (1, 2):
+                cv_name_map = {1: "Geographic K-Fold", 2: "Random K-Fold"}
+                cv_name = cv_name_map[cv_method]
+                n_folds_cfg = int(cfg.get("n_folds", 5))
+                header_detail = f"n={n_folds_cfg}{seed_str}"
+            elif cv_method == 3:
+                cv_name = "Checkerboard"
+                grid_m = cfg.get("grid_size", 50000.0)
+                header_detail = f"single split, grid={int(grid_m)} m"
+            elif cv_method == 4:
+                cv_name = "Buffered LOO"
+                buf_m = cfg.get("buffer_dist", 50000)
+                header_detail = f"buffer={int(buf_m)} m{seed_str}"
+            else:
+                cv_name = f"method {cv_method}"
+                header_detail = ""
+            self.log.emit("")
+            self.log.emit(
+                f"─── 3. Cross-validation ({cv_name}, "
+                f"{header_detail}) ───"
+            )
             self._check(50, "Running cross-validation...")
             (cv_aucs, first_fold,
              cv_roc_fpr, cv_roc_tpr) = self._cross_validate(
@@ -543,10 +613,20 @@ class MaxentWorker(QThread):
             if cv_aucs:
                 valid = [a for a in cv_aucs if not np.isnan(a)]
                 if valid:
-                    self.log.emit(
-                        f"  → CV AUC = {np.mean(valid):.4f} ± {np.std(valid):.4f}"
-                        f"  (n={len(valid)} fold(s))"
-                    )
+                    # Single-split methods (Checkerboard, BLOO) produce
+                    # one AUC, so "mean ± std" would be misleading
+                    # (std is trivially 0 for one value). Report just
+                    # the AUC in that case.
+                    if cv_method in (3, 4) or len(valid) == 1:
+                        self.log.emit(
+                            f"  → CV AUC (held-out) = "
+                            f"{np.mean(valid):.4f}"
+                        )
+                    else:
+                        self.log.emit(
+                            f"  → CV AUC (held-out, mean ± std) = "
+                            f"{np.mean(valid):.4f} ± {np.std(valid):.4f}"
+                        )
                 else:
                     # All folds returned NaN. Show the user a clear message
                     # rather than reporting "nan ± nan", which is what
@@ -559,6 +639,54 @@ class MaxentWorker(QThread):
 
         # ── 6. Jackknife (variable importance, uses full model) ───────────
         if cfg.get("do_jackknife", True):
+            # ─── 4. Jackknife variable importance ──────────────────────
+            # The "reuse CV" path: pass cv_aucs into the jackknife so
+            # its full-model reference matches the headline CV AUC
+            # exactly (no second retrain, no second fold-split). Both
+            # values are anchored to the same partitioning the user
+            # configured in ② Parameters.
+            # ─── Issue A (v0.1.7 final): BLOO opts OUT of cv_aucs reuse.
+            # BLOO produces a single pooled AUC across N pseudo-folds —
+            # methodologically distinct from K-Fold's per-fold AUCs.
+            # Using it as the jackknife "full-model reference" while
+            # per-variable AUCs are evaluated on a separate 25%
+            # hold-out (because first_fold is None for BLOO) would
+            # mix two non-comparable measurement schemes in the same
+            # chart. Cleaner: BLOO's pooled AUC stays in § 5; the
+            # jackknife reverts to its 25%-hold-out path (same as
+            # cv_method=0 None), keeping reference and per-variable
+            # AUCs anchored to the same fold.
+            # Checkerboard (cv_method=3) keeps cv_aucs reuse because
+            # its single train/test split IS the first_fold — so
+            # jackknife reuses the exact same partition.
+            if cv_method in (1, 2, 3):
+                cv_aucs_for_jk = result.get("cv_aucs", None)
+            else:
+                cv_aucs_for_jk = None
+            # ─── Issue B (v0.1.7 final): per-method header wording.
+            # "across the same N folds" is only natural for actual
+            # K-Fold methods. Checkerboard is a single spatial
+            # split (Muscarella 2014), and BLOO / None fall back to
+            # a random 25% hold-out.
+            self.log.emit("")
+            if cv_method in (1, 2) and cv_aucs_for_jk:
+                n_folds_for_jk = len([a for a in cv_aucs_for_jk
+                                      if not np.isnan(a)])
+                self.log.emit(
+                    f"─── 4. Jackknife variable importance "
+                    f"(across the same {n_folds_for_jk} folds) ───"
+                )
+            elif cv_method == 3 and cv_aucs_for_jk:
+                self.log.emit(
+                    "─── 4. Jackknife variable importance "
+                    "(on the same checkerboard split) ───"
+                )
+            else:
+                # cv_method == 0 (None) or 4 (BLOO).
+                self.log.emit(
+                    "─── 4. Jackknife variable importance "
+                    "(25% hold-out) ───"
+                )
             self._check(75, "Running jackknife variable importance...")
             # Inject presence_clean into cfg so the per-fold loop can
             # use Geographic K-Fold (which needs coordinates) without
@@ -569,6 +697,7 @@ class MaxentWorker(QThread):
                 model, x, y, feature_names, feature_types, cfg, first_fold,
                 categorical_indices=categorical_indices,
                 sample_weight=sample_weight,
+                cv_aucs=cv_aucs_for_jk,
             )
             cfg.pop("_presence_clean", None)
             result["jackknife_results"] = jk_results
@@ -582,7 +711,96 @@ class MaxentWorker(QThread):
             # intermediate checkpoint to keep the progress bar moving
             # smoothly (75% → 95% → 100%) instead of jumping directly
             # from 75% to 100% and looking frozen.
-            self._check(95, "Finalizing model...")
+            self._check(85, "Finalizing model...")
+
+        # ── 7. Permutation importance (added v0.1.3) ─────────────────────
+        # Reports the AUC drop when each feature's values are randomly
+        # shuffled — the same metric reported by maxent.jar as
+        # "permutation importance" (Phillips et al. 2006, 2017). Computed
+        # on the held-out test fold when a CV first_fold exists,
+        # otherwise on the full training matrix. Result is normalized
+        # to percentage of total to match maxent.jar's output
+        # convention and enable direct ranking comparison with
+        # published Maxent SDM studies.
+        #
+        # Note (Strobl et al. 2007; Hooker & Mentch 2019): permutation
+        # importance can underestimate the importance of features
+        # correlated with other features in the model. We report the
+        # raw values without correction and document this caveat in
+        # the UI panel; users should interpret jackknife and
+        # permutation importance together rather than relying on
+        # either alone.
+        if cfg.get("do_permutation", True):
+            self._check(90, "Computing permutation importance...")
+            try:
+                # Use the held-out test fold for an honest estimate
+                # when CV is configured. Falls back to the full design
+                # matrix when no CV partition is available.
+                if first_fold is not None:
+                    _, te_mask = first_fold
+                    x_pi, y_pi = x[te_mask], y[te_mask]
+                    pi_source = "held-out test set"
+                else:
+                    x_pi, y_pi = x, y
+                    pi_source = "training set"
+
+                n_repeats = int(cfg.get("permutation_repeats", 10))
+                # ─── 5. Permutation importance ─────────────────────────
+                self.log.emit("")
+                self.log.emit(
+                    f"─── 5. Permutation importance "
+                    f"(sklearn, n_repeats={n_repeats}, "
+                    f"evaluated on {pi_source}) ───"
+                )
+                pi_seed   = cfg.get("random_seed")
+                importances = eb.permutation_importance_scores(
+                    model, x_pi, y_pi,
+                    n_repeats=n_repeats,
+                    n_jobs=1,
+                    random_state=pi_seed,
+                )
+                # importances shape: (n_features, n_repeats)
+                pi_mean = importances.mean(axis=1)
+                pi_std  = importances.std(axis=1)
+
+                # Normalize as percentage of total (matches maxent.jar's
+                # permutation importance convention). Guard against
+                # all-zero importances (e.g. perfectly random model).
+                total = float(pi_mean.sum())
+                if total > 0:
+                    pi_pct = 100.0 * pi_mean / total
+                else:
+                    pi_pct = np.zeros_like(pi_mean)
+
+                permutation_results = []
+                for i, nm in enumerate(feature_names):
+                    permutation_results.append({
+                        "variable":         nm,
+                        "importance_mean":  float(pi_mean[i]),
+                        "importance_std":   float(pi_std[i]),
+                        "importance_pct":   float(pi_pct[i]),
+                    })
+                # Sort by importance_mean descending so the chart and
+                # XLSX both show the most important variable on top.
+                permutation_results.sort(
+                    key=lambda r: -r["importance_mean"]
+                )
+                result["permutation_results"]    = permutation_results
+                result["permutation_source"]     = pi_source
+                result["permutation_n_repeats"]  = n_repeats
+                self.log.emit(
+                    f"  → Computed for {len(feature_names)} variables "
+                    "(see Results > Permutation Importance tab)"
+                )
+            except Exception as e:
+                # Permutation can fail when the held-out set is
+                # degenerate (e.g. all-presence). Log and continue
+                # rather than aborting the whole run — jackknife
+                # already provides a variable-importance signal.
+                self.log.emit(
+                    f"  → Permutation importance skipped: {e}"
+                )
+                result["permutation_results"] = []
 
         # Persist academic results into the model meta so they survive
         # a save → load cycle. Without this, reopening a .pkl would
@@ -616,6 +834,17 @@ class MaxentWorker(QThread):
                      for k, v in row.items()}
                     for row in result.get("jackknife_results", [])
                 ],
+                # Permutation importance rows (added v0.1.3). Same
+                # defensive-copy pattern as jackknife — keeps the
+                # .pkl portable across machines and free of numpy
+                # scalar references.
+                "permutation_results":  [
+                    {k: (float(v) if isinstance(v, (int, float)) else v)
+                     for k, v in row.items()}
+                    for row in result.get("permutation_results", [])
+                ],
+                "permutation_source":   result.get("permutation_source"),
+                "permutation_n_repeats": result.get("permutation_n_repeats"),
             }
             # Re-save the .pkl now that academic_results is populated.
             # The first save_object call (right after model.fit, before
@@ -643,11 +872,19 @@ class MaxentWorker(QThread):
 
         # Save XLSX (multi-sheet styled report — see _save_xlsx).
         if cfg.get("output_xlsx") and (
-            "jackknife_results" in result or "cv_aucs" in result
+            "jackknife_results" in result
+            or "cv_aucs" in result
+            or "permutation_results" in result
         ):
+            # ─── 6. Save results ──────────────────────────────────────
+            self.log.emit("")
+            self.log.emit("─── 6. Save results ───")
             self._save_xlsx(result, cfg)
             result["xlsx_path"] = cfg["output_xlsx"]
 
+        # No "Done" log line — the progress bar reaching 100% and the
+        # main thread's "All analysis complete." emit together convey
+        # completion without duplication.
         self._check(100, "Done")
         return result
 
@@ -747,6 +984,39 @@ class MaxentWorker(QThread):
             te[all_p[te_p]] = True; te[all_bg] = True
             return tr, te
 
+        def _to_metric_gdf(gdf):
+            """Reproject the presence GeoDataFrame to EPSG:6933 if its
+            CRS is geographic (degrees).
+
+            EPSG:6933 (World Equidistant Cylindrical) is area-
+            preserving and uses metres — the same CRS used in
+            priority_sites.py for distance filters. Reprojecting here
+            lets the user enter `Grid size (m)` and `Buffer (m)` as
+            literal metres regardless of whether the presence layer
+            arrived in EPSG:4326 (degrees) or some other CRS.
+
+            We only reproject when needed:
+              - geographic (lat/lon) → EPSG:6933
+              - already projected (any metric CRS) → leave as is
+
+            elapid's checkerboard_split and BufferedLeaveOneOut both
+            consume coordinates in the GeoDataFrame's native CRS, so
+            this single reprojection step is sufficient.
+            """
+            try:
+                src_crs = getattr(gdf, "crs", None)
+                if src_crs is None:
+                    return gdf
+                if bool(src_crs.is_geographic):
+                    return gdf.to_crs("EPSG:6933")
+                return gdf
+            except Exception:
+                # If the CRS lookup or reprojection fails (mis-encoded
+                # CRS, missing PROJ database, etc.), fall back to the
+                # original GeoDataFrame — better an approximate split
+                # than a hard failure mid-run.
+                return gdf
+
         aucs       = []
         first_fold = None
         # Per-fold ROC traces. We collect (fpr, tpr) for every fold so the
@@ -781,7 +1051,7 @@ class MaxentWorker(QThread):
                     auc = float("nan")
                 aucs.append(auc)
                 self.log.emit(
-                    f"  Fold {fi+1}: {len(te_p)} test presences, AUC={auc:.4f}"
+                    f"  Fold {fi+1}: {len(te_p):>3d} test presences, AUC = {auc:.4f}"
                 )
 
         elif cv_method == 2:  # Random K-Fold (Phillips 2006)
@@ -823,14 +1093,19 @@ class MaxentWorker(QThread):
                     auc = float("nan")
                 aucs.append(auc)
                 self.log.emit(
-                    f"  Fold {fi+1}: {len(te_p)} test presences, AUC={auc:.4f}"
+                    f"  Fold {fi+1}: {len(te_p):>3d} test presences, AUC = {auc:.4f}"
                 )
 
         elif cv_method == 3:  # Checkerboard (single train/test split)
-            pts = presence_clean.copy()
+            # v0.1.7: reproject to EPSG:6933 (metres) so the user's
+            # Grid size value is consumed as metres regardless of
+            # whether presence_clean arrived in EPSG:4326 (degrees)
+            # or a projected CRS. Default 50000 = 50 km, a reasonable
+            # checkerboard scale for continent-wide SDMs.
+            pts = _to_metric_gdf(presence_clean.copy())
             pts["_oi"] = np.arange(len(presence_clean))
             tr_pts, te_pts = eb.checkerboard_split(
-                pts, grid_size=cfg.get("grid_size", 1.0)
+                pts, grid_size=cfg.get("grid_size", 50000.0)
             )
             if len(te_pts) > 0:
                 tr, te = _masks(tr_pts["_oi"].values, te_pts["_oi"].values)
@@ -846,7 +1121,9 @@ class MaxentWorker(QThread):
                 except Exception:
                     auc = float("nan")
                 aucs.append(auc)
-                self.log.emit(f"  Checkerboard AUC={auc:.4f}")
+                self.log.emit(
+                    f"  Split: {len(te_pts):>3d} test presences, AUC = {auc:.4f}"
+                )
 
         elif cv_method == 4:  # Buffered LOO
             # Pearson 2007 / Ploton 2020 standard: pool predictions across
@@ -855,14 +1132,17 @@ class MaxentWorker(QThread):
             # (which are statistically unstable because each fold has only
             # one test presence and shares the entire background set).
             #
-            # `buffer_dist` is interpreted in the units of the presence
-            # layer's CRS (metres for projected metric CRSs; degrees for
-            # EPSG:4326). The 50,000 default is illustrative only — an
-            # appropriate value depends on the species' dispersal range
-            # and the spatial autocorrelation length of the covariates
-            # (Roberts et al. 2017; Ploton et al. 2020).
+            # v0.1.7: `buffer_dist` is always interpreted as metres,
+            # regardless of the source CRS. We achieve this by
+            # reprojecting the presence GeoDataFrame to EPSG:6933
+            # (an area-preserving metric CRS) before handing it to
+            # elapid's BufferedLeaveOneOut. The 50,000 default is
+            # 50 km — illustrative only; an appropriate value depends
+            # on the species' dispersal range and the spatial
+            # autocorrelation length of the covariates (Roberts et
+            # al. 2017; Ploton et al. 2020).
             bloo = eb.make_buffered_loo(distance=cfg.get("buffer_dist", 50000))
-            pts  = presence_clean.reset_index(drop=True).copy()
+            pts  = _to_metric_gdf(presence_clean.reset_index(drop=True).copy())
             pts["_y"] = 1   # for class_label
 
             test_pres_pred = []   # predictions for held-out presences
@@ -878,8 +1158,29 @@ class MaxentWorker(QThread):
             # focused on the published Maxent options.
             min_train_pres = cfg.get("bloo_min_train_pres", 5)
 
+            # Estimate total folds for progress reporting. BLOO splits
+            # produce one fold per presence point, so we can bound the
+            # progress bar to that range — useful because BLOO can
+            # take minutes on a 100+ presence species (one retrain
+            # per held-out point).
+            n_total_folds = max(1, len(presence_clean))
+            self.log.emit(
+                f"  BLOO: {n_total_folds} folds total "
+                f"(one retrain per presence point)"
+            )
+
+            fold_idx = 0
             for tr_p, te_p in bloo.split(pts, class_label="_y"):
                 if self._cancelled: break
+                fold_idx += 1
+                # Progress: BLOO occupies the 50–75% range. Steps go
+                # 50 → 75 across the folds. We update on every fold
+                # so a long BLOO run doesn't look frozen.
+                pct = 50 + int((fold_idx / n_total_folds) * 25)
+                self.progress.emit(
+                    pct,
+                    f"BLOO fold {fold_idx}/{n_total_folds}",
+                )
                 if len(tr_p) < min_train_pres:
                     continue
                 tr, te = _masks(tr_p, te_p)
@@ -927,8 +1228,8 @@ class MaxentWorker(QThread):
                     pooled_auc = float("nan")
                 aucs.append(pooled_auc)
                 self.log.emit(
-                    f"  Buffered LOO pooled AUC = {pooled_auc:.4f}  "
-                    f"(folds run: {n_folds_run})"
+                    f"  Pooled AUC = {pooled_auc:.4f} "
+                    f"({n_folds_run} folds run)"
                 )
             # first_fold stays None for BLOO -> jackknife falls back to
             # random hold-out per decision #3-a-i.
@@ -942,7 +1243,8 @@ class MaxentWorker(QThread):
 
     def _jackknife(self, full_model, x, y, feature_names,
                    feature_types, cfg, first_fold,
-                   categorical_indices=None, sample_weight=None):
+                   categorical_indices=None, sample_weight=None,
+                   cv_aucs=None):
         """Jackknife variable importance with train+test AUC reporting.
 
         Returns:
@@ -951,6 +1253,16 @@ class MaxentWorker(QThread):
               full_train_auc: full-model AUC on the whole dataset
               full_test_auc:  full-model AUC averaged across folds (or
                               single hold-out when CV is disabled / BLOO)
+
+        When ``cv_aucs`` is provided (the list of per-fold held-out AUCs
+        already computed in § 5 Cross-validation), this method uses it
+        directly as ``full_test_auc`` instead of refitting the full
+        model fold-by-fold. This (a) guarantees the reported
+        full-model reference matches the headline CV AUC exactly —
+        no second fold-split, no second retrain, no rounding-error
+        divergence — and (b) saves ``n_folds`` full-model fits on the
+        critical path. The per-variable ``only(v)`` / ``without(v)``
+        retrains still need to happen, of course.
 
         For every variable v we fit two reduced models per fold:
             only(v):    model trained on v alone
@@ -1087,9 +1399,9 @@ class MaxentWorker(QThread):
                 )
                 fold_masks = []
             if fold_masks:
-                self.log.emit(
-                    f"  Jackknife: averaging across {len(fold_masks)} CV folds."
-                )
+                # (No "averaging across N folds" line here — the Block 4
+                # header above already states the fold count.)
+                pass
 
         if not fold_masks:
             # Either CV is disabled / BLOO / Checkerboard, or fold
@@ -1116,31 +1428,54 @@ class MaxentWorker(QThread):
 
         # ── Full-model reference AUCs ────────────────────────────────────
         # Train AUC is computed once on the whole dataset (matches the
-        # headline "Train AUC" in the status bar). Test AUC is the
-        # *mean across folds*, mirroring the ROC panel's mean CV AUC.
+        # headline "Training AUC" emitted in § 2). Test AUC re-uses
+        # the per-fold cv_aucs from § 5 when available, so:
+        #   • the value reported here matches the headline CV AUC
+        #     line-for-line (no second fold-split, no rounding-error
+        #     divergence);
+        #   • we save n_folds full-model retrains on the critical path.
+        # When cv_aucs is None (CV is disabled / BLOO / Checkerboard /
+        # CV fold setup failed), we fall back to retraining the full
+        # model on each jackknife fold the way the v0.1.6 path did.
         full_train_auc = _auc(full_model, x, y)
-        full_test_aucs = []
-        for tr, te in fold_masks:
-            if not (report_test and te.any()):
-                continue
-            sw_tr = sample_weight[tr] if sample_weight is not None else None
-            try:
-                m = _build()
-                m.fit(x[tr], y[tr], sample_weight=sw_tr,
-                      categorical=categorical_indices or None,
-                      labels=feature_names)
-                full_test_aucs.append(_auc(m, x[te], y[te]))
-            except Exception:
-                full_test_aucs.append(float("nan"))
-        full_test_auc = (float(np.nanmean(full_test_aucs))
-                         if full_test_aucs else float("nan"))
+        if cv_aucs is not None:
+            valid_cv = [a for a in cv_aucs if not np.isnan(a)]
+            full_test_auc = (float(np.mean(valid_cv))
+                             if valid_cv else float("nan"))
+        else:
+            full_test_aucs = []
+            for tr, te in fold_masks:
+                if not (report_test and te.any()):
+                    continue
+                sw_tr = sample_weight[tr] if sample_weight is not None else None
+                try:
+                    m = _build()
+                    m.fit(x[tr], y[tr], sample_weight=sw_tr,
+                          categorical=categorical_indices or None,
+                          labels=feature_names)
+                    full_test_aucs.append(_auc(m, x[te], y[te]))
+                except Exception:
+                    full_test_aucs.append(float("nan"))
+            full_test_auc = (float(np.nanmean(full_test_aucs))
+                             if full_test_aucs else float("nan"))
         self.log.emit(
-            f"  → Full model: train AUC={full_train_auc:.4f}"
-            + (f", mean test AUC={full_test_auc:.4f} "
-               f"({n_folds_actual} folds)" if report_test else "")
+            f"  Reference: full model — train AUC = {full_train_auc:.4f}"
+            + (f", mean held-out test AUC = {full_test_auc:.4f}"
+               if report_test else "")
         )
 
         # ── Per-variable jackknife loop ──────────────────────────────────
+        # Emit a one-time legend so the per-variable lines below
+        # (only_tr=, only_te=, without_tr=, without_te=) stay short
+        # while keeping the meaning obvious on first read.
+        # Wording is method-neutral: K-Fold runs average across N
+        # folds, Checkerboard runs use the single train/test split,
+        # BLOO / None use a 25% hold-out — so "evaluated on the test
+        # split(s)" covers all four without misleading the reader.
+        self.log.emit(
+            "  Per-variable AUCs "
+            "(tr = train AUC, te = held-out test AUC):"
+        )
         results = []
         n       = len(feature_names)
         cat_set = set(categorical_indices or [])
@@ -1261,16 +1596,21 @@ class MaxentWorker(QThread):
                 "train_drop_without": round(train_drop,         4),
                 "test_drop_without":  round(test_drop,          4),
             })
+            # Compute the variable-name column width once per call
+            # so all per-variable lines line up. We pad to the longest
+            # feature name in the current run.
+            name_w = max(len(nm) for nm in feature_names)
             self.log.emit(
-                f"  {name}: only_tr={only_train_auc:.4f} "
-                f"only_te={only_test_auc:.4f}  "
-                f"without_tr={without_train_auc:.4f} "
-                f"without_te={without_test_auc:.4f}"
+                f"    {name:<{name_w}}  "
+                f"only_tr = {only_train_auc:.4f}  "
+                f"only_te = {only_test_auc:.4f}  "
+                f"without_tr = {without_train_auc:.4f}  "
+                f"without_te = {without_test_auc:.4f}"
             )
             if only_skip_reason:
-                self.log.emit(f"     {only_skip_reason}")
+                self.log.emit(f"      {only_skip_reason}")
             if without_skip_reason:
-                self.log.emit(f"     {without_skip_reason}")
+                self.log.emit(f"      {without_skip_reason}")
 
         return results, full_train_auc, full_test_auc
 
@@ -1336,7 +1676,7 @@ class MaxentWorker(QThread):
         BORDER_HEADER    = Border(bottom=SIDE_THIN)
         BORDER_BOT_THICK = Border(bottom=SIDE_THICK)
 
-        ROW_HEIGHT = 22  # ≈ 1.4× line spacing at 11pt
+        ROW_HEIGHT = 24  # ≈ 1.6× line spacing at 11pt Times New Roman
 
         # ── Helpers ──────────────────────────────────────────────────────
         def _write_section_title(ws, row, text, n_cols):
@@ -1409,18 +1749,25 @@ class MaxentWorker(QThread):
                            start_column=1, end_column=n_cols)
             # Estimate visual line count from total merged width.
             # Excel "column width" units ≈ characters of the default
-            # font; 11pt italic is slightly narrower so we use 1.05 as
-            # a conservative char-per-unit factor.
+            # font at 11pt. The footnote is 10pt italic Times New Roman
+            # which is actually slightly wider per character than
+            # regular 11pt Calibri (the assumed baseline) due to the
+            # italic obliqueness, so we use 0.9 — a more conservative
+            # chars-per-unit factor than the previous 1.05. The old
+            # 1.05 over-estimated chars-per-line and produced footnote
+            # rows that visually clipped on the ~190-260 char footnotes
+            # (Overview, Variables, Jackknife).
             total_width = (sum(col_widths)
                            if col_widths else max(60, n_cols * 18))
-            chars_per_line = max(40, int(total_width * 1.05))
+            chars_per_line = max(40, int(total_width * 0.9))
             n_lines = max(1, (len(text) + chars_per_line - 1)
                               // chars_per_line)
-            # Each line at 10pt italic needs ~14pt of row height; add
-            # 4pt of top/bottom padding so adjacent footnotes don't
-            # touch each other.
+            # Each line at 10pt italic needs ~15pt of row height
+            # (10pt glyphs + leading + descender slack); add 6pt of
+            # top/bottom padding so adjacent footnotes don't touch
+            # each other.
             ws.row_dimensions[row].height = max(ROW_HEIGHT,
-                                                 14 * n_lines + 4)
+                                                 15 * n_lines + 6)
 
         def _autosize(ws, widths):
             from openpyxl.utils import get_column_letter
@@ -1762,7 +2109,65 @@ class MaxentWorker(QThread):
             _autosize(ws, jk_widths)
 
         # ════════════════════════════════════════════════════════════════
-        # Sheet 5: Priority Sites (optional — present when threshold info
+        # Sheet 5: Permutation importance (added v0.1.3)
+        # ════════════════════════════════════════════════════════════════
+        # Same metric reported by maxent.jar as "permutation importance"
+        # in its HTML output. Normalized as percentage of total to match
+        # the maxent.jar convention and enable direct ranking comparison
+        # with published Maxent SDM studies (e.g. Lee et al. 2025
+        # Table 4 column 4).
+        pi_rows = result.get("permutation_results", []) or []
+        if pi_rows:
+            ws = wb.create_sheet("Permutation importance")
+            n_repeats = result.get("permutation_n_repeats", "?")
+            pi_source = result.get("permutation_source", "training set")
+            _write_section_title(
+                ws, 1,
+                f"Table 5. Permutation importance — AUC drop when each "
+                f"variable's values are randomly shuffled "
+                f"(n_repeats={n_repeats}, evaluated on {pi_source}).",
+                n_cols=4,
+            )
+            _write_header(ws, 2, [
+                "Variable",
+                "Mean importance",
+                f"Std (n={n_repeats})",
+                "Normalized (%)",
+            ])
+            cur = 3
+            n_pi = len(pi_rows)
+            for i, r in enumerate(pi_rows):
+                _write_data(
+                    ws, cur,
+                    [
+                        r.get("variable", ""),
+                        f"{r.get('importance_mean', 0.0):.4f}",
+                        f"{r.get('importance_std', 0.0):.4f}",
+                        f"{r.get('importance_pct', 0.0):.2f}",
+                    ],
+                    alignments=["left", "center", "center", "center"],
+                    is_last=(i == n_pi - 1),
+                )
+                cur += 1
+            pi_widths = [22, 18, 18, 16]
+            _write_footnote(
+                ws, cur,
+                "Permutation importance = AUC drop after shuffling each "
+                "variable's values, computed via sklearn's "
+                "permutation_importance (n_repeats independent shuffles). "
+                "Normalized values sum to 100% and match the convention "
+                "of maxent.jar's permutation importance output. Caveat "
+                "(Strobl et al. 2007; Hooker & Mentch 2019): this metric "
+                "can underestimate the importance of features that are "
+                "correlated with other features in the model; interpret "
+                "alongside the jackknife sheet rather than alone. "
+                "Variables sorted by descending mean importance.",
+                n_cols=4, col_widths=pi_widths,
+            )
+            _autosize(ws, pi_widths)
+
+        # ════════════════════════════════════════════════════════════════
+        # Sheet 6: Priority Sites (optional — present when threshold info
         # is in meta from a prior priority-sites run)
         # ════════════════════════════════════════════════════════════════
         ps = meta.get("priority_thresholds", None)
@@ -1770,7 +2175,7 @@ class MaxentWorker(QThread):
             ws = wb.create_sheet("Priority Sites")
             _write_section_title(
                 ws, 1,
-                "Table 5. Priority Sites threshold values from the "
+                "Table 6. Priority Sites threshold values from the "
                 "training data.",
                 n_cols=2,
             )

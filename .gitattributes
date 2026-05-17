@@ -1,0 +1,16 @@
+# Enforce LF for every text file regardless of contributor's OS.
+# This eliminates the CRLF/LF noise that otherwise marks every file
+# as "modified" the moment a Windows user clones the repo.
+* text=auto eol=lf
+
+# Binary assets — never line-ending normalise.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.pdf   binary
+*.zip   binary
+*.pkl   binary
+*.tif   binary
+*.tiff  binary

@@ -292,6 +292,99 @@ class QMaxentMainDock(QDockWidget):
         self._bg_spin.setSingleStep(1000)
         bgg.addWidget(self._bg_spin); bgg.addStretch()
         v.addWidget(bg_grp)
+
+        # ── Export for external Maxent (v0.1.3, dual-format in v0.1.4) ───
+        # Exports the current presence + raster selection in one of two
+        # formats consumable by the standalone maxent.jar implementation
+        # (Phillips et al. 2017). Two formats are offered:
+        #
+        #   "SWD" — Samples-With-Data CSV pair. Best for byte-level
+        #     cross-checking the elapid backend against maxent.jar on
+        #     exactly the same point sample. Does NOT yield a
+        #     projection raster on its own.
+        #
+        #   "Samples + Raster" — A short samples CSV plus one ESRI
+        #     ASCII Grid (.asc) per environmental raster. This is the
+        #     natural maxent.jar input format: model fit AND a
+        #     projection raster are produced in a single command-line
+        #     invocation. Files are larger than SWD because the
+        #     environment is stored as full surfaces, not just the
+        #     extracted point values.
+        #
+        # Both formats write a README.txt with a generic maxent.jar
+        # default-settings command line, so any QGIS user can take the
+        # output and run maxent.jar without further configuration.
+        swd_grp = QGroupBox(tr("Export for external Maxent"))
+        swdv = QVBoxLayout(swd_grp)
+
+        swd_info = QLabel(tr(
+            "Export the current presence and environmental raster "
+            "selection in a format consumable by the standalone "
+            "maxent.jar implementation. Useful for running the "
+            "original Java Maxent on the same data, or for sharing "
+            "a ready-to-use Maxent input directory."
+        ))
+        swd_info.setWordWrap(True)
+        swd_info.setStyleSheet("color: #555; font-size: 9pt;")
+        swdv.addWidget(swd_info)
+
+        # Format radio selector. We use plain QRadioButton instead of
+        # a QComboBox so the trade-off between the two formats is
+        # visible side-by-side without having to open a dropdown. The
+        # default option (Samples + Raster) is listed first to match
+        # the platform convention that the default sits at the top of
+        # a radio group (Microsoft Fluent Design, Apple HIG, and QGIS
+        # itself follow this).
+        fmt_row = QHBoxLayout()
+        fmt_row.addWidget(QLabel(tr("Format:")))
+        self._swd_fmt_raster = QRadioButton(tr("Samples + Raster (samples CSV + .asc layers)"))
+        self._swd_fmt_raster.setToolTip(tooltip(tr(
+            "A short samples CSV (Species, Longitude, Latitude only) "
+            "plus one ESRI ASCII Grid (.asc) per environmental raster "
+            "in a layers/ folder. maxent.jar fits the model AND "
+            "produces a projection raster in a single run. Larger "
+            "files but ready to use without additional arguments."
+        )))
+        self._swd_fmt_swd = QRadioButton(tr("SWD (CSV pair, extracted values)"))
+        self._swd_fmt_swd.setToolTip(tooltip(tr(
+            "Two CSVs (presence.csv + background.csv) with environmental "
+            "values pre-extracted at each point. maxent.jar will use "
+            "these exact points and values — no further sampling. "
+            "Smaller files, but produces no projection raster unless "
+            "you also pass projectionlayers= to maxent.jar."
+        )))
+        # Default to the format that matches typical maxent.jar usage —
+        # samples + raster — so a first-time user gets a usable
+        # projection raster out of the box.
+        self._swd_fmt_raster.setChecked(True)
+        fmt_row.addWidget(self._swd_fmt_raster)
+        fmt_row.addWidget(self._swd_fmt_swd)
+        fmt_row.addStretch()
+        swdv.addLayout(fmt_row)
+
+        swd_row = QHBoxLayout()
+        swd_row.addWidget(QLabel(tr("Output folder:")))
+        self._swd_dir_edit = QLineEdit()
+        self._swd_dir_edit.setText(
+            os.path.join(_default_output_dir(), "maxent_export")
+        )
+        self._swd_dir_edit.setToolTip(self._swd_dir_edit.text())
+        self._swd_dir_edit.textChanged.connect(
+            self._swd_dir_edit.setToolTip
+        )
+        swd_row.addWidget(self._swd_dir_edit, stretch=1)
+        swd_browse = QPushButton("...")
+        swd_browse.setMaximumWidth(30)
+        swd_browse.clicked.connect(self._browse_swd_dir)
+        swd_row.addWidget(swd_browse)
+        swdv.addLayout(swd_row)
+
+        self._swd_export_btn = QPushButton(tr("Export"))
+        self._swd_export_btn.clicked.connect(self._on_swd_export_clicked)
+        swdv.addWidget(self._swd_export_btn)
+
+        v.addWidget(swd_grp)
+
         v.addStretch()
         return w
 
@@ -325,12 +418,40 @@ class QMaxentMainDock(QDockWidget):
         self._raster_list.addItem(item)
 
         # Custom row widget: name on the left, toggle on the right.
+        # Transparent background so the QListWidgetItem's native
+        # selection highlight (blue when the row is selected, white
+        # when not) shows through the row widget. Without this the
+        # row widget paints its own opaque background and selected
+        # rows look unselected — a known Qt gotcha when combining
+        # setItemWidget with ExtendedSelection.
+        #
+        # The stylesheet uses an objectName-scoped selector
+        # (#qmaxentRasterRow) so the transparent rule applies ONLY
+        # to this QWidget and does NOT cascade to its descendants.
+        # An unscoped "background: transparent;" would propagate to
+        # the categorical toggle QPushButton and strip its native
+        # button styling — leaving the user with a row of black
+        # rectangles on the Windows native theme.
         row_w = QWidget()
+        row_w.setObjectName("qmaxentRasterRow")
+        row_w.setAttribute(Qt.WA_TranslucentBackground)
+        row_w.setAutoFillBackground(False)
+        row_w.setStyleSheet(
+            "QWidget#qmaxentRasterRow { background: transparent; }"
+        )
         row_l = QHBoxLayout(row_w)
         row_l.setContentsMargins(6, 2, 6, 2)
         row_l.setSpacing(8)
 
         name_lbl = QLabel(display_text or layer_name)
+        # The label needs its own transparent background for the
+        # same reason — and it's safe to scope this one with
+        # objectName too, since the QLabel has no descendants we
+        # care about styling.
+        name_lbl.setObjectName("qmaxentRasterRowLabel")
+        name_lbl.setStyleSheet(
+            "QLabel#qmaxentRasterRowLabel { background: transparent; }"
+        )
         row_l.addWidget(name_lbl, stretch=1)
 
         toggle = QPushButton()
@@ -380,7 +501,7 @@ class QMaxentMainDock(QDockWidget):
         # Feature Types
         ft_grp = QGroupBox(tr("Feature Types"))
         ftv = QVBoxLayout(ft_grp)
-        self._ft_auto_radio   = QRadioButton(tr("Auto (sample-size based, maxnet)"))
+        self._ft_auto_radio   = QRadioButton(tr("Auto (sample-size based, Phillips et al. 2017)"))
         self._ft_manual_radio = QRadioButton(tr("Manual selection"))
         self._ft_auto_radio.setChecked(True)
         ftv.addWidget(self._ft_auto_radio)
@@ -492,7 +613,7 @@ class QMaxentMainDock(QDockWidget):
         row_cv.addWidget(QLabel(tr("Method:")))
         self._cv_combo = QComboBox()
         self._cv_combo.addItems([
-            tr("None (random hold-out, non-spatial)"),
+            tr("None (no cross-validation; training AUC only)"),
             tr("Geographic K-Fold (Anderson 2023)"),
             tr("Random K-Fold (Phillips 2006)"),
             tr("Checkerboard (single spatial split; Muscarella 2014)"),
@@ -524,41 +645,43 @@ class QMaxentMainDock(QDockWidget):
         row_folds.addWidget(self._folds_spin); row_folds.addSpacing(16)
 
         # Grid size — for Checkerboard (was missing)
-        self._grid_lbl = QLabel(tr("Grid size:"))
+        self._grid_lbl = QLabel(tr("Grid size (m):"))
         row_folds.addWidget(self._grid_lbl)
         self._grid_spin = QDoubleSpinBox()
-        self._grid_spin.setRange(0.001, 1e6); self._grid_spin.setValue(1.0)
-        self._grid_spin.setSingleStep(0.5)
-        self._grid_spin.setDecimals(3)
-        # Grid size shares the buffer's unit-ambiguity problem: it is
-        # measured in the units of the presence layer's CRS, so 1.0 means
-        # something very different on a metric projection (1 metre) vs
-        # EPSG:4326 (1 degree ≈ 110 km). A good value matches the
-        # environmental autocorrelation length of the study area
-        # (Muscarella et al. 2014, ENMeval).
+        # Range: 1m to 10,000km. 50000 (50 km) is a reasonable
+        # default for continent-wide SDMs; users with finer-grained
+        # study areas can drop it to a few kilometres.
+        self._grid_spin.setRange(1.0, 1e7); self._grid_spin.setValue(50000.0)
+        self._grid_spin.setSingleStep(10000.0)
+        self._grid_spin.setDecimals(0)
+        # v0.1.7: Grid size is always in metres regardless of the
+        # presence-layer CRS. Internally the worker reprojects to
+        # EPSG:6933 (area-preserving metric) before handing the
+        # GeoDataFrame to elapid's checkerboard_split.
         self._grid_spin.setToolTip(tooltip(tr(
-            "Checkerboard cell size in the CRS units of the presence "
-            "layer (metres for projected CRSs; degrees for EPSG:4326). "
-            "Choose a value matching the environmental autocorrelation "
-            "length of the study area (Muscarella et al. 2014, ENMeval)."
+            "Checkerboard cell size in metres. Choose a value "
+            "matching the environmental autocorrelation length of "
+            "the study area (Muscarella et al. 2014, ENMeval). "
+            "Internally reprojected to EPSG:6933 so this value is "
+            "metres regardless of the presence layer's CRS."
         )))
         row_folds.addWidget(self._grid_spin); row_folds.addSpacing(16)
 
-        self._buffer_lbl = QLabel(tr("Buffer:"))
+        self._buffer_lbl = QLabel(tr("Buffer (m):"))
         row_folds.addWidget(self._buffer_lbl)
         self._buffer_spin = QDoubleSpinBox()
         self._buffer_spin.setRange(0, 1e7); self._buffer_spin.setValue(50000)
         self._buffer_spin.setSingleStep(10000)
-        # The buffer is interpreted in the units of the presence layer's CRS
-        # (metres for projected metric CRSs; degrees for EPSG:4326). An
-        # appropriate value depends on the species' dispersal range and
-        # on the spatial autocorrelation length of the environmental
-        # covariates (Roberts et al. 2017; Ploton et al. 2020).
+        self._buffer_spin.setDecimals(0)
+        # v0.1.7: Buffer is always in metres regardless of the
+        # presence-layer CRS — same reprojection treatment as
+        # Grid size above.
         self._buffer_spin.setToolTip(tooltip(tr(
-            "Buffer distance in the CRS units of the presence layer "
-            "(metres for projected CRSs; degrees for EPSG:4326). "
-            "Choose a value appropriate to the species' dispersal range "
-            "(Roberts et al. 2017; Ploton et al. 2020)."
+            "Buffer distance in metres. Choose a value appropriate "
+            "to the species' dispersal range (Roberts et al. 2017; "
+            "Ploton et al. 2020). Internally reprojected to "
+            "EPSG:6933 so this value is metres regardless of the "
+            "presence layer's CRS."
         )))
         row_folds.addWidget(self._buffer_spin); row_folds.addStretch()
         cvv.addLayout(row_folds)
@@ -593,7 +716,15 @@ class QMaxentMainDock(QDockWidget):
         seed_row.addWidget(self._seed_check)
         self._seed_spin = QSpinBox()
         self._seed_spin.setRange(0, 2_147_483_647)
-        self._seed_spin.setValue(0)
+        # 42 is the de-facto ML community convention for a "reasonable
+        # arbitrary integer seed" (Adams, 1979). It carries no special
+        # statistical properties — any fixed integer is equally valid
+        # for reproducibility — but using a deliberately-chosen value
+        # signals to reviewers that the seed is intentional rather than
+        # an unreset default. The actual value is written into the
+        # Overview sheet of results.xlsx for citation in the paper's
+        # Methods section.
+        self._seed_spin.setValue(42)
         self._seed_spin.setToolTip(tr(
             "The seed value. The Overview sheet of results.xlsx "
             "records this value (or 'random (not fixed)' when the "
@@ -616,7 +747,51 @@ class QMaxentMainDock(QDockWidget):
         # what the worker actually does.
         self._jackknife_chk = QCheckBox(tr("Jackknife variable importance"))
         self._jackknife_chk.setChecked(True)
+        self._jackknife_chk.setToolTip(tooltip(tr(
+            "Train models with each variable alone and with each "
+            "variable removed; report train and held-out test AUC. "
+            "Robust to multicollinearity but slower (requires "
+            "retraining N×2 times)."
+        )))
         v.addWidget(self._jackknife_chk)
+
+        # Permutation importance (added v0.1.3) — the same metric
+        # reported by maxent.jar as "permutation importance" in its
+        # HTML output. Computed by shuffling each variable's values
+        # in the fitted model and measuring the AUC drop; reported
+        # both as raw AUC drop and as a percentage of total
+        # (matching maxent.jar's convention). Enables direct ranking
+        # comparison with published Maxent SDM studies.
+        pi_row = QHBoxLayout()
+        self._permutation_chk = QCheckBox(tr("Permutation importance"))
+        self._permutation_chk.setChecked(True)
+        self._permutation_chk.setToolTip(tooltip(tr(
+            "Shuffle each variable's values in the fitted model and "
+            "measure the AUC drop (sklearn permutation_importance). "
+            "Same metric reported by maxent.jar; enables direct "
+            "ranking comparison with maxent.jar-based SDM studies. "
+            "Fast (no retraining) but can underestimate the "
+            "importance of correlated variables — interpret "
+            "alongside jackknife rather than alone."
+        )))
+        pi_row.addWidget(self._permutation_chk)
+        pi_row.addWidget(QLabel(tr("Repeats:")))
+        self._permutation_repeats_spin = QSpinBox()
+        self._permutation_repeats_spin.setRange(2, 100)
+        self._permutation_repeats_spin.setValue(10)
+        self._permutation_repeats_spin.setToolTip(tooltip(tr(
+            "Number of independent shuffles per variable. The "
+            "default of 10 matches sklearn and maxent.jar; higher "
+            "values reduce noise in the std column at linear cost."
+        )))
+        pi_row.addWidget(self._permutation_repeats_spin)
+        pi_row.addStretch()
+        # Enable/disable the spin box alongside the checkbox so the UI
+        # state never lies about what will actually be computed.
+        self._permutation_chk.toggled.connect(
+            self._permutation_repeats_spin.setEnabled
+        )
+        v.addLayout(pi_row)
 
         # Output Files
         out_grp = QGroupBox(tr("Output Files"))
@@ -661,6 +836,17 @@ class QMaxentMainDock(QDockWidget):
             default_filename="results.xlsx",
         )
         outg.addLayout(row_c)
+
+        # v0.1.7: the explicit "Save training log alongside prediction
+        # raster" checkbox is removed. training_log.txt is now written
+        # automatically next to model.pkl at the end of ▶ Run Maxent —
+        # the natural moment a researcher would want the log — rather
+        # than gating it on the optional ▶ Run Spatial Projection step.
+        # The log captures the full Run Maxent narrative (categorical
+        # mask decisions, fold AUCs, jackknife outliers, dependency
+        # versions) which the results.xlsx Overview sheet only
+        # summarises, and is small enough (a few KB) that opt-in
+        # friction would be net-negative.
         v.addWidget(out_grp)
         v.addStretch()
         scroll.setWidget(inner)
@@ -707,9 +893,35 @@ class QMaxentMainDock(QDockWidget):
         self._train_log.setReadOnly(True); self._train_log.setMaximumBlockCount(500)
         self._train_log.setFont(QFont("Courier New", 9))
         v.addWidget(self._train_log, stretch=1)
-        clr_btn = QPushButton(tr("Clear log"))
+        # Three-button row: clear / copy / save-as. "Copy log" and
+        # "Save log as…" give the user a manual escape hatch separate
+        # from the auto-save (which lands next to model.pkl at the end
+        # of ▶ Run Maxent in v0.1.7), useful when (a) the run is still
+        # in progress, (b) the user wants a quick snapshot at a
+        # specific moment, or (c) the log needs to go into a slack /
+        # email / GitHub issue. The buttons grab whatever is currently
+        # in the QPlainTextEdit — same single source of truth as the
+        # auto-save path.
+        log_btn_row = QHBoxLayout()
+        clr_btn  = QPushButton(tr("Clear log"))
         clr_btn.clicked.connect(self._train_log.clear)
-        v.addWidget(clr_btn)
+        copy_btn = QPushButton(tr("Copy log"))
+        copy_btn.setToolTip(tr(
+            "Copy the entire training log to the clipboard."
+        ))
+        copy_btn.clicked.connect(self._copy_train_log_to_clipboard)
+        save_btn = QPushButton(tr("Save log as..."))
+        save_btn.setToolTip(tr(
+            "Save the entire training log to a text file at a "
+            "location of your choice. This is independent of the "
+            "auto-save next to model.pkl."
+        ))
+        save_btn.clicked.connect(self._save_train_log_as)
+        log_btn_row.addWidget(clr_btn)
+        log_btn_row.addWidget(copy_btn)
+        log_btn_row.addWidget(save_btn)
+        log_btn_row.addStretch()
+        v.addLayout(log_btn_row)
         return w
 
     # ─── Tab 4: Results ──────────────────────────────────────────────────────
@@ -720,6 +932,7 @@ class QMaxentMainDock(QDockWidget):
         self._result_tabs = QTabWidget()
         self._result_tabs.addTab(self._build_response_tab(),   tr("Response Curves"))
         self._result_tabs.addTab(self._build_importance_tab(), tr("Jackknife Importance"))
+        self._result_tabs.addTab(self._build_permutation_tab(), tr("Permutation Importance"))
         self._result_tabs.addTab(self._build_project_tab(),    tr("Spatial Projection"))
         v.addWidget(self._result_tabs)
         return w
@@ -727,6 +940,34 @@ class QMaxentMainDock(QDockWidget):
     def _build_response_tab(self) -> QWidget:
         w = QWidget(); v = QVBoxLayout(w)
         v.setContentsMargins(4, 4, 4, 4)
+
+        # v0.1.7: one-paragraph explanation matching the pattern used
+        # on the Jackknife and Permutation tabs. Tells the user what
+        # a response curve actually shows so the Y-axis transform
+        # selector and the per-variable dropdown make sense without
+        # prior Maxent familiarity. The "holding other variables at
+        # training-set means" caveat is spelled out because it's the
+        # single most common misreading — users intuitively want to
+        # read the curve as an absolute probability map.
+        info = QLabel(tr(
+            "Marginal effect: how the predicted suitability changes "
+            "across the range of one variable while the other "
+            "variables are held at their training-set means. The "
+            "Y-axis reads as relative habitat suitability (cloglog: "
+            "0 to 1, saturates near 1 in the most suitable region). "
+            "The shaded green band marks the variable's training-data "
+            "range — curves outside it are extrapolation and should "
+            "be interpreted with caution; the dotted line marks the "
+            "training-data mean. Useful for inspecting whether the "
+            "model has learned ecologically plausible shapes (e.g. "
+            "unimodal temperature optima) and for spotting variables "
+            "whose curves are nearly flat — candidates for removal "
+            "in a parsimonious model."
+        ))
+        info.setWordWrap(True)
+        info.setStyleSheet("QLabel { padding: 6px; font-size: 9pt; }")
+        v.addWidget(info)
+
         bar = QHBoxLayout()
         bar.addWidget(QLabel(tr("Variable:")))
         self._response_var_combo = QComboBox()
@@ -743,11 +984,94 @@ class QMaxentMainDock(QDockWidget):
     def _build_importance_tab(self) -> QWidget:
         w = QWidget(); v = QVBoxLayout(w)
         v.setContentsMargins(4, 4, 4, 4)
+
+        # v0.1.7: explanation strip matching the other two
+        # variable-analysis tabs. Distinguishes Jackknife (retrain
+        # with each variable alone / removed) from Permutation
+        # (shuffle in the fitted model) so users know why both are
+        # offered and which one to cite for which question.
+        info = QLabel(tr(
+            "Retraining test: trains the model with each variable "
+            "alone (per-variable AUC) and with each variable removed "
+            "(per-variable drop in AUC), then averages across CV "
+            "folds. Robust to correlated variables — unlike "
+            "permutation importance — because each retrained model "
+            "sees a different variable set. Slower (requires N×2 "
+            "retrains) but the standard Maxent variable-importance "
+            "diagnostic since Phillips et al. (2006)."
+        ))
+        info.setWordWrap(True)
+        info.setStyleSheet("QLabel { padding: 6px; font-size: 9pt; }")
+        v.addWidget(info)
+
         self._importance_canvas_widget = QWidget()
         self._importance_canvas_widget.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Expanding
         )
         v.addWidget(self._importance_canvas_widget, stretch=1)
+        return w
+
+    def _build_permutation_tab(self) -> QWidget:
+        """Permutation importance Results sub-tab (added v0.1.3).
+
+        Shows a horizontal bar chart of normalized permutation
+        importance (percent of total, matching maxent.jar's output
+        convention) with ±std error bars. The metric measures how
+        much the fitted model's AUC drops when each variable's values
+        are randomly shuffled — a direct measure of model reliance on
+        each variable.
+        """
+        w = QWidget(); v = QVBoxLayout(w)
+        v.setContentsMargins(4, 4, 4, 4)
+
+        # Short explanation strip so users know how this differs from
+        # the Jackknife tab they just saw. Calling out the
+        # correlation-underestimation caveat (Strobl et al. 2007)
+        # up-front prevents the "but TWI shows lower here than in
+        # Jackknife" confusion.
+        info = QLabel(tr(
+            "Model reliance: how much the trained model's predictions "
+            "depend on each variable, measured by the AUC drop after "
+            "shuffling that variable's values. Same metric reported "
+            "by maxent.jar as \"permutation importance\". Fast to "
+            "compute but can underestimate the importance of "
+            "variables correlated with other variables in the model "
+            "(Strobl et al. 2007); read alongside the Jackknife tab "
+            "rather than alone."
+        ))
+        info.setWordWrap(True)
+        # v0.1.7: grey background removed for visual consistency with
+        # the Response Curves and Jackknife Importance tabs (which
+        # also carry one-paragraph explanations now). Padding and
+        # font-size kept so the strip reads as a description rather
+        # than body prose.
+        info.setStyleSheet("QLabel { padding: 6px; font-size: 9pt; }")
+        v.addWidget(info)
+
+        self._permutation_canvas_widget = QWidget()
+        self._permutation_canvas_widget.setSizePolicy(
+            QSizePolicy.Expanding, QSizePolicy.Expanding
+        )
+        v.addWidget(self._permutation_canvas_widget, stretch=1)
+
+        # Action row: save the chart as PNG / data as CSV.
+        btn_row = QHBoxLayout()
+        self._permutation_save_png_btn = QPushButton(tr("Save PNG..."))
+        self._permutation_save_png_btn.clicked.connect(
+            self._on_save_permutation_png
+        )
+        self._permutation_save_png_btn.setEnabled(False)
+        btn_row.addWidget(self._permutation_save_png_btn)
+
+        self._permutation_save_csv_btn = QPushButton(tr("Save CSV..."))
+        self._permutation_save_csv_btn.clicked.connect(
+            self._on_save_permutation_csv
+        )
+        self._permutation_save_csv_btn.setEnabled(False)
+        btn_row.addWidget(self._permutation_save_csv_btn)
+        btn_row.addStretch()
+        v.addLayout(btn_row)
+
         return w
 
     def _build_project_tab(self) -> QWidget:
@@ -807,15 +1131,16 @@ class QMaxentMainDock(QDockWidget):
         # most users.
         self._proj_save_charts_chk = QCheckBox(
             tr("Save analysis charts as PNG "
-               "(Response Curves, ROC, Jackknife)")
+               "(Response Curves, ROC, Jackknife, Permutation)")
         )
         self._proj_save_charts_chk.setChecked(True)
         self._proj_save_charts_chk.setToolTip(tr(
-            "When the projection finishes, three sets of PNG files are "
+            "When the projection finishes, four sets of PNG files are "
             "written next to the GeoTIFF:\n"
             "  • <name>_response_curves.png — one image with all response curves\n"
             "  • <name>_roc.png — ROC panel (training + CV folds + mean)\n"
-            "  • <name>_jackknife.png — variable-importance bars\n"
+            "  • <name>_jackknife.png — variable-importance bars (jackknife)\n"
+            "  • <name>_permutation.png — variable-importance bars (permutation)\n"
             "Uncheck to skip this step entirely."
         ))
         v.addWidget(self._proj_save_charts_chk)
@@ -876,10 +1201,10 @@ class QMaxentMainDock(QDockWidget):
         purpose_grp = QGroupBox(tr("Survey purpose"))
         pg = QVBoxLayout(purpose_grp)
         self._priority_mode_discovery = QRadioButton(tr(
-            "Discovery — find new populations in unsurveyed areas"
+            "Discovery mode — find new populations in unsurveyed areas"
         ))
         self._priority_mode_validation = QRadioButton(tr(
-            "Model validation — test the suitability gradient"
+            "Validation mode — test the suitability gradient"
         ))
         self._priority_mode_discovery.setChecked(True)
         self._priority_mode_discovery.setToolTip(tr(
@@ -1518,10 +1843,13 @@ class QMaxentMainDock(QDockWidget):
     def _save_priority_sites_gpkg(self, rows: list, out_path: str):
         """Write the result table to a GeoPackage point layer.
 
-        Schema: id (int), lat, lon, suitability, country, province,
-        city_county, district, display_name. The display_name is the
-        full Nominatim label and acts as a self-contained attribution
-        field for OSM data.
+        Schema: id (int), lat, lon, suitability, quartile, country,
+        province, city_county, district, display_name. The
+        ``quartile`` field holds the suitability quartile id 0..3 in
+        Validation mode (0 = lowest band above threshold, 3 =
+        highest); Discovery mode always writes 0. The display_name
+        is the full Nominatim label and acts as a self-contained
+        attribution field for OSM data.
         """
         from qgis.core import (
             QgsVectorFileWriter, QgsFields, QgsField, QgsFeature,
@@ -1543,6 +1871,11 @@ class QMaxentMainDock(QDockWidget):
         fields.append(QgsField("lat",           QVariant.Double))
         fields.append(QgsField("lon",           QVariant.Double))
         fields.append(QgsField("suitability",   QVariant.Double))
+        # Suitability quartile id (0..3) so the layer can be styled
+        # by quartile in Validation mode. Stored as Int — categorized
+        # symbology renders integer fields more reliably than strings
+        # across QGIS versions.
+        fields.append(QgsField("quartile",      QVariant.Int))
         fields.append(QgsField("country",       QVariant.String))
         fields.append(QgsField("province",      QVariant.String))
         fields.append(QgsField("city_county",   QVariant.String))
@@ -1582,6 +1915,7 @@ class QMaxentMainDock(QDockWidget):
                     i,
                     float(r["lat"]), float(r["lon"]),
                     float(r["suitability"]),
+                    int(r.get("quartile", 0)),
                     r.get("country", ""), r.get("province", ""),
                     r.get("city_county", ""), r.get("district", ""),
                     r.get("display_name", ""),
@@ -1605,17 +1939,22 @@ class QMaxentMainDock(QDockWidget):
     def _load_priority_sites_layer(self, gpkg_path: str):
         """Load the priority sites layer with simple, robust styling.
 
-        Single red marker (#cb181d, 3.5pt). No labels — administrative
-        names are still in the attribute table (province, city_county,
-        district, display_name) so users can switch on labelling
-        manually from Layer Properties → Labels if they want to.
-        Keeping the default view label-free was a deliberate user
-        request: with 20+ sites the labels overlap and clutter the
-        map.
+        Default: single red marker (#cb181d, 3.5pt). No labels —
+        administrative names are still in the attribute table
+        (province, city_county, district, display_name) so users can
+        switch on labelling manually from Layer Properties → Labels.
 
-        We use *simple* symbology instead of graduated-by-suitability
-        because the graduated path crashed QGIS natively on QGIS 3.44 +
-        Python 3.12 (post-GeoPackage-write segfault).
+        Validation mode enhancement (v0.1.7): when the GPKG carries
+        ≥2 distinct quartile values (i.e. the user ran Validation
+        mode with stratify_by_quartile=True), we additionally attempt
+        categorized symbology by the ``quartile`` field — green for
+        the highest-suitability quartile shading to red for the
+        lowest. The whole categorized step is wrapped in a defensive
+        try/except because a previous QGIS 3.44 + Python 3.12 build
+        produced a post-GeoPackage-write segfault when applying
+        graduated-by-suitability symbology; if that recurs with
+        categorized symbology too we fall back to the simple single
+        marker (same as Discovery mode) without aborting.
         """
         from qgis.core import (
             QgsVectorLayer, QgsProject, QgsSymbol,
@@ -1626,10 +1965,9 @@ class QMaxentMainDock(QDockWidget):
         if not layer.isValid():
             raise RuntimeError(f"Invalid layer: {gpkg_path}")
 
-        # Simple symbology — single red marker. Wrapped in try/except
-        # so any unexpected API mismatch leaves the layer with QGIS's
-        # default symbology rather than failing the whole auto-load
-        # step.
+        # First apply the simple fallback styling. Any subsequent
+        # categorized attempt either replaces the renderer (success)
+        # or leaves this in place (failure).
         try:
             sym = QgsSymbol.defaultSymbol(layer.geometryType())
             if sym is not None:
@@ -1641,6 +1979,74 @@ class QMaxentMainDock(QDockWidget):
                 layer.renderer().setSymbol(sym.clone())
         except Exception:
             pass
+
+        # Detect Validation mode by scanning the quartile column.
+        # Validation mode produces a mix of quartile ids (0..3);
+        # Discovery mode writes 0 for every site.
+        try:
+            qvals = set()
+            for f in layer.getFeatures():
+                q = f["quartile"]
+                if q is not None:
+                    qvals.add(int(q))
+            wants_categorized = len(qvals) >= 2
+        except Exception:
+            # If the feature scan fails (e.g. legacy GPKG written by
+            # an earlier QMaxent version that has no quartile field),
+            # stay with the simple single-marker styling.
+            wants_categorized = False
+
+        if wants_categorized:
+            try:
+                from qgis.core import (
+                    QgsCategorizedSymbolRenderer, QgsRendererCategory,
+                )
+                # Quartile palette — sequential YlOrRd (yellow→red,
+                # warm sequential color scheme). Q4 (highest
+                # suitability) is red — the SAME red used for
+                # Discovery mode's single-marker styling — so a user
+                # toggling between Discovery and Validation reads
+                # "red = highest priority" consistently across both
+                # modes. Q1 (lowest) drops to a light yellow to
+                # signal "low-priority verification site" without
+                # competing visually with the Q4 sites.
+                palette = {
+                    3: ("#cb181d", "Q4 (highest)"),
+                    2: ("#fd8d3c", "Q3"),
+                    1: ("#fdae6b", "Q2"),
+                    0: ("#fdd49e", "Q1 (lowest)"),
+                }
+                categories = []
+                for q in sorted(qvals, reverse=True):
+                    color_hex, label = palette.get(
+                        q, ("#888888", f"Q{q+1}")
+                    )
+                    s = QgsSymbol.defaultSymbol(layer.geometryType())
+                    if s is None:
+                        continue
+                    s.setColor(QColor(color_hex))
+                    try:
+                        s.symbolLayer(0).setSize(3.5)
+                    except Exception:
+                        pass
+                    categories.append(
+                        QgsRendererCategory(q, s, label)
+                    )
+                if categories:
+                    renderer = QgsCategorizedSymbolRenderer(
+                        "quartile", categories
+                    )
+                    layer.setRenderer(renderer)
+            except Exception as e:
+                # Categorized symbology failed — surface a one-line
+                # log message but keep the layer on its single-marker
+                # fallback. This matches the v0.1.7 design intent:
+                # never let a styling glitch block the user from
+                # seeing their sites on the map.
+                self._log_append(
+                    tr("(Categorized symbology fell back to single "
+                       "marker: {e})").format(e=e)
+                )
 
         QgsProject.instance().addMapLayer(layer)
 
@@ -1703,26 +2109,129 @@ class QMaxentMainDock(QDockWidget):
             self._raster_list.takeItem(row)
 
     def _move_raster(self, direction: int):
-        """Move the selected raster up (-1) or down (+1) in the list.
+        """Move the selected raster(s) up (-1) or down (+1) in the list.
 
-        We can't use ``takeItem`` + ``insertItem`` here because the list
-        rows carry a custom ``setItemWidget`` widget (the name label +
-        categorical toggle). ``takeItem`` detaches the item from the
-        widget, and reinserting the item yields an empty grey row.
+        Block-preserving multi-selection: when the user selects a
+        contiguous range of rows (e.g. rows 2–6) and presses ▲ / ▼,
+        the whole block shifts as one unit and the selection stays
+        on those same five rasters at their new positions. Multiple
+        non-adjacent blocks are each moved independently.
 
-        Instead we leave the items in place and swap the *contents* of
-        the two rows: the layer_id + categorical flag stored in the
-        item, the displayed name in the label, and the toggle button's
-        checked state. Externally observable order matches what the
-        user expects from the up/down arrows.
+        Implementation: for each contiguous selected block, swap the
+        adjacent non-selected row (above the block when moving up,
+        below the block when moving down) past the block. This
+        preserves block contents and leaves the selection on the
+        same rasters.
+
+        We can't use ``takeItem`` + ``insertItem`` here because the
+        list rows carry a custom ``setItemWidget`` widget (the name
+        label + categorical toggle). ``takeItem`` detaches the item
+        from the widget, and reinserting the item yields an empty
+        grey row. Instead we leave the items in place and swap the
+        *contents* of adjacent rows.
         """
-        row = self._raster_list.currentRow()
-        if row < 0:
-            return
-        new_row = row + direction
-        if new_row < 0 or new_row >= self._raster_list.count():
-            return
+        selected_rows = sorted({self._raster_list.row(it)
+                                for it in self._raster_list.selectedItems()})
+        if not selected_rows:
+            # Fallback: no explicit selection — operate on the
+            # current row (keeps single-click + ▲ / ▼ workflow
+            # working as in v0.1.6).
+            cur = self._raster_list.currentRow()
+            if cur < 0:
+                return
+            selected_rows = [cur]
 
+        # Group consecutive rows into contiguous blocks.
+        # e.g. [1, 2, 3, 5, 7, 8] -> [[1,2,3], [5], [7,8]]
+        blocks = []
+        cur_block = [selected_rows[0]]
+        for r in selected_rows[1:]:
+            if r == cur_block[-1] + 1:
+                cur_block.append(r)
+            else:
+                blocks.append(cur_block)
+                cur_block = [r]
+        blocks.append(cur_block)
+
+        n = self._raster_list.count()
+
+        # Process blocks in order that avoids them colliding with
+        # each other:
+        #   • up   (direction = -1): top-down — topmost block moves
+        #     first, freeing the slot above for any block below.
+        #   • down (direction = +1): bottom-up — bottommost block
+        #     moves first, freeing the slot below for any block
+        #     above.
+        ordered = blocks if direction < 0 else list(reversed(blocks))
+        new_selected = []
+
+        for block in ordered:
+            top, bot = block[0], block[-1]
+            if direction < 0:
+                # Moving up: need a non-selected row at top - 1.
+                if top == 0:
+                    new_selected.extend(block)
+                    continue
+                # Pull the row above the block down past the block
+                # by walking it through one swap at a time. Visual
+                # effect: the block moves up by one row, and the
+                # row that was above the block now sits below it.
+                for r in range(top - 1, bot):
+                    self._swap_raster_rows(r, r + 1)
+                new_selected.extend([r - 1 for r in block])
+            else:
+                # Moving down: need a non-selected row at bot + 1.
+                if bot == n - 1:
+                    new_selected.extend(block)
+                    continue
+                # Pull the row below the block up past the block,
+                # walking it through one swap at a time from the
+                # bottom-of-block edge upward.
+                for r in range(bot + 1, top, -1):
+                    self._swap_raster_rows(r, r - 1)
+                new_selected.extend([r + 1 for r in block])
+
+        # Restore selection exactly on the new positions of the
+        # rasters the user had selected — same five (or whatever)
+        # rasters, just at new row numbers.
+        #
+        # We use QItemSelectionModel.select() with ClearAndSelect|Rows
+        # rather than per-item setSelected(True) because the latter
+        # can be silently undone in some Qt builds when followed by
+        # setCurrentRow / setCurrentItem (which behave like
+        # single-selection commands on ExtendedSelection lists). The
+        # selection-model approach applies the entire multi-row
+        # selection atomically and survives any focus changes.
+        if new_selected:
+            from qgis.PyQt.QtCore import QItemSelection, QItemSelectionModel
+            new_rows = sorted(set(new_selected))
+            sel_model = self._raster_list.selectionModel()
+            selection = QItemSelection()
+            for r in new_rows:
+                idx = self._raster_list.model().index(r, 0)
+                selection.select(idx, idx)
+            sel_model.select(
+                selection,
+                QItemSelectionModel.ClearAndSelect | QItemSelectionModel.Rows,
+            )
+            # Anchor the current index on the topmost selected row
+            # without disturbing the selection set we just applied
+            # (NoUpdate keeps the multi-selection visible). The
+            # current index is what ▲ / ▼ keyboard shortcuts and
+            # the "outline" focus rectangle use.
+            top_idx = self._raster_list.model().index(new_rows[0], 0)
+            sel_model.setCurrentIndex(top_idx, QItemSelectionModel.NoUpdate)
+
+    def _swap_raster_rows(self, row: int, new_row: int):
+        """Swap the contents of two adjacent raster-list rows.
+
+        Used by ``_move_raster`` to implement up/down arrows for
+        single and multi-selection alike. Swaps the item's UserRole
+        data, the visible label text, and the categorical toggle
+        state — leaving the QListWidgetItem and its setItemWidget
+        association in place so we never hit the takeItem blank-row
+        bug.
+        """
         a = self._raster_list.item(row)
         b = self._raster_list.item(new_row)
         wa = self._raster_list.itemWidget(a)
@@ -1734,7 +2243,6 @@ class QMaxentMainDock(QDockWidget):
             # widget anyway.
             item = self._raster_list.takeItem(row)
             self._raster_list.insertItem(new_row, item)
-            self._raster_list.setCurrentRow(new_row)
             return
 
         # 1. Swap UserRole data on the items themselves.
@@ -1768,8 +2276,6 @@ class QMaxentMainDock(QDockWidget):
             # silenced (blockSignals also suppressed the visual sync).
             self._sync_categorical_toggle(ba)
             self._sync_categorical_toggle(bb)
-
-        self._raster_list.setCurrentRow(new_row)
 
     # =========================================================================
     # Raster consistency: explicit Check + Harmonize workflow
@@ -1941,14 +2447,55 @@ class QMaxentMainDock(QDockWidget):
                     tr("Harmonization failed:\n{msg}").format(msg=msg),
                 )
                 return
-            self._replace_rasters_with_harmonized(new_paths)
-            QMessageBox.information(
-                self, tr("Harmonize Rasters"),
-                tr(
-                    "Harmonized {n} raster(s) to:\n{path}\n\n"
-                    "The raster list has been updated to use the "
-                    "aligned copies."
-                ).format(n=len(new_paths), path=chosen),
+
+            # v0.1.7: present the user a 3-option choice instead of
+            # silently swapping. The previous behavior cleared the
+            # ① Data raster list but left the *unaligned originals*
+            # in the QGIS project panel, leading to:
+            #   - cluttered Layers panel (12 layers instead of 6)
+            #   - confusion when re-using "Add from project" later
+            #   - mismatched ① Data list vs QGIS project state
+            # Three options let the user pick the right tradeoff for
+            # their workflow:
+            #   Replace — clean swap, recommended
+            #   Add     — keep originals visible alongside aligned
+            #   Cancel  — files on disk only, nothing added
+            mbox = QMessageBox(self)
+            mbox.setWindowTitle(tr("Harmonize Rasters"))
+            mbox.setIcon(QMessageBox.Question)
+            mbox.setText(tr(
+                "Harmonized {n} raster(s) to:\n{path}"
+            ).format(n=len(new_paths), path=chosen))
+            mbox.setInformativeText(tr(
+                "Replace the unaligned originals in this project with "
+                "the harmonized versions?"
+            ))
+            btn_replace = mbox.addButton(
+                tr("Replace"), QMessageBox.AcceptRole
+            )
+            btn_add = mbox.addButton(
+                tr("Add as additional layers"),
+                QMessageBox.ActionRole,
+            )
+            btn_cancel = mbox.addButton(
+                tr("Cancel"), QMessageBox.RejectRole
+            )
+            mbox.setDefaultButton(btn_replace)
+            mbox.exec_()
+            clicked = mbox.clickedButton()
+
+            if clicked is btn_cancel:
+                # Files on disk are kept; nothing added to project.
+                self._consistency_lbl.setText(tr(
+                    "Status: harmonized files written to {path}; "
+                    "project not changed."
+                ).format(path=chosen))
+                self._consistency_lbl.setStyleSheet("color: #2E7D32;")
+                return
+
+            replace_originals = (clicked is btn_replace)
+            self._replace_rasters_with_harmonized(
+                new_paths, remove_originals=replace_originals
             )
             # Auto-refresh the consistency label
             self._on_check_consistency()
@@ -1963,19 +2510,34 @@ class QMaxentMainDock(QDockWidget):
         progress.canceled.connect(worker.cancel)
         worker.start()
 
-    def _replace_rasters_with_harmonized(self, new_paths: list):
+    def _replace_rasters_with_harmonized(self, new_paths: list,
+                                          remove_originals: bool = True):
         """Swap the raster list so subsequent runs use the aligned copies.
 
         Each harmonized output is loaded into the QGIS project as a
         new raster layer (so the user can inspect it on the map) and
         replaces the corresponding row in the raster list while
         preserving each row's continuous/categorical setting.
+
+        When ``remove_originals`` is True (the v0.1.7 default chosen
+        by the "Replace" dialog button), the original unaligned
+        raster layers are also removed from the QGIS project panel
+        — keeping the Layers panel uncluttered and the ① Data list
+        in sync with what QGIS shows. The files themselves stay on
+        disk; only the project references are removed. When False
+        (the "Add as additional layers" button), originals stay
+        visible in the Layers panel and the user gets two parallel
+        sets of layers in the project.
         """
-        # Read existing categorical settings before we overwrite the list
+        # Read existing categorical settings AND layer IDs before we
+        # overwrite the list. The IDs are what we need to remove the
+        # originals from the QGIS project.
         existing_cats = []
+        original_layer_ids = []
         for i in range(self._raster_list.count()):
             item = self._raster_list.item(i)
             existing_cats.append(bool(item.data(self._ROLE_IS_CATEG)))
+            original_layer_ids.append(item.data(self._ROLE_LAYER_ID))
 
         self._raster_list.clear()
         for i, p in enumerate(new_paths):
@@ -1990,6 +2552,20 @@ class QMaxentMainDock(QDockWidget):
                 layer_id=lyr.id(),
                 is_categorical=is_cat,
             )
+
+        # v0.1.7: remove the unaligned originals from the QGIS
+        # project AFTER adding the harmonized ones, so the Layers
+        # panel reflects the new "aligned-only" state. Done in a
+        # try/except per layer in case one was already removed
+        # manually by the user.
+        if remove_originals:
+            for lid in original_layer_ids:
+                if not lid:
+                    continue
+                try:
+                    QgsProject.instance().removeMapLayer(lid)
+                except Exception:
+                    pass
 
     def _browse_save(self, le: QLineEdit, ffilter: str):
         # Open the file dialog at the most useful starting location:
@@ -2066,6 +2642,8 @@ class QMaxentMainDock(QDockWidget):
             "random_seed":        (self._seed_spin.value()
                                     if self._seed_check.isChecked() else None),
             "do_jackknife":       self._jackknife_chk.isChecked(),
+            "do_permutation":     self._permutation_chk.isChecked(),
+            "permutation_repeats": self._permutation_repeats_spin.value(),
             "output_model":       self._model_path.text().strip() or None,
             "output_xlsx":        self._xlsx_path.text().strip() or None,
         }
@@ -2134,6 +2712,95 @@ class QMaxentMainDock(QDockWidget):
     def _log_append(self, text: str):
         self._train_log.appendPlainText(text)
 
+    # ── Training log — manual export helpers ───────────────────────
+    # The auto-save next to prediction.tif covers the common case, but
+    # these two buttons give the user direct control: copy to clipboard
+    # for paste-into-Slack-or-email, or "Save log as…" for an
+    # arbitrary file location (e.g. a Zenodo deposit folder, an
+    # iCloud / Dropbox sync path, or a co-author's review folder).
+    # Both operate on the QPlainTextEdit's current content, so they
+    # always reflect exactly what the user sees in the Training tab.
+
+    def _copy_train_log_to_clipboard(self):
+        from qgis.PyQt.QtWidgets import QApplication
+        text = self._train_log.toPlainText()
+        if not text:
+            self._set_status(tr("Log is empty — nothing to copy."))
+            return
+        QApplication.clipboard().setText(text)
+        self._set_status(
+            tr("Training log copied to clipboard ({n} characters).").format(n=len(text))
+        )
+
+    def _save_train_log_as(self):
+        from qgis.PyQt.QtWidgets import QFileDialog
+        text = self._train_log.toPlainText()
+        if not text:
+            self._set_status(tr("Log is empty — nothing to save."))
+            return
+        # Default suggestion: same directory as the prediction raster
+        # (or, failing that, the default output directory) with a
+        # timestamped filename so successive saves don't overwrite.
+        default_dir = _default_output_dir()
+        try:
+            proj_path = (self._proj_path.text() or "").strip()
+            if proj_path:
+                cand = os.path.dirname(proj_path) or default_dir
+                if os.path.isdir(cand):
+                    default_dir = cand
+        except Exception:
+            pass
+        from datetime import datetime
+        stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        default_name = os.path.join(default_dir, f"training_log_{stamp}.txt")
+        out_path, _ = QFileDialog.getSaveFileName(
+            self, tr("Save training log"), default_name,
+            tr("Text files (*.txt);;All files (*)"),
+        )
+        if not out_path:
+            return
+        try:
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(text)
+            self._set_status(tr("Training log saved: {path}").format(path=out_path))
+        except OSError as e:
+            self._set_status(tr("Save failed: {e}").format(e=e))
+
+    def _autosave_training_log(self, target_path: str) -> None:
+        """Auto-save training_log.txt next to model.pkl.
+
+        Triggered from ``_on_finished`` at the end of ▶ Run Maxent
+        (v0.1.7) — the natural moment a researcher would want the
+        log. Previously gated on a Parameters-tab checkbox and only
+        written next to the prediction raster; that checkbox is
+        removed in v0.1.7 since the cost is negligible (a few KB) and
+        the value to reviewers / collaborators retracing a run is
+        substantial. The log content is whatever is currently in the
+        ③ Training tab — same source as the manual Copy / Save-as
+        buttons, ensuring consistency. Silent on success; errors are
+        logged to the training tab so the user can see them but the
+        Run Maxent still succeeds.
+        """
+        try:
+            text = self._train_log.toPlainText()
+            if not text:
+                return
+            out_dir = os.path.dirname(target_path) or _default_output_dir()
+            # Auto-create the directory so a user-typed fresh path
+            # works on the first run (matches the same guarantee made
+            # by the worker for model.pkl / results.xlsx).
+            os.makedirs(out_dir, exist_ok=True)
+            log_path = os.path.join(out_dir, "training_log.txt")
+            with open(log_path, "w", encoding="utf-8") as f:
+                f.write(text)
+            self._log_append(
+                tr("Training log saved: {path}").format(path=log_path)
+            )
+        except Exception as e:
+            # Never let a log-save failure break the run — the model
+            # is the primary deliverable.
+            self._log_append(tr("(Could not save training log: {e})").format(e=e))
+
     def _on_finished(self, success: bool, msg: str, results: dict):
         self._run_btn.setText(tr("▶  Run Maxent"))
         self._worker = None
@@ -2148,6 +2815,7 @@ class QMaxentMainDock(QDockWidget):
 
         self._populate_response_combo()
         self._plot_importance()
+        self._plot_permutation()
         self._proj_btn.setEnabled(self._model is not None)
         # Priority Sites for Survey is available once a model exists —
         # the actual run-time check (prediction raster present) happens
@@ -2185,7 +2853,21 @@ class QMaxentMainDock(QDockWidget):
         self._set_status("✓ " + "  |  ".join(parts))
 
         self.tabs.setCurrentIndex(3)
-        self._log_append(tr("All analysis complete."))
+        self._log_append(tr("✓ All analysis complete."))
+
+        # v0.1.7: write training_log.txt next to model.pkl so the log
+        # follows the artifact a researcher carries between sessions.
+        # Done after _log_append so the "All analysis complete." line
+        # is included in the saved file. The model path comes from
+        # the LineEdit on ② Parameters → Output Files.
+        try:
+            model_path = self._model_path.text().strip()
+            if model_path:
+                self._autosave_training_log(model_path)
+        except Exception:
+            # The log itself is best-effort — never let it break the
+            # successful Run Maxent flow.
+            pass
 
     # =========================================================================
     # Response curves — English matplotlib labels (② fix)
@@ -2303,8 +2985,19 @@ class QMaxentMainDock(QDockWidget):
                 ax.set_xlabel(var, fontsize=9)
                 ax.legend(fontsize=7)
 
-            # English-only axis label (② fix — no Korean in matplotlib)
-            ax.set_ylabel(trans.capitalize(), fontsize=9)
+            # Y-axis label — academic SDM convention is to spell out
+            # what the axis represents (predicted habitat suitability)
+            # alongside the transform that produced the values. For raw
+            # output we drop the "suitability" framing because raw is
+            # an unbounded relative score, not a probability-like
+            # quantity (Phillips et al. 2017).
+            if trans == "cloglog":
+                y_label = "Predicted suitability (cloglog)"
+            elif trans == "logistic":
+                y_label = "Predicted suitability (logistic)"
+            else:
+                y_label = "Raw output"
+            ax.set_ylabel(y_label, fontsize=9)
             ax.set_title(f"Response curve: {var}", fontsize=10)
             if trans in ("cloglog", "logistic"):
                 ax.set_ylim(0, 1)
@@ -2384,7 +3077,15 @@ class QMaxentMainDock(QDockWidget):
                     ax.axvline(float(sm.get(var, 0)), color="#666",
                                linewidth=1, linestyle=":")
                     ax.set_xlabel(var, fontsize=9)
-                ax.set_ylabel(trans.capitalize(), fontsize=9)
+                # Same Y-axis label convention as the on-screen single
+                # plot above — see comment there.
+                if trans == "cloglog":
+                    y_label = "Predicted suitability (cloglog)"
+                elif trans == "logistic":
+                    y_label = "Predicted suitability (logistic)"
+                else:
+                    y_label = "Raw output"
+                ax.set_ylabel(y_label, fontsize=9)
                 ax.set_title(f"Response: {var}", fontsize=10)
                 if trans in ("cloglog", "logistic"):
                     ax.set_ylim(0, 1)
@@ -2435,6 +3136,359 @@ class QMaxentMainDock(QDockWidget):
             lbl = QLabel(tr("Chart error: {e}").format(e=e))
             lbl.setWordWrap(True)
             self._importance_canvas_widget.layout().addWidget(lbl)
+
+    def _plot_permutation(self):
+        """Render the permutation importance bar chart (added v0.1.3).
+
+        Mirrors the pattern of _plot_importance: clears the existing
+        canvas, builds a fresh matplotlib figure, embeds it in the
+        Qt widget, and enables the Save PNG / Save CSV buttons.
+        """
+        self._clear_widget(self._permutation_canvas_widget)
+        if self._results is None:
+            return
+
+        pi_rows = self._results.get("permutation_results", []) or []
+        if not pi_rows:
+            lbl = QLabel(tr(
+                "No permutation importance results.\n"
+                "Enable it in Parameters and re-run."
+            ))
+            lbl.setWordWrap(True)
+            self._permutation_canvas_widget.layout().addWidget(lbl)
+            self._permutation_save_png_btn.setEnabled(False)
+            self._permutation_save_csv_btn.setEnabled(False)
+            return
+
+        try:
+            fig = self._make_permutation_figure(
+                pi_rows,
+                source=self._results.get("permutation_source",
+                                          "training set"),
+                n_repeats=self._results.get("permutation_n_repeats", 10),
+            )
+            import matplotlib.backends.backend_qt5agg as _mplqt
+            canvas = _mplqt.FigureCanvasQTAgg(fig)
+            self._permutation_canvas_widget.layout().addWidget(canvas)
+            self._permutation_fig_cached = fig
+            self._permutation_save_png_btn.setEnabled(True)
+            self._permutation_save_csv_btn.setEnabled(True)
+            import matplotlib.pyplot as plt
+            # Note: we do NOT close the figure here because the canvas
+            # holds a reference to it for redrawing. The same pattern
+            # applies in _plot_importance.
+        except Exception as e:
+            lbl = QLabel(tr("Chart error: {e}").format(e=e))
+            lbl.setWordWrap(True)
+            self._permutation_canvas_widget.layout().addWidget(lbl)
+            self._permutation_save_png_btn.setEnabled(False)
+            self._permutation_save_csv_btn.setEnabled(False)
+
+    def _make_permutation_figure(self, pi_rows, source: str,
+                                  n_repeats):
+        """Build the matplotlib Figure for the permutation tab.
+
+        Horizontal bar chart with ±std error bars; variables sorted
+        by mean importance descending (most important on top). The
+        x-axis is the normalized percentage of total (matches
+        maxent.jar's "permutation importance" column convention).
+        """
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+
+        # pi_rows is already sorted by descending importance_mean
+        # (see maxent_worker._execute step 7). We reverse for the
+        # bar chart so the top variable appears at the top, matching
+        # the academic-paper convention.
+        rows = list(reversed(pi_rows))
+        names = [r["variable"] for r in rows]
+        pcts  = [r.get("importance_pct", 0.0) for r in rows]
+
+        # Convert std (which is in raw AUC-drop units) to the same
+        # percentage scale as importance_pct so the error bars are
+        # interpretable on the chart's x-axis. Total stays the same
+        # across rows so we can factor it out.
+        total_raw = sum(r.get("importance_mean", 0.0) for r in rows)
+        if total_raw > 0:
+            stds_pct = [
+                100.0 * r.get("importance_std", 0.0) / total_raw
+                for r in rows
+            ]
+        else:
+            stds_pct = [0.0] * len(rows)
+
+        n = len(rows)
+        fig_h = max(3.0, 0.45 * n + 1.5)
+        fig, ax = plt.subplots(figsize=(8, fig_h), tight_layout=True)
+
+        y_pos = list(range(n))
+        # Plugin palette: primary green fill + darker green outline,
+        # matching the Jackknife "with only variable" bars in
+        # _make_jackknife_only_figure for visual consistency across
+        # the Results sub-tabs.
+        ax.barh(y_pos, pcts, xerr=stds_pct,
+                color="#1D9E75", edgecolor="#0F4D3A", linewidth=0.5,
+                error_kw={"capsize": 3, "alpha": 0.5,
+                          "ecolor": "#666"})
+
+        # Per-bar value labels — same convention as the Jackknife
+        # importance bars: white text inside a long bar, dark text
+        # just past the end of a short bar. The cut-off uses 10% of
+        # the longest bar so very short bars (like bio6 at ~4%)
+        # render readable text outside the bar instead of overflowing
+        # past the bar edge.
+        max_pct = max(pcts) if pcts else 1.0
+        for i, p in enumerate(pcts):
+            if p > max_pct * 0.10:
+                # Inside the bar, white text near the left edge so
+                # the error bar's right whisker doesn't visually
+                # collide with the label.
+                ax.text(p * 0.02, i, f"{p:.1f}",
+                        va="center", ha="left",
+                        fontsize=9, color="white")
+            else:
+                # Outside the bar, dark text just past the error
+                # bar's right whisker.
+                err = stds_pct[i] if i < len(stds_pct) else 0.0
+                ax.text(p + err + max_pct * 0.015, i, f"{p:.1f}",
+                        va="center", ha="left",
+                        fontsize=9, color="#222")
+
+        ax.set_yticks(y_pos)
+        ax.set_yticklabels(names)
+        ax.set_xlabel("Permutation importance (% of total)")
+        ax.set_title(
+            f"Permutation importance — {source}, n_repeats={n_repeats}"
+        )
+        ax.grid(axis="x", alpha=0.3)
+        # A subtle note for users comparing against maxent.jar's
+        # exact percentage values: the absolute % depends on the
+        # AUC drop sum, which differs slightly between QMaxent and
+        # maxent.jar (different solver). The ranking is what matters
+        # for cross-implementation comparison.
+        return fig
+
+    def _on_save_permutation_png(self):
+        """Save the permutation importance chart as PNG."""
+        if not getattr(self, "_permutation_fig_cached", None):
+            return
+        path, _ = QFileDialog.getSaveFileName(
+            self, tr("Save permutation importance chart"),
+            os.path.join(_default_output_dir(),
+                          "permutation_importance.png"),
+            "PNG (*.png)"
+        )
+        if path:
+            try:
+                self._permutation_fig_cached.savefig(path, dpi=150)
+                self._set_status(tr("Saved: {p}").format(p=path))
+            except Exception as e:
+                QMessageBox.critical(
+                    self, "QMaxent",
+                    tr("Failed to save PNG: {e}").format(e=e)
+                )
+
+    def _on_save_permutation_csv(self):
+        """Save the permutation importance data as CSV."""
+        if not self._results:
+            return
+        pi_rows = self._results.get("permutation_results", []) or []
+        if not pi_rows:
+            return
+        path, _ = QFileDialog.getSaveFileName(
+            self, tr("Save permutation importance data"),
+            os.path.join(_default_output_dir(),
+                          "permutation_importance.csv"),
+            "CSV (*.csv)"
+        )
+        if not path:
+            return
+        try:
+            import csv
+            with open(path, "w", encoding="utf-8", newline="") as f:
+                w = csv.writer(f)
+                w.writerow([
+                    "Variable", "Mean importance",
+                    "Std", "Normalized (%)"
+                ])
+                for r in pi_rows:
+                    w.writerow([
+                        r.get("variable", ""),
+                        f"{r.get('importance_mean', 0.0):.6f}",
+                        f"{r.get('importance_std', 0.0):.6f}",
+                        f"{r.get('importance_pct', 0.0):.2f}",
+                    ])
+            self._set_status(tr("Saved: {p}").format(p=path))
+        except Exception as e:
+            QMessageBox.critical(
+                self, "QMaxent",
+                tr("Failed to save CSV: {e}").format(e=e)
+            )
+
+    # ── SWD export handlers (added v0.1.3) ──────────────────────────────
+
+    def _browse_swd_dir(self):
+        """Pick the output folder for SWD export."""
+        d = QFileDialog.getExistingDirectory(
+            self, tr("Select output folder for SWD export"),
+            self._swd_dir_edit.text() or _default_output_dir()
+        )
+        if d:
+            self._swd_dir_edit.setText(d)
+
+    def _on_swd_export_clicked(self):
+        """Validate inputs and launch the SWD/raster-samples export worker.
+
+        Reuses the same presence-layer + raster-list + categorical-flag
+        machinery as the Run Maxent button so the export reflects
+        exactly what would go into a training run. This way the
+        downstream maxent.jar invocation operates on the same data
+        QMaxent would have used internally.
+
+        In v0.1.4 the format is chosen via two radio buttons. The
+        worker dispatches on cfg["format"] — "swd" or "raster_samples".
+        """
+        # Validate presence layer.
+        try:
+            presence_layer = self._get_presence_layer()
+        except ValueError as e:
+            QMessageBox.warning(self, "QMaxent", str(e))
+            return
+
+        # Validate raster list — at least one continuous variable.
+        raster_layers = self._get_raster_layers()
+        if not raster_layers:
+            QMessageBox.warning(
+                self, "QMaxent",
+                tr("Add at least one environmental raster.")
+            )
+            return
+
+        # Validate output folder.
+        output_dir = self._swd_dir_edit.text().strip()
+        if not output_dir:
+            QMessageBox.warning(
+                self, "QMaxent",
+                tr("Specify an output folder.")
+            )
+            return
+
+        # Build worker config — same data dependencies as a real run.
+        try:
+            from ..core.venv_manager import ensure_venv_packages_available
+            ensure_venv_packages_available()
+            from ..bridge.vector_bridge import presence_layer_to_geodataframe
+            from ..bridge.raster_bridge import layers_to_paths
+            presence_gdf  = presence_layer_to_geodataframe(presence_layer)
+            raster_paths  = layers_to_paths(raster_layers)
+            feature_names = [l.name() for l in raster_layers]
+        except Exception as e:
+            QMessageBox.critical(
+                self, "QMaxent",
+                tr("Data error: {e}").format(e=e)
+            )
+            return
+
+        # Resolve format choice from the radio buttons. The "raster +
+        # samples" path needs the .asc converter, which runs once per
+        # raster, so it takes proportionally longer than SWD on big
+        # stacks; the progress label communicates this.
+        if self._swd_fmt_swd.isChecked():
+            fmt = "swd"
+            progress_label = tr("Exporting SWD files...")
+        else:
+            fmt = "raster_samples"
+            progress_label = tr("Exporting samples + raster...")
+
+        cfg = {
+            "format":               fmt,
+            "presence_gdf":         presence_gdf,
+            "raster_paths":         raster_paths,
+            "feature_names":        feature_names,
+            "categorical_indices":  self._get_categorical_indices(),
+            "n_background":         self._bg_spin.value(),
+            "output_dir":           output_dir,
+            "species_name":         presence_layer.name(),
+            "bias_path":            None,
+        }
+
+        # Launch worker with a modal progress dialog. The QProgressDialog
+        # gives the user a Cancel button and prevents accidental
+        # interaction with the main dock while data extraction runs.
+        from ..workers.swd_export_worker import SWDExportWorker
+
+        progress = QProgressDialog(
+            progress_label,
+            tr("Cancel"), 0, 100, self
+        )
+        progress.setWindowModality(Qt.WindowModal)
+        progress.setAutoClose(False)
+        progress.setAutoReset(False)
+        progress.setMinimumDuration(0)
+        progress.setValue(0)
+
+        worker = SWDExportWorker(cfg, self)
+        # Keep references so they survive past the local scope of this
+        # method — Qt requires both the worker and the dialog to stay
+        # alive until finished() fires.
+        self._swd_worker   = worker
+        self._swd_progress = progress
+
+        def _on_progress(pct, msg):
+            progress.setValue(int(pct))
+            progress.setLabelText(msg)
+
+        def _on_finished(ok, msg, result):
+            progress.close()
+            self._swd_worker = None
+            self._swd_progress = None
+            if ok:
+                # Format-specific completion message — both modes have
+                # different output structure, so we tell the user
+                # exactly what was produced.
+                rfmt = result.get("format", "swd")
+                if rfmt == "swd":
+                    body = tr(
+                        "SWD export complete.\n\n"
+                        "Presence:    {p} ({np} rows)\n"
+                        "Background:  {b} ({nb} rows)\n"
+                        "README:      {r}\n\n"
+                        "The README contains the maxent.jar command "
+                        "line to run on this dataset."
+                    ).format(
+                        p=result.get("presence_path", ""),
+                        np=result.get("n_presence", 0),
+                        b=result.get("background_path", ""),
+                        nb=result.get("n_background", 0),
+                        r=result.get("readme_path", ""),
+                    )
+                else:
+                    body = tr(
+                        "Samples + Raster export complete.\n\n"
+                        "Samples:   {s} ({np} rows)\n"
+                        "Layers:    {l} ({nr} ASCII grids)\n"
+                        "README:    {r}\n\n"
+                        "The README contains the maxent.jar command "
+                        "line to run on this dataset."
+                    ).format(
+                        s=result.get("samples_path", ""),
+                        np=result.get("n_presence", 0),
+                        l=result.get("layers_dir", ""),
+                        nr=result.get("n_rasters", 0),
+                        r=result.get("readme_path", ""),
+                    )
+                QMessageBox.information(self, "QMaxent", body)
+            else:
+                QMessageBox.critical(
+                    self, "QMaxent",
+                    tr("Export failed:\n{msg}").format(msg=msg)
+                )
+
+        worker.progress.connect(_on_progress)
+        worker.finished.connect(_on_finished)
+        progress.canceled.connect(worker.cancel)
+        worker.start()
 
     def _make_importance_figure(self, jk, cv_aucs, roc_fpr, roc_tpr,
                                  full_auc, full_test_auc=None,
@@ -2489,7 +3543,6 @@ class QMaxentMainDock(QDockWidget):
                                     if not fold_label_used else None))
                     fold_label_used = True
                 try:
-                    import numpy as np
                     mean_fpr = np.linspace(0, 1, 101)
                     tprs = []
                     for f_fpr, f_tpr in zip(cv_fpr_list, cv_tpr_list):
@@ -2522,11 +3575,31 @@ class QMaxentMainDock(QDockWidget):
             ax0.plot(roc_fpr, roc_tpr, color="#0F4D3A", linewidth=2,
                      label=train_label)
 
-            ax0.plot([0, 1], [0, 1], "k--", linewidth=0.8, label="Random")
+            ax0.plot([0, 1], [0, 1], "k--", linewidth=0.8,
+                     label="Random classifier")
             ax0.set_xlabel("False Positive Rate", fontsize=9)
             ax0.set_ylabel("True Positive Rate", fontsize=9)
             ax0.set_title("ROC Curve", fontsize=10)
-            ax0.legend(fontsize=7, loc="lower right")
+            # Reorder legend by performance descending (Training top,
+            # mean CV next, CV folds, random classifier at the bottom)
+            # — standard academic ROC plot convention. matplotlib's
+            # default legend ordering is plot-order, which would put
+            # the high-importance Training curve at index 3.
+            handles, labels = ax0.get_legend_handles_labels()
+            preferred_order = [
+                "Training ROC",
+                "Mean CV ROC",
+                "CV folds",
+                "Random classifier",
+            ]
+            def _rank(lbl):
+                for i, key in enumerate(preferred_order):
+                    if lbl.startswith(key):
+                        return i
+                return len(preferred_order)
+            paired = sorted(zip(handles, labels), key=lambda p: _rank(p[1]))
+            handles, labels = zip(*paired) if paired else ([], [])
+            ax0.legend(handles, labels, fontsize=7, loc="lower right")
             ax0.set_xlim(0, 1); ax0.set_ylim(0, 1)
         elif cv_aucs:
             valid = [a for a in cv_aucs if not np.isnan(a)]
@@ -2695,11 +3768,27 @@ class QMaxentMainDock(QDockWidget):
         if len(roc_fpr) > 0:
             ax0.plot(roc_fpr, roc_tpr, color="#0F4D3A", linewidth=2,
                      label=f"Training ROC (AUC={full_auc:.3f})")
-        ax0.plot([0, 1], [0, 1], "k--", linewidth=0.8, label="Random")
+        ax0.plot([0, 1], [0, 1], "k--", linewidth=0.8,
+                 label="Random classifier")
         ax0.set_xlabel("False Positive Rate", fontsize=10)
         ax0.set_ylabel("True Positive Rate", fontsize=10)
         ax0.set_title("ROC Curve", fontsize=11)
-        ax0.legend(fontsize=8, loc="lower right")
+        # Reorder legend — same convention as the on-screen ROC panel.
+        handles, labels = ax0.get_legend_handles_labels()
+        preferred_order = [
+            "Training ROC",
+            "Mean CV ROC",
+            "CV folds",
+            "Random classifier",
+        ]
+        def _rank(lbl):
+            for i, key in enumerate(preferred_order):
+                if lbl.startswith(key):
+                    return i
+            return len(preferred_order)
+        paired = sorted(zip(handles, labels), key=lambda p: _rank(p[1]))
+        handles, labels = zip(*paired) if paired else ([], [])
+        ax0.legend(handles, labels, fontsize=8, loc="lower right")
         ax0.set_xlim(0, 1); ax0.set_ylim(0, 1)
         # Force 1:1 aspect — the academic standard for ROC plots; the
         # diagonal random reference should look like a 45° line.
@@ -3139,6 +4228,12 @@ class QMaxentMainDock(QDockWidget):
         # ④ Save PNG charts alongside the raster
         self._export_charts_as_png(output_path)
 
+        # v0.1.7: training_log.txt auto-save was moved to _on_finished
+        # (▶ Run Maxent completion) so the log accompanies model.pkl,
+        # not the prediction raster — model.pkl is the artifact a
+        # researcher carries between sessions, while prediction.tif is
+        # a derived re-runnable output.
+
         # New prediction raster is on disk → recompute the Discovery
         # minimum-suitability floor (raster_max × 0.9) so the
         # ⑤ Priority Sites tab opens with a value adapted to this
@@ -3161,20 +4256,20 @@ class QMaxentMainDock(QDockWidget):
                 )
 
     def _export_charts_as_png(self, raster_path: str):
-        """Save Response Curves, ROC, and Jackknife charts as separate
-        PNG files alongside the prediction GeoTIFF.
+        """Save Response Curves, ROC, Jackknife, and Permutation charts as
+        separate PNG files alongside the prediction GeoTIFF.
 
-        Three files are written when the analyses are available:
+        Four files are written when the analyses are available:
           • <name>_response_curves.png   — one image, all variables
           • <name>_roc.png               — ROC panel (training + CV folds + mean)
-          • <name>_jackknife.png         — variable importance bars
+          • <name>_jackknife.png         — variable importance bars (jackknife)
+          • <name>_permutation.png       — variable importance bars (permutation)
 
-        ROC and Jackknife are split into separate files (rather than
-        the previous combined "_variable_importance.png") because they
-        get cited independently in academic figures — Jackknife usually
-        in the main text, ROC in supplementary or vice versa — and
-        each panel deserves its own aspect ratio: ROC ≈ square,
-        Jackknife wide-and-tall-by-n_vars.
+        ROC and the two importance plots are split into separate files
+        because they get cited independently in academic figures —
+        Jackknife usually in the main text, ROC in supplementary or
+        vice versa — and each panel deserves its own aspect ratio:
+        ROC ≈ square, the bar charts wide-and-tall-by-n_vars.
 
         The whole step is skipped when the user has unticked the
         "Save analysis charts as PNG" checkbox.
@@ -3234,6 +4329,32 @@ class QMaxentMainDock(QDockWidget):
                     saved.append(os.path.basename(p))
         except Exception as e:
             self._log_append(f"PNG export (jackknife) failed: {e}")
+
+        # ── Permutation importance panel (standalone) ─────────────
+        # Added v0.1.7: previously only the manual "Save PNG..."
+        # button on the Permutation Importance sub-tab could save
+        # this figure. With the "Save analysis charts as PNG"
+        # checkbox now covering it too, the four variable-analysis
+        # outputs all land together when the user opts in.
+        try:
+            pi_rows = (self._results or {}).get("permutation_results", []) or []
+            if pi_rows:
+                fig = self._make_permutation_figure(
+                    pi_rows,
+                    source=(self._results or {}).get(
+                        "permutation_source", "training set"
+                    ),
+                    n_repeats=(self._results or {}).get(
+                        "permutation_n_repeats", 10
+                    ),
+                )
+                if fig is not None:
+                    p = os.path.join(out_dir, f"{base}_permutation.png")
+                    fig.savefig(p, dpi=150, bbox_inches="tight")
+                    plt.close(fig)
+                    saved.append(os.path.basename(p))
+        except Exception as e:
+            self._log_append(f"PNG export (permutation) failed: {e}")
 
         if saved:
             self._log_append(f"PNG charts saved: {', '.join(saved)}")
@@ -3348,12 +4469,19 @@ class QMaxentMainDock(QDockWidget):
             "cv_roc_fpr_list":   list(academic.get("cv_roc_fpr_list", [])),
             "cv_roc_tpr_list":   list(academic.get("cv_roc_tpr_list", [])),
             "jackknife_results": list(academic.get("jackknife_results", [])),
+            # Permutation importance restored from .pkl (added v0.1.3).
+            # Same defensive list-copy pattern as jackknife to keep the
+            # restored result dict self-contained.
+            "permutation_results":   list(academic.get("permutation_results", [])),
+            "permutation_source":    academic.get("permutation_source"),
+            "permutation_n_repeats": academic.get("permutation_n_repeats"),
         }
         self._populate_response_combo()
         # Replay the importance plot so the Jackknife tab shows the
         # restored data instead of staying blank from a previous run.
         try:
             self._plot_importance()
+            self._plot_permutation()
         except Exception:
             # Plot routine can fail when matplotlib isn't installed
             # yet (e.g., user loads model before installing deps).

@@ -293,7 +293,11 @@ def extract_priority_sites(prediction_path: str,
             bin_indices.append(idx[order].tolist())
 
     # Round-robin sampling with spacing filter.
-    accepted = []   # list of (xm, ym, suitability, lat, lon)
+    # accepted holds (xm, ym, suitability, lat, lon, quartile) per site
+    # so the GPKG layer can be categorized by quartile in Validation
+    # mode (Discovery mode users get quartile=0 for every site since
+    # stratify_by_quartile is False there).
+    accepted = []
     d_between_sq = min_distance_between_sites_m ** 2
     cursor = [0] * n_bins
     while len(accepted) < n_sites:
@@ -325,6 +329,7 @@ def extract_priority_sites(prediction_path: str,
                     float(cand_x), float(cand_y),
                     float(suit_values[idx]),
                     lat, lon,
+                    int(bin_id[idx]),
                 ))
                 progressed = True
                 break
@@ -332,8 +337,8 @@ def extract_priority_sites(prediction_path: str,
             break  # no more candidates anywhere
 
     return [
-        {"lat": lat, "lon": lon, "suitability": s}
-        for (_, _, s, lat, lon) in accepted
+        {"lat": lat, "lon": lon, "suitability": s, "quartile": q}
+        for (_, _, s, lat, lon, q) in accepted
     ]
 
 

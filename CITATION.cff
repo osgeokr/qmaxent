@@ -7,8 +7,9 @@ authors:
     given-names: Byeong-Hyeok
     email: bhyu@knps.or.kr
     affiliation: Korea National Park Service
-version: 0.1.2
-date-released: 2026-05-10
+    # orcid: "https://orcid.org/0000-0000-0000-0000"  # TODO: fill in
+version: 0.1.7
+date-released: 2026-05-16
 license: MIT
 repository-code: "https://github.com/osgeokr/qmaxent"
 url: "https://osgeokr.github.io/qmaxent/"
@@ -19,9 +20,101 @@ keywords:
   - QGIS
   - ecology
   - biogeography
+  - spatial cross-validation
+  - habitat suitability
+identifiers:
+  # Concept DOI (all versions). Issued by Zenodo on the first GitHub
+  # release; the value below is a PLACEHOLDER and will be replaced with
+  # the actual DOI just before SoftwareX acceptance (see
+  # docs/zenodo-release.md).
+  - type: doi
+    value: 10.5281/zenodo.XXXXXXX
+    description: "Concept DOI (all versions) — Zenodo archive of the QMaxent source code."
+  # Version-specific DOI for v0.1.7. Also a PLACEHOLDER, populated once
+  # the v0.1.7 GitHub tag is archived by Zenodo.
+  - type: doi
+    value: 10.5281/zenodo.XXXXXXX
+    description: "Version DOI for v0.1.7."
 abstract: >
   QMaxent integrates the elapid Python library into QGIS to provide
-  Maxent-style species distribution modeling. It supports model training,
-  spatial projection, spatial cross-validation (Geographic K-Fold,
-  Checkerboard, Buffered Leave-One-Out), and jackknife variable
-  importance analysis directly within QGIS.
+  Maxent-style species distribution modeling (SDM) without leaving the
+  GIS desktop. It supports model training, spatial projection, spatial
+  cross-validation (Geographic K-Fold as the default; Checkerboard,
+  Random K-Fold, Buffered Leave-One-Out), jackknife and permutation
+  variable importance, export of QGIS-resident data to maxent.jar-
+  compatible formats (SWD or ESRI ASCII Grid), and stratified priority-
+  site selection for post-prediction field surveys — all in one GIS
+  session. Dependencies are isolated in a plugin-private virtual
+  environment that does not affect the host QGIS Python installation.
+preferred-citation:
+  # The companion SoftwareX manuscript that introduces and validates
+  # QMaxent. DOI is a PLACEHOLDER pending acceptance; the rest of the
+  # block matches the manuscript as submitted (v1.6, May 2026).
+  type: article
+  title: "QMaxent: A QGIS plugin for Maxent species distribution modeling"
+  authors:
+    - family-names: Yu
+      given-names: Byeong-Hyeok
+      email: bhyu@knps.or.kr
+      affiliation: Korea National Park Service
+    - family-names: Lee
+      given-names: Soo-Dong
+      affiliation: Gyeongsang National University
+    - family-names: Oh
+      given-names: Chung-Hyeon
+      affiliation: Gyeongsang National University
+    - family-names: Lee
+      given-names: Jeong-Ho
+      affiliation: Korea Aerospace Research Institute
+    - family-names: Lee
+      given-names: Sun-Gu
+      affiliation: Korea Aerospace Research Institute
+  journal: "SoftwareX"
+  year: 2026
+  doi: 10.1016/j.softx.2026.XXXXXX  # PLACEHOLDER — replace on acceptance
+references:
+  - type: article
+    authors:
+      - family-names: Phillips
+        given-names: Steven J.
+      - family-names: Anderson
+        given-names: Robert P.
+      - family-names: Dudík
+        given-names: Miroslav
+      - family-names: Schapire
+        given-names: Robert E.
+      - family-names: Blair
+        given-names: Mary E.
+    title: "Opening the black box: an open-source release of Maxent"
+    journal: Ecography
+    volume: 40
+    issue: 7
+    start: 887
+    end: 893
+    year: 2017
+    doi: 10.1111/ecog.03049
+  - type: article
+    authors:
+      - family-names: Anderson
+        given-names: Christopher B.
+    title: "elapid: species distribution modeling tools for Python"
+    journal: Journal of Open Source Software
+    volume: 8
+    issue: 84
+    start: 4930
+    year: 2023
+    doi: 10.21105/joss.04930
+  - type: article
+    authors:
+      - family-names: Fithian
+        given-names: William
+      - family-names: Hastie
+        given-names: Trevor
+    title: "Finite-sample equivalence in statistical models for presence-only data"
+    journal: "Annals of Applied Statistics"
+    volume: 7
+    issue: 4
+    start: 1917
+    end: 1939
+    year: 2013
+    doi: 10.1214/13-AOAS667

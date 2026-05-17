@@ -42,15 +42,27 @@ class SetupDockWidget(QDockWidget):
         about_group = QGroupBox(tr("About"))
         ag = QVBoxLayout(about_group)
 
-        # (1) Plugin info — compact rich-text block
+        # (1) Plugin info — compact rich-text block. Version is read
+        # dynamically from metadata.txt so a stale hard-coded label can
+        # never desync from the installed plugin's actual version. The
+        # homepage and manual links sit next to the repository link so
+        # users can find the public docs without first clicking through
+        # GitHub.
+        version_str = self._read_plugin_version() or "?"
         plugin_info = QLabel(tr(
-            "<b>QMaxent</b> 0.1.0<br>"
+            "<b>QMaxent</b> {version}<br>"
             "Author: Byeong-Hyeok Yu &lt;bhyu@knps.or.kr&gt;<br>"
             "License: MIT — Copyright © 2026 Byeong-Hyeok Yu<br>"
+            "Homepage: "
+            "<a href=\"https://osgeokr.github.io/qmaxent/\">"
+            "osgeokr.github.io/qmaxent</a><br>"
+            "Manual: "
+            "<a href=\"https://osgeokr.github.io/qmaxent/manual/\">"
+            "osgeokr.github.io/qmaxent/manual</a><br>"
             "Repository: "
             "<a href=\"https://github.com/osgeokr/qmaxent\">"
             "github.com/osgeokr/qmaxent</a>"
-        ))
+        ).format(version=version_str))
         plugin_info.setWordWrap(True)
         plugin_info.setOpenExternalLinks(True)
         plugin_info.setTextInteractionFlags(Qt.TextBrowserInteraction)
@@ -71,7 +83,7 @@ class SetupDockWidget(QDockWidget):
             "&nbsp;&nbsp;• rasterio, geopandas (spatial I/O)<br>"
             "&nbsp;&nbsp;• scikit-learn, scipy, numpy<br>"
             "&nbsp;&nbsp;• matplotlib (result plots)<br><br>"
-            "Approximate size: 300–500 MB"
+            "Approximate size: ~590 MB"
         ))
         info_text.setWordWrap(True)
         info_text.setStyleSheet("padding-top: 6px;")
@@ -123,6 +135,29 @@ class SetupDockWidget(QDockWidget):
 
         layout.addStretch()
         self.setWidget(container)
+
+    @staticmethod
+    def _read_plugin_version() -> str:
+        """Return the plugin's `version=` line from metadata.txt.
+
+        Reading at runtime instead of hard-coding keeps the About
+        block in sync with the actual install — releasing a new
+        plugin version no longer requires remembering to bump a
+        second string buried in setup_dock.py.
+        """
+        import os
+        meta_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "metadata.txt",
+        )
+        try:
+            with open(meta_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    if line.startswith("version="):
+                        return line.split("=", 1)[1].strip()
+        except OSError:
+            pass
+        return ""
 
     def _refresh_status(self):
         from ..core.venv_manager import get_venv_status

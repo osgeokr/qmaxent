@@ -21,6 +21,7 @@ mirrors CRAN's dismo package contents).
 """
 
 import os
+import shutil
 import traceback
 import urllib.request
 
@@ -108,6 +109,12 @@ DATASET_REGISTRY = {
         "presence_y_field":  None,
         "presence_crs":      None,    # embedded in the gpkg
         "categorical_files": [],
+        # Variants are post-download transformations that demonstrate
+        # specific QMaxent workflows. Only Ariolimax exposes them
+        # because it is the manuscript's § 3.2 harmonization example;
+        # Bradypus stays in its canonical Phillips et al. (2006) state
+        # so it remains a faithful benchmark.
+        "supports_variants": True,
     },
 }
 
@@ -380,6 +387,157 @@ def _group_files_into_units(files: list) -> list:
     return [(label, list(fs)) for label, fs in units]
 
 
+# ─── Variant transformation ─────────────────────────────────────────────
+
+def _apply_mismatch_variant(src_dir: str, files: list, spec: dict):
+    """Apply a deterministic raster mismatch pattern to a copy of the
+    downloaded dataset and return ``(demo_dir, demo_files)``.
+
+    The transformation lives in a sibling ``mismatch_demo/`` folder so
+    the originals stay pristine on disk. Three raster transformations
+    are applied in a fixed, deterministic order so that successive
+    runs produce byte-identical demo copies — useful for teaching and
+    for reproducing manuscript figures:
+
+    * 1st raster → reprojected to EPSG:3857 (Web Mercator)
+    * 2nd raster → resampled to half resolution (every other pixel)
+    * 3rd raster → extent shifted by one pixel diagonally
+
+    Any remaining rasters are copied verbatim, so the demo folder
+    always contains the same set of files as the source.
+
+    Non-raster files (the presence layer and any sidecars) are
+    copied to the demo folder unchanged.
+
+    Falls back gracefully when rasterio is unavailable: a
+    RuntimeError is raised and the caller switches to the
+    pre-harmonized load path.
+    """
+    try:
+        import rasterio
+        from rasterio.warp import calculate_default_transform, reproject, Resampling
+        from rasterio.windows import Window
+    except ImportError as e:
+        raise RuntimeError(
+            "rasterio is required for the Mismatch demo variant. "
+            "Install plugin dependencies first (Plugins → QMaxent → "
+            "QMaxent Dependencies)."
+        ) from e
+
+    demo_dir = os.path.join(src_dir, "mismatch_demo")
+    os.makedirs(demo_dir, exist_ok=True)
+
+    raster_exts = (".tif", ".tiff", ".img", ".asc", ".vrt", ".grd")
+    raster_files = [f for f in files
+                    if os.path.splitext(f)[1].lower() in raster_exts]
+    other_files = [f for f in files
+                   if os.path.splitext(f)[1].lower() not in raster_exts]
+
+    demo_files = []
+
+    # ─── Non-raster files: copy verbatim ──────────────────────────────
+    for fname in other_files:
+        src = os.path.join(src_dir, fname)
+        dst = os.path.join(demo_dir, fname)
+        if os.path.isfile(src):
+            shutil.copy2(src, dst)
+        demo_files.append(fname)
+
+    # ─── Raster 1 → reproject to EPSG:3857 ────────────────────────────
+    if len(raster_files) >= 1:
+        src_path = os.path.join(src_dir, raster_files[0])
+        dst_path = os.path.join(demo_dir, raster_files[0])
+        with rasterio.open(src_path) as src:
+            transform, width, height = calculate_default_transform(
+                src.crs, "EPSG:3857", src.width, src.height, *src.bounds,
+            )
+            profile = src.profile.copy()
+            profile.update({
+                "crs": "EPSG:3857",
+                "transform": transform,
+                "width": width,
+                "height": height,
+            })
+            with rasterio.open(dst_path, "w", **profile) as dst:
+                for i in range(1, src.count + 1):
+                    reproject(
+                        source=rasterio.band(src, i),
+                        destination=rasterio.band(dst, i),
+                        src_transform=src.transform, src_crs=src.crs,
+                        dst_transform=transform, dst_crs="EPSG:3857",
+                        resampling=Resampling.nearest,
+                    )
+        demo_files.append(raster_files[0])
+
+    # ─── Raster 2 → halve the resolution ──────────────────────────────
+    if len(raster_files) >= 2:
+        src_path = os.path.join(src_dir, raster_files[1])
+        dst_path = os.path.join(demo_dir, raster_files[1])
+        with rasterio.open(src_path) as src:
+            new_w = max(1, src.width  // 2)
+            new_h = max(1, src.height // 2)
+            data = src.read(out_shape=(src.count, new_h, new_w),
+                            resampling=Resampling.average)
+            new_transform = src.transform * src.transform.scale(
+                src.width / new_w, src.height / new_h,
+            )
+            profile = src.profile.copy()
+            profile.update({
+                "transform": new_transform,
+                "width": new_w, "height": new_h,
+            })
+            with rasterio.open(dst_path, "w", **profile) as dst:
+                dst.write(data)
+        demo_files.append(raster_files[1])
+
+    # ─── Raster 3 → shift the extent diagonally by one pixel ──────────
+    if len(raster_files) >= 3:
+        src_path = os.path.join(src_dir, raster_files[2])
+        dst_path = os.path.join(demo_dir, raster_files[2])
+        with rasterio.open(src_path) as src:
+            shifted = src.transform * src.transform.translation(1, 1)
+            profile = src.profile.copy()
+            profile.update({"transform": shifted})
+            with rasterio.open(dst_path, "w", **profile) as dst:
+                dst.write(src.read())
+        demo_files.append(raster_files[2])
+
+    # ─── Remaining rasters: copy verbatim ─────────────────────────────
+    for fname in raster_files[3:]:
+        src = os.path.join(src_dir, fname)
+        dst = os.path.join(demo_dir, fname)
+        if os.path.isfile(src):
+            shutil.copy2(src, dst)
+        demo_files.append(fname)
+
+    # Write a small README so users understand what they're seeing.
+    readme = os.path.join(demo_dir, "README.txt")
+    with open(readme, "w", encoding="utf-8") as f:
+        f.write(
+            "QMaxent — Mismatch demo variant\n"
+            "================================\n\n"
+            "This folder contains deterministically-transformed copies of\n"
+            "the example rasters in the parent folder. The transformations\n"
+            "intentionally violate raster consistency so that QMaxent's\n"
+            "Check Raster Consistency and Harmonize to Folder workflows\n"
+            "(see ① Data tab) have something concrete to detect and fix.\n\n"
+            "Applied transformations:\n"
+        )
+        if len(raster_files) >= 1:
+            f.write(f"  - {raster_files[0]}: reprojected to EPSG:3857\n")
+        if len(raster_files) >= 2:
+            f.write(f"  - {raster_files[1]}: resampled to half resolution\n")
+        if len(raster_files) >= 3:
+            f.write(f"  - {raster_files[2]}: extent shifted by 1 pixel diagonally\n")
+        f.write(
+            "\nThe original rasters in the parent folder are unmodified.\n"
+            "To revert to the original, use the Pre-harmonized variant\n"
+            "in the Example Dataset download dialog.\n"
+        )
+
+    return demo_dir, demo_files
+
+
 # ─── Dialog ──────────────────────────────────────────────────────────────
 
 class ExampleDataDialog(QDialog):
@@ -428,8 +586,67 @@ class ExampleDataDialog(QDialog):
             dsv.addWidget(r)
             self._radio_group.addButton(r, i)
             self._radios[key] = r
+            # When user picks a dataset, the Variant group below is
+            # enabled or disabled depending on whether the chosen
+            # dataset supports variants. Both signals are wired to a
+            # single slot so the variant group stays consistent.
+            r.toggled.connect(self._refresh_variant_state)
 
         v.addWidget(ds_grp)
+
+        # Variant choice (post-download transformation) ------------------
+        # Two variants are supported, both targeting the manuscript's
+        # § 3.2 raster-harmonization narrative:
+        #
+        #   • Pre-harmonized (default) — the dataset is loaded as
+        #     delivered by the source, with all rasters already on a
+        #     common grid. Demonstrates the "happy path" through
+        #     ① Data → Check Raster Consistency.
+        #
+        #   • Mismatch demo — after download, a deterministic set of
+        #     transformations is applied to a *copy* of the rasters:
+        #     the first raster is reprojected to EPSG:3857, the
+        #     second is resampled to half resolution, the third is
+        #     shifted by one pixel in extent. The transformed copies
+        #     live in a `mismatch_demo/` subfolder; the originals are
+        #     never touched. This gives users a one-click way to
+        #     trigger the Harmonize-to-Folder workflow with a known,
+        #     reproducible mismatch pattern — useful for teaching and
+        #     for reproducing the manuscript's Figure 2 captures.
+        #
+        # The group is only enabled when the currently-selected
+        # dataset has `supports_variants: True` in DATASET_REGISTRY.
+        # Bradypus deliberately does not support variants — it is the
+        # community's canonical Maxent benchmark and should stay in
+        # its original Phillips et al. (2006) state.
+        self._variant_grp = QGroupBox(tr("Variant"))
+        var_v = QVBoxLayout(self._variant_grp)
+        self._variant_group = QButtonGroup(self)
+        self._variant_pre = QRadioButton(tr("Pre-harmonized (default)"))
+        self._variant_pre.setToolTip(tooltip(tr(
+            "Load the dataset exactly as delivered by the source. All "
+            "rasters share a common grid, so Check Raster Consistency "
+            "in the ① Data tab will pass with no findings."
+        )))
+        self._variant_pre.setChecked(True)
+        self._variant_mismatch = QRadioButton(tr("Mismatch demo"))
+        self._variant_mismatch.setToolTip(tooltip(tr(
+            "After download, apply a deterministic set of "
+            "transformations to copies of the rasters: reproject one "
+            "to a different CRS, resample one to half resolution, and "
+            "shift the extent of another. The original files are not "
+            "modified. Use this to demonstrate the ① Data → Check "
+            "Raster Consistency and Harmonize to Folder workflow with "
+            "a known, reproducible mismatch pattern."
+        )))
+        var_v.addWidget(self._variant_pre)
+        var_v.addWidget(self._variant_mismatch)
+        self._variant_group.addButton(self._variant_pre, 0)
+        self._variant_group.addButton(self._variant_mismatch, 1)
+        v.addWidget(self._variant_grp)
+
+        # Set initial enabled state to match the dataset selected above.
+        self._refresh_variant_state()
 
         # Destination directory ------------------------------------------
         dst_row = QHBoxLayout()
@@ -474,6 +691,24 @@ class ExampleDataDialog(QDialog):
         v.addLayout(btn_row)
 
     # ── Slots ────────────────────────────────────────────────────────────
+    def _refresh_variant_state(self):
+        """Enable the Variant group only when the selected dataset
+        declares ``supports_variants: True`` in DATASET_REGISTRY.
+
+        Bradypus does not support variants (it is the community
+        Maxent benchmark and must stay as Phillips et al. 2006
+        delivered it), so when the user picks Bradypus the entire
+        Variant group is greyed out and the radio selection is
+        forced back to Pre-harmonized to avoid carrying a stale
+        Mismatch selection across dataset switches.
+        """
+        key = self._selected_key()
+        spec = DATASET_REGISTRY.get(key, {}) if key else {}
+        enabled = bool(spec.get("supports_variants", False))
+        self._variant_grp.setEnabled(enabled)
+        if not enabled:
+            self._variant_pre.setChecked(True)
+
     def _on_browse(self):
         d = QFileDialog.getExistingDirectory(
             self, tr("Select destination directory"), self._dst_edit.text()
@@ -571,6 +806,39 @@ class ExampleDataDialog(QDialog):
             )
             return
 
+        # If the user selected the Mismatch demo variant (and the
+        # dataset supports it), apply the deterministic raster
+        # transformations to copies in a mismatch_demo/ subfolder.
+        # The originals stay untouched on disk; only the project-
+        # loading step below points at the transformed copies. If the
+        # transformation fails for any reason we fall back to loading
+        # the originals and surface a warning — the dataset is still
+        # usable, just without the demo mismatches.
+        spec_for_load = DATASET_REGISTRY[key]
+        files_for_load = final_files
+        dir_for_load = dst_dir
+        variant_used = "pre-harmonized"
+
+        if (spec_for_load.get("supports_variants")
+                and self._variant_mismatch.isChecked()):
+            variant_used = "mismatch-demo"
+            try:
+                demo_dir, demo_files = _apply_mismatch_variant(
+                    src_dir=dst_dir, files=final_files, spec=spec_for_load,
+                )
+                # Switch the load target to the transformed copies.
+                dir_for_load = demo_dir
+                files_for_load = demo_files
+            except Exception as e:
+                QMessageBox.warning(
+                    self, tr("Download Example Dataset"),
+                    tr(
+                        "Mismatch demo transformation failed; loading "
+                        "the originals instead.\n\nReason: {e}"
+                    ).format(e=e)
+                )
+                variant_used = "pre-harmonized (fallback)"
+
         # Detect whether the conversion step ran. If `final_files`
         # still contains .grd entries, rasterio wasn't available so
         # the worker left the originals in place. We surface this in
@@ -587,10 +855,11 @@ class ExampleDataDialog(QDialog):
         # Add layers to the active project ------------------------------
         try:
             # Build a transient spec that reflects the on-disk reality
-            # after conversion (e.g., bio1.grd → bio1.tif).
-            effective_spec = dict(DATASET_REGISTRY[key])
-            effective_spec["files"] = final_files
-            self._add_layers_to_project(dst_dir, effective_spec)
+            # after conversion (e.g., bio1.grd → bio1.tif) and any
+            # variant transformation.
+            effective_spec = dict(spec_for_load)
+            effective_spec["files"] = files_for_load
+            self._add_layers_to_project(dir_for_load, effective_spec)
         except Exception as e:
             QMessageBox.warning(
                 self, tr("Download Example Dataset"),
@@ -616,9 +885,9 @@ class ExampleDataDialog(QDialog):
             QMessageBox.information(
                 self, tr("Download Example Dataset"),
                 tr(
-                    "Example dataset '{ds}' is ready in:\n{path}\n\n"
+                    "Example dataset '{ds}' (variant: {variant}) is ready in:\n{path}\n\n"
                     "Open the QMaxent Analysis dock to start training."
-                ).format(ds=key, path=dst_dir)
+                ).format(ds=key, variant=variant_used, path=dir_for_load)
             )
         self.accept()
 
