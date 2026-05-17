@@ -72,8 +72,8 @@ Click **▶ Run Maxent** at the bottom of the dock. Focus shifts to the
 
 ![Training tab at 100% with the full log](images/ui/dock-3-training-completed.png)
 
-The log reports `Training AUC = 0.9562` and a 5-fold mean
-`CV AUC = 0.7581 ± 0.0920`. The honest gap between training and CV AUC is
+The log reports `Training AUC = 0.9569` and a 5-fold mean
+`CV AUC = 0.7436 ± 0.0750`. The honest gap between training and CV AUC is
 itself a good sign — it tells you the model has not been silently
 over-fitted to the training presences (a risk that
 [Roberts et al. 2017](references.md) document at length).

@@ -41,22 +41,22 @@ flowchart TD
 진행률 바 아래 로그 패널이 모든 단계를 기록합니다. Bradypus 실행이 성공적으로
 끝난 후의 모습:
 
-![100% 완료된 학습 탭과 전체 로그: 116 presence, 9,997 background, train AUC=0.9562, CV AUC=0.7581 ± 0.0920, 변수별 jackknife](images/ui/dock-3-training-completed.png)
+![100% 완료된 학습 탭과 전체 로그: 116 presence, 10,104 background, train AUC=0.9569, CV AUC=0.7436 ± 0.0750, 변수별 jackknife](images/ui/dock-3-training-completed.png)
 
 로그를 위에서 아래로 읽으세요 — 실행에서 일어난 일의 가장 완전한 기록입니다.
 스크린샷에서:
 
 - `→ 10,000 background points sampled` — 표본 추출 완료
-- `→ Presence: 116, Background: 9,997` — 최종 개수 (NaN 셀 때문에 요청보다 약간 적음)
+- `→ Presence: 116, Background: 10,104` — 최종 개수 (NaN 셀 때문에 요청보다 약간 적음)
 - `→ Feature types: ['linear', 'quadratic', 'product', 'hinge', 'threshold']`
     — 자동 규칙이 n=116에 대해 모든 LQPHT 선택
-- `→ Training AUC = 0.9562`
+- `→ Training AUC = 0.9569`
 - 폴드별 CV AUC (5개 폴드, 0.59 – 0.86 범위)
-- `→ CV AUC = 0.7581 ± 0.0920` — 폴드 평균 ± 표준편차
+- `→ CV AUC = 0.7436 ± 0.0750` — 폴드 평균 ± 표준편차
 - Jackknife 블록: 9개 변수 각각의 `only_tr / only_te / without_tr / without_te`
 - `→ Results XLSX saved: …` — 최종 산출물 위치
 
-같은 핵심 수치(`train AUC=0.9562`, `CV AUC=0.7581`)가 도크의 영구 상태바에 그대로
+같은 핵심 수치(`train AUC=0.9569`, `CV AUC=0.7436`)가 도크의 영구 상태바에 그대로
 표시되어 탭을 전환해도 계속 보입니다.
 
 ## 자주 보는 경고와 의미

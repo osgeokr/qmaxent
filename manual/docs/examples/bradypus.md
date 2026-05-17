@@ -4,170 +4,211 @@ The brown-throated three-toed sloth — *Bradypus variegatus* — is the
 canonical Maxent test dataset, originally published with
 [Phillips, Anderson & Schapire 2006](../references.md) and reused in
 virtually every subsequent Maxent paper. We use it here as a
-**guided tour of every QMaxent feature**: data loading, parameter
-selection, spatial cross-validation, jackknife importance, projection,
-and survey planning. By the end of this chapter you will have produced
-— and be able to defend academically — a complete Bradypus habitat-
-suitability model.
+**guided tour of every QMaxent feature**: dependency setup, data
+loading, parameter selection, spatial cross-validation, jackknife and
+permutation importance, projection, and survey planning. By the end
+of this chapter you will have produced — and be able to defend
+academically — a complete Bradypus habitat-suitability model.
 
-## Dataset
+## 0. Before you start: dependencies
+
+QMaxent installs its third-party Python libraries (elapid, rasterio,
+geopandas, scikit-learn, scipy, numpy, matplotlib) into an isolated
+virtual environment so they cannot conflict with QGIS's own Python.
+The first time you open the plugin, you are invited to perform a
+one-time install:
+
+![QMaxent — Dependencies dialog, environment not installed](../images/ui/dialog-dependencies.png)
+
+Click **Install / Update Dependencies**. The progress bar walks
+through the four pip phases (collecting, downloading, building,
+installing) and finishes with the green badge below — at that point
+every QMaxent feature is ready to run.
+
+![QMaxent — Dependencies dialog, environment ready](../images/ui/dialog-dependencies-installed.png)
+
+If you ever need to recreate the venv (e.g. after a major QGIS
+upgrade), the **Remove Environment** button on the same dialog is the
+clean way to start over.
+
+## 1. Dataset
 
 The Phillips et al. (2006) dataset contains:
 
 | Layer | Type | Description |
 |---|---|---|
-| `bradypus.shp` | Vector point | 116 occurrence records across South and Central America |
+| `bradypus` | Vector point | 116 occurrence records across South and Central America |
 | `bio1, bio5, bio6, bio7, bio8` | Continuous raster | Temperature variables (WorldClim) |
 | `bio12, bio16, bio17` | Continuous raster | Precipitation variables (WorldClim) |
 | `biome` | Categorical raster | Biome type (Olson et al. 2001) |
 
 All rasters share the same grid: EPSG:4326, 0.5° × 0.5° cells, full
-Americas coverage. Total dataset size <100 MB.
+Americas coverage. Total dataset size < 100 MB.
 
-Download via **Plugins → QMaxent → Download Example Dataset → Bradypus
-variegatus**. Layers are added to the QGIS project automatically:
+Download via **Plugins → QMaxent → Download Example Dataset**, pick
+**Bradypus variegatus (Phillips et al, 2006 standard)**, choose a
+destination folder, and click **Download**:
+
+![Download Example Dataset dialog with Bradypus selected](../images/ui/dialog-download-example-dataset.png)
+
+Layers are added to the QGIS project automatically:
 
 ![Bradypus presence overlaid on bio17 across Central and South America](../images/maps/example-bradypus-loaded.png)
 
-## Loading data into the Analysis dock
+## 2. Loading data into the Analysis dock
 
 Open **Plugins → QMaxent → QMaxent Analysis**. On **① Data**, pick
 `bradypus` from the **Presence Points Layer** drop-down — QMaxent
 immediately reports `116 presence points loaded`.
 
 Click **Add from project** to register every loaded raster at once. The
-`biome` row gets a `[categorical]` tag (its sidecar PAM metadata says
-so). Click **Check Raster Consistency** to verify the grid:
+`biome` row gets a `[categorical]` tag (its sidecar metadata says so).
+Click **Check Raster Consistency** to verify the grid; the status line
+should read
+`✓ All 9 rasters share grid (CRS: EPSG:4326, resolution: 0.5 × 0.5)`,
+exactly what you expect from the bundled dataset:
 
-![Bradypus presence layer, 9 environmental rasters, biome categorical, Check Raster Consistency passed](../images/ui/dock-1-data-with-bradypus.png)
+![Data tab — Bradypus presence + 9 rasters loaded, grid consistency OK](../images/ui/dock-1-data-with-bradypus.png)
 
-The status line reads
-`✓ All 9 rasters share grid (CRS: EPSG:4326, resolution: 0.5 × 0.5)` —
-exactly what you expect from the bundled dataset.
+**Background Points** is left at its default of 10,000, the value
+[Phillips & Dudík 2008](../references.md) recommend for continental
+extents. The **Export for external Maxent** panel at the bottom is
+optional — leave it alone for this tutorial; see
+[Exporting results](../exporting-results.md) for when it matters.
 
-## Model setup
+## 3. Model setup
 
-Switch to **② Parameters**. For this tour we accept every default — each
-default is the literature-recommended value, and accepting them lets us
-inspect what those choices produce:
+Switch to **② Parameters**. For this tour we accept every default —
+each default is the literature-recommended value, and accepting them
+lets us inspect what those choices produce:
 
-- **Feature classes**: Auto (the maxnet rule of
+![Parameters tab with all defaults accepted](../images/ui/dock-2-parameters-defaults.png)
+
+- **Feature Types**: Auto (the maxnet rule of
   [Phillips & Dudík 2008](../references.md) selects all of LQPHT for
-  116 presences)
+  116 presences).
 - **Regularization multiplier**: 1.0
-  ([Phillips & Dudík 2008](../references.md) recommendation)
-- **Spatial CV**: Geographic K-Fold, 5 folds, fixed seed = 0
-  ([Roberts et al. 2017](../references.md) default)
-- **Jackknife variable importance**: enabled
+  ([Phillips & Dudík 2008](../references.md) recommendation).
+- **Spatial evaluation**: Geographic K-Fold
+  ([Anderson 2023](../references.md)), 5 folds, grid 50,000 m,
+  buffer 50,000 m, fixed random seed = 42
+  ([Roberts et al. 2017](../references.md) default).
+- **Jackknife variable importance**: enabled.
+- **Permutation importance**: enabled, 10 repeats.
 - **Output files**: `qmaxent_output/model.pkl` and
-  `qmaxent_output/results.xlsx`
+  `qmaxent_output/results.xlsx`.
 
-The fixed random seed means **anyone re-running this tutorial will get
+The fixed random seed means **anyone re-running this tutorial gets
 bit-identical results** — central to computational reproducibility
 ([Araújo et al. 2019](../references.md)).
 
-## Running training and cross-validation
+## 4. Running training and cross-validation
 
 Click **▶ Run Maxent**. The **③ Training** tab takes over and finishes
 in about 30 seconds:
 
 ![Training tab at 100% with the full log](../images/ui/dock-3-training-completed.png)
 
-Reading the log top-to-bottom tells the whole story:
+The status bar at the bottom summarises the run:
+`presence=116 background=10,104 | train AUC=0.9569 | CV AUC=0.7436`.
+Reading the log section by section:
 
-```text
-→ 10,000 background points sampled
-Extracting raster covariates for presence points…
-Extracting raster covariates for background points…
-→ Presence: 116, Background: 9,997
-→ Feature types: ['linear', 'quadratic', 'product', 'hinge', 'threshold']
-Training MaxentModel…
-→ Model training complete
-→ Model saved: …/model.pkl
-Computing ROC curve…
-→ Training AUC = 0.9562
-Running cross-validation…
-  Fold 1: 22 test presences, AUC = 0.7453
-  Fold 2: 21 test presences, AUC = 0.7839
-  Fold 3: 39 test presences, AUC = 0.8097
-  Fold 4: 26 test presences, AUC = 0.8614
-  Fold 5:  8 test presences, AUC = 0.5903
-→ CV AUC = 0.7581 ± 0.0920  (n=5 fold(s))
-```
+- **Full-data model** — `Training AUC = 0.9569`, saved to
+  `qmaxent_output/model.pkl`.
+- **Cross-validation** — Geographic K-Fold n=5, seed=42:
 
-**Train AUC = 0.956** while **CV AUC = 0.758 ± 0.092**. That gap is the
-cost of holding out spatially-distinct validation sets — and a far more
-honest measure of real-world predictive performance than looking at the
+  | Fold | Test presences | AUC |
+  |---:|---:|---:|
+  | 1 | 58 | 0.7779 |
+  | 2 | 20 | 0.7711 |
+  | 3 | 22 | 0.7531 |
+  | 4 |  8 | 0.5994 |
+  | 5 |  8 | 0.8165 |
+
+  Pooled mean ± std = **0.7436 ± 0.0750**.
+
+- **Jackknife variable importance** — per-variable AUC across the same
+  5 folds in three modes (full-model reference, *only this variable*,
+  and *without this variable*). The numbers feed the Jackknife plot
+  below.
+- **Permutation importance** — sklearn `permutation_importance` with
+  `n_repeats=10`, evaluated on the held-out test set. Results feed the
+  Permutation Importance sub-tab.
+- **Save results** — `results.xlsx` and `training_log.txt` are
+  persisted next to the `.pkl`.
+
+**Train AUC = 0.957** while **CV AUC = 0.744 ± 0.075**. That gap is
+the cost of holding out spatially-distinct validation sets — and a
+far more honest measure of real-world predictive performance than the
 inflated training AUC alone, exactly the point
 [Roberts et al. 2017](../references.md) make.
 
-Fold 5 has the lowest AUC (0.59) and the smallest validation set (8
-presences) — in spatial CV, folds are intentionally uneven in area, and
-one fold can land on a small, atypical region. The pooled CV AUC
-averages over this variance.
+Folds 4 and 5 have the smallest validation set (8 presences each) and
+the largest spread in AUC. In spatial CV, folds are intentionally
+uneven in area, and one fold can land on a small, atypical region.
+The pooled CV AUC averages over this variance — the **± 0.075
+standard deviation** is precisely the quantity you would cite
+alongside the mean in a publication.
 
-## Inspecting variable behaviour
+The full log is exportable via **Save log as…** at the bottom of the
+tab; **Copy log** drops it into the clipboard, handy for pasting into
+an issue report.
+
+## 5. Inspecting variable behaviour
 
 ### Response curves
 
-On **④ Results → Response Curves**, pick `bio1` (mean annual
-temperature):
+On **④ Results → Response Curves**, pick `bio12` (annual
+precipitation):
 
-![Response curve for bio1 with shaded training range](../images/ui/dock-4-response-curve-bio1.png)
+![Response curve for bio12](../images/examples/bradypus/response-curve-bio12.png)
 
-The response is non-monotonic — peaks near 150 and 290 (in 0.1 °C units
-per WorldClim convention) with a trough around 240. The model recruited
-hinge features to capture this discontinuity. The shaded **Training
-range** band covers the values actually present in the dataset —
-predictions near −50 (extreme cold) and beyond 320 should be considered
-pure extrapolation in the
-[Elith, Kearney & Phillips 2010](../references.md) sense.
+The model assigns highest suitability to the 1,500–3,500 mm/year band
+— the climatology of South American rainforest — with a sharp drop-off
+below ~800 mm. The shape combines hinge and quadratic features. Try
+other variables in the drop-down: smooth U- or peak-shaped curves
+indicate quadratic terms; sharp angular discontinuities come from
+hinge or threshold features.
 
-Try other variables in the drop-down — you can see which features
-Maxent recruited for each. Smooth U- or peak-shaped curves suggest
-quadratic terms; sharp angular discontinuities come from hinge or
-threshold features.
+### Jackknife importance
 
-### Jackknife importance and ROC
+The **Jackknife Importance** sub-tab compares each variable's stand-
+alone signal against its incremental contribution. Dark bars
+(*Only this variable*) and light bars (*Without this variable*) tell
+you each variable's unique value:
 
-The **Jackknife Importance** sub-tab combines the ROC and per-variable
-bars in one figure — the canonical Maxent summary plot since
-[Phillips, Anderson & Schapire 2006](../references.md):
+![Jackknife bars for the 9 Bradypus variables](../images/examples/bradypus/jackknife.png)
 
-![ROC and Jackknife panels for the 9 Bradypus variables](../images/ui/dock-4-jackknife-bars.png)
-
-Reading the ROC:
-
-- **Training ROC** (solid, AUC 0.956): in-sample fit
-- **Mean CV ROC** (dashed, AUC 0.758): mean across 5 spatial folds
-- **Per-fold ROC** (faint): variance is the model's spatial sub-sample
-  stability
-
-Reading the Jackknife:
-
-The dark bars (model with this variable only) and light bars (model
-without this variable) tell you each variable's *unique* contribution.
 For Bradypus:
 
-- **`biome`** (categorical) has the strongest univariate signal
-  (AUC ≈ 0.78) and the model loses meaningfully when it is removed —
-  biome boundaries map closely to sloth distribution.
-- **`bio7`** (annual temperature range) is second.
-- **`bio1`** alone is informative but redundant with several others
-  (small drop on removal).
-- **`bio5`** has the lowest stand-alone signal (~0.54), close to
-  random.
+- **`bio7`** (annual temperature range) and **`bio12`** (annual
+  precipitation) have the strongest stand-alone signals.
+- **`biome`** and **`bio6`** (min temp of coldest month) come next.
+- The "without" bars are tightly bunched in the high-0.9s — Maxent
+  recovers from removing any single variable because the climate
+  variables are correlated. This is the textbook
+  [Phillips, Anderson & Schapire 2006](../references.md) pattern.
 
-This is exactly how the original [Phillips et al. 2006](../references.md)
-paper used jackknife to argue that biome and seasonality jointly carry
-the most information about Bradypus.
+### Permutation importance
 
-## Spatial projection
+The **Permutation Importance** sub-tab reports the same idea from a
+different lens: scikit-learn's `permutation_importance` shuffles each
+variable's values on the held-out test set, measures the AUC drop,
+repeats 10 times, and normalises to 100% of the total:
+
+![Permutation importance bars](../images/examples/bradypus/permutation.png)
+
+`bio7` and `bio12` again dominate; the permutation view distributes
+the total importance across all variables and is therefore directly
+comparable to maxent.jar's per-variable percentage table.
+
+## 6. Spatial projection
 
 Switch to **Spatial Projection** in the same Results tab. Leave
-**cloglog** as the output transform (the [Phillips et al. 2017](../references.md)
-recommended default) and **Auto-load result as QGIS layer** ticked, then
-click **▶ Run Spatial Projection**:
+**cloglog** as the output transform (the
+[Phillips et al. 2017](../references.md) recommended default) and
+**Auto-load result as QGIS layer** ticked, then click
+**▶ Run Spatial Projection**:
 
 ![Projection sub-tab after a successful run — output GeoTIFF path shown](../images/ui/dock-4-projection-done.png)
 
@@ -181,9 +222,9 @@ secondary patches across Central America. The model correctly
 identifies the unsuitability of the Andes (cold, high altitude) and
 the very dry Brazilian Northeast (Caatinga).
 
-## Saving outputs
+## 7. Saving outputs
 
-Two files were written automatically:
+Two files are written automatically:
 
 - `qmaxent_output/model.pkl` — the serialised trained model. Reload it
   later from the Data tab's **Load existing model (.pkl)…** button or
@@ -191,32 +232,62 @@ Two files were written automatically:
   [Saving and reusing models](../saving-models.md).
 - `qmaxent_output/results.xlsx` — the multi-sheet supplementary table
   containing experimental setup, variable list, CV results, jackknife,
-  and response-curve breakpoints. See
+  permutation, response-curve breakpoints, and threshold tables. See
   [Exporting results](../exporting-results.md) for the sheet-by-sheet
   layout.
 
-If you ticked **Save analysis charts as PNG** before projection, three
-additional 300-dpi PNGs of the response curves, ROC, and jackknife
-panels are written next to the GeoTIFF — sized for direct paste into a
-single-column manuscript figure.
+If you ticked **Save analysis charts as PNG** before projection, four
+additional 300-dpi PNGs of the response curves, ROC, jackknife, and
+permutation panels are written next to the GeoTIFF — sized for direct
+paste into a single-column manuscript figure.
 
-## Optional: Priority sites for survey
+## 8. Priority sites for survey
 
 A natural next step is to use the trained model to plan follow-up
-surveys. Switch to **⑤ Priority Sites for Survey**, choose **Discovery**
-mode, leave the auto-set minimum suitability of 0.9, and click
-**▶ Extract Priority Sites**:
+surveys. **⑤ Priority Sites for Survey** offers two distinct modes —
+**Discovery** (looking for *new* populations) and **Validation**
+(stratified field-checks across the suitability gradient).
 
-![Priority Sites tab in Discovery mode after extraction](../images/ui/dock-5-priority-sites-extracted.png)
+### 8.1 Discovery mode
+
+Discovery picks candidates from a high-suitability band. Open the
+tab, keep **Discovery** as the mode, leave the auto-set minimum
+suitability of ~0.81, set `n_sites = 20`, leave the 1 km / 500 m
+spacing defaults, and click **▶ Extract Priority Sites**:
+
+![Priority Sites tab in Discovery mode — form filled in](../images/ui/dock-5-priority-sites-discovery.png)
 
 20 candidate locations (red dots) appear on the suitability map, with
-addresses populated by Nominatim reverse geocoding:
+their attribute table populated by Nominatim reverse geocoding:
 
-![Priority sites overlaid on the Bradypus suitability map](../images/maps/priority-sites-on-canvas.png)
+![Discovery-mode candidates on the canvas with attribute table](../images/ui/dock-5-priority-sites-extracted.png)
 
 Each candidate is at least 1 km from any known occurrence and at least
 500 m from any other candidate, so a single field trip can plausibly
-cover several at once.
+cover several at once. Discovery is the right mode when the question
+is *"where could the species be that we have not yet looked?"* — the
+[Rhoden et al. 2017](../references.md) "Maxent-directed surveys"
+paradigm.
+
+### 8.2 Validation mode
+
+Switching the **Survey purpose** to **Validation** draws a different
+kind of sample: candidates are stratified into four quartiles of
+suitability (above a configurable threshold), so a field trip can test
+the model's calibration across the full predicted gradient rather than
+only its high-suitability core:
+
+![Priority Sites tab in Validation mode — quartile stratification settings](../images/ui/dialog-priority-validation.png)
+
+The resulting sites span low- through high-suitability cells in
+roughly equal numbers, each tagged with its quartile in the attribute
+table:
+
+![Validation-mode candidates with quartile-coloured stratification](../images/maps/priority-sites-validation-canvas.png)
+
+Validation is the right mode for model verification rather than
+discovery — it is the field-side complement of the cross-validation
+AUC we computed in § 4.
 
 ## Next steps
 

@@ -29,7 +29,7 @@ QMaxent Analysis 도크는 플러그인의 핵심으로, 전체 SDM 워크플로
 어느 탭을 보고 있든 두 요소는 고정으로 유지됩니다:
 
 - 좌측 하단의 **상태바** 는 현재 모델 상태를 요약합니다(예:
-    `presence=116 background=10,113 train AUC=0.9562 CV AUC=0.7581`).
+    `presence=116 background=10,104 train AUC=0.9569 CV AUC=0.7436`).
     학습 전에는 비어 있고, 학습 후 채워집니다.
 - 우측 하단의 큰 **▶ Run Maxent** 버튼은 전체 학습+평가 파이프라인을 시작합니다.
     클릭하면 자동으로 Training 탭으로 전환됩니다.

@@ -1,211 +1,178 @@
 # Pitta nympha
 
-The fairy pitta *Pitta nympha* is the third worked example. Where Bradypus
-showcases the feature tour and Ariolimax demonstrates raster harmonization,
-this case study has a different purpose: **reproduce a published Java-MaxEnt
-analysis in QMaxent and compare the two pipelines side-by-side**.
+The fairy pitta *Pitta nympha* is a long-distance migratory passerine
+that breeds in dense, multi-strata broadleaved forest. The dataset
+shipped here reproduces a published field study — Lee et al. (2025,
+*Global Ecology and Conservation* 60:e03939) — that surveyed nest
+sites on Geoje Island (Geoje-si, South Korea) and trained a Maxent
+model with **maxnet R** (ENMeval 2.0). Re-running the same data in
+QMaxent serves two purposes:
 
-The reference study is Lee et al. (2025), *Breeding habitat prediction and
-nest-site characteristics of the fairy pitta (*Pitta nympha*) in Geoje-si,
-South Korea — Insights from a species distribution model*, Global Ecology
-and Conservation 64 e03939. The study used the classical Java MaxEnt with
-ENMeval-driven hyperparameter selection; we run the same data through
-QMaxent's elapid backend with the **same final hyperparameters** and ask
-how the conclusions differ.
+1. **Worked example for real, small-n field data** (47 nest locations)
+   with a mix of continuous topographic variables and a categorical
+   forest-age class.
+2. **Cross-implementation comparison** with maxent.jar — see § 3.3 of
+   the accompanying manuscript for the formal IWLR ↔ coordinate-
+   descent equivalence numbers (Default β=1 and Lee-matched β=4).
 
-## Background and original publication
+## 1. Dataset
 
-Lee et al. (2025) surveyed fairy pitta nests across all of Geoje-si, South
-Korea between 2019 and 2023, locating 47 nests. They modelled breeding
-habitat suitability with 10 environmental variables grouped as
-**topographic** (TWI, TIN, ASPECT, SLOPE), **soil** (SMI), and
-**vegetation** (DBH, HEIGHT, AGE, PERCENT CANOPY COVER, SPECIES) — see
-[References](../references.md) for the full citation. Their optimal model,
-selected from 60 candidates, used the **LQH** feature class with
-**regularization multiplier (RM) = 4** and reported AUC = 0.881 ± 0.026
-across 10 bootstrap replicates of a 75/25 train/test split.
-
-We reproduce the same setup in QMaxent.
-
-## Dataset
-
-Ten environmental rasters at 30 m resolution covering Geoje-si, plus the
-47 nest occurrence points. The supplementary archive of Lee et al. (2025)
-distributes the rasters; in our local copy each raster has been renamed
-to its Table 1 code (`TWI.tif`, `TIN.tif`, …) and the two categorical
-rasters (`AGE.tif`, `SPECIES.tif`) carry a `LAYER_TYPE=thematic` PAM tag
-so QMaxent **auto-detects them as categorical** without the user having
-to toggle.
-
-Loaded into QGIS with all rasters and the presence layer:
-
-![Pitta nympha occurrence overlaid on Geoje-si environmental rasters](../images/examples/pitta-nympha/canvas.png)
-
-## Loading data into the Analysis dock
-
-On **① Data**, the auto-detection works as advertised — `AGE` and
-`SPECIES` show `[categorical]`, the other eight show `[continuous]`, and
-**Check Raster Consistency** reports
-`✓ All 9 rasters share grid (CRS: EPSG:5186, resolution: 10 × 10)`:
-
-![Data tab with Pitta nympha — 47 presence points, 9 environmental rasters with AGE and SPECIES auto-marked categorical, all rasters share a common grid](../images/examples/pitta-nympha/data-tab.png)
-
-The status bar at the bottom of the dock reads
-`presence=47 background=6,980 train AUC=0.8735 CV AUC=0.7878` — those
-final two numbers are populated after training (next section).
-
-## QMaxent setup matching the original study
-
-On **② Parameters**, we configure QMaxent to mirror Lee et al. (2025)'s
-final model as closely as the toolset allows:
-
-![Parameters tab — Manual selection LQH (Linear Quadratic Hinge), Regularization multiplier 4.00, Random K-Fold k=4 with fixed seed 0, Jackknife enabled](../images/examples/pitta-nympha/parameters.png)
-
-| Setting | QMaxent | Paper |
+| Layer | Type | Description |
 |---|---|---|
-| Feature classes | LQH | LQH ✓ |
-| Regularization multiplier | 4.0 | 4.0 ✓ |
-| Spatial CV | Random K-Fold, k=4 | 75/25 split ≡ k=4 ✓ |
-| Background points | 10,000 | 10,000 ✓ |
-| Add presences to background | ✓ | (Java default) ✓ |
-| Bias correction | Down-weight spatially clustered points | KDE bias raster (closest analog) |
-| Replicates | 1 (single K-Fold) | 10 bootstrap replicates ★ |
+| `pitta_nympha_occurrence` | Vector point | **47** nest locations on Geoje Island |
+| `TWI` | Continuous raster | Topographic wetness index |
+| `TIN` | Continuous raster | Terrain ruggedness |
+| `ASPECT` | Continuous raster | Aspect (degrees, sin-cos pre-processed) |
+| `SLOPE` | Continuous raster | Slope (°) |
+| `SMI` | Continuous raster | Soil moisture index |
+| `AGE` | **Categorical** raster | Forest age class (1–4) |
+| `DBH` | Continuous raster | Mean trunk diameter at breast height |
+| `HEIGHT` | Continuous raster | Mean canopy height |
+| `CANOPY_COVER` | Continuous raster | Canopy closure (%) |
+| `SPECIES` | Continuous raster | Dominant tree species (numeric code) |
 
-**★** Where the two diverge: Lee et al. ran their final 75/25 split **10
-times with bootstrap re-sampling** and reported the mean AUC. QMaxent
-v0.1.x runs a single K-Fold pass; the bootstrap-mean smoothing of the
-paper would lift the reported AUC by roughly 0.02–0.05.
+All ten rasters share a common grid (EPSG:5186 KGD2002 / Central
+Belt, 10 m × 10 m). This is real survey-data: the dataset is not
+bundled with the plugin's Example Dataset Downloader; the
+corresponding author of the manuscript holds the canonical copy
+(contact bhyu@knps.or.kr).
 
-## Click ▶ Run Maxent
+## 2. Loading data
 
-The training tab completes in ~30 seconds and the bottom status bar
-populates: **train AUC = 0.8735**, **CV AUC = 0.7878**.
+On **① Data**, pick `pitta_nympha_occurrence` from the Presence
+Points Layer drop-down (47 points), add all ten rasters from the
+project, **mark `AGE` as `[categorical]`**, and click
+**Check Raster Consistency**:
 
-## ROC and Jackknife — comparing with the paper
+![Data tab with Pitta nympha presence layer (47 points) + 10 rasters, AGE flagged categorical, grid consistency OK](../images/examples/pitta-nympha/data-tab.png)
 
-The ROC curve shows a familiar healthy gap between training and CV:
+The status line reads
+`✓ All 10 rasters share grid (CRS: EPSG:5186, resolution: 10 × 10)`.
+The presence points cluster on Geoje Island's central forested
+ridges:
 
-![ROC curve for Pitta nympha — Training AUC 0.873, mean CV ROC AUC 0.788 across 4 folds](../images/examples/pitta-nympha/roc.png)
+![Geoje Island canvas with the 47 fairy-pitta nest locations](../images/examples/pitta-nympha/canvas.png)
 
-The Jackknife variable importance plot orders the predictors:
+## 3. Lee-matched parameters
 
-![Jackknife variable importance — ASPECT, TWI, SPECIES carry the strongest unique signal; CANOPY_COVER, SMI, DBH the weakest](../images/examples/pitta-nympha/jackknife.png)
+On **② Parameters**, switch to **Manual selection** for Feature
+Types and tick **Linear**, **Quadratic**, **Hinge** (un-tick
+Product and Threshold). Set **Regularization multiplier = 4.00**.
+For Spatial evaluation, choose **Random K-Fold (Phillips 2006)**
+with **Folds = 10** and seed = 42. Leave Jackknife and Permutation
+importance enabled (10 repeats):
 
-Side-by-side with the paper's Table 4:
+![Parameters tab with Lee-matched manual configuration — LQH features, β=4, Random K-Fold 10-fold](../images/examples/pitta-nympha/parameters.png)
 
-| Rank | Lee et al. 2025 (% contribution) | QMaxent (Jackknife AUC drop) |
-|---|---|---|
-| 1 | **TWI** (48.6%) | TWI — strong "with-only" 0.775, drops removal AUC |
-| 2 | **SPECIES** (22.2%) | SPECIES — second-largest "without" drop |
-| 3 | **ASPECT** (13.8%) | ASPECT — highest "with-only" 0.677 |
-| 4 | DBH (5.6%) | DBH ≈ |
-| 5 | SLOPE (3.2%) | SLOPE ≈ |
-| 6 | TIN (2.9%) | TIN ≈ |
-| 7 | SMI (1.4%) | SMI ≈ |
-| 8 | HEIGHT (1.1%) | HEIGHT ≈ |
-| 9 | AGE (0.6%) | AGE ≈ |
-| 10 | CANOPY COVER (0.4%) | CANOPY_COVER ≈ |
+This configuration is the one ENMeval selected as optimal in
+Lee et al. (2025) and the one labelled "Lee-matched" in § 3.3 of
+the accompanying manuscript. Re-running it under maxent.jar
+v3.4.4 on the same data yields the maxent.jar side of the
+comparison (Training AUC = 0.8692 ± 0.0230, 10-fold CV AUC =
+0.8128 ± 0.1022) — within the |Δ| < 0.005 micro-convergence band
+documented for IWLR ↔ coordinate-descent in § 2.3.
 
-**The top three predictors and their order are identical between the two
-pipelines** (TWI, SPECIES, ASPECT). Lower-ranked variables shuffle
-slightly — predictably, since their contributions are within
-single-percentage-point noise — but the picture is consistent.
+## 4. Training
 
-## Marginal response curves
+Click **▶ Run Maxent**. The Training tab finishes in ~ 20 seconds:
 
-The 9-panel response-curve summary shows the partial-dependence shape of
-each variable. Topographic favourability concentrates on **southwest-facing
-slopes (ASPECT 200–300°)**, **gentle gradients (SLOPE < 30°)**, and **moist
-hollows (TWI peak at low values, dropping then climbing back)** — same
-qualitative pattern Lee et al. discuss in their Section 3.2:
+![Training log for Pitta nympha — Lee-matched configuration](../images/examples/pitta-nympha/training-log.png)
 
-![Marginal response curves for the 9 Pitta nympha predictors](../images/examples/pitta-nympha/response-curves.png)
+The status bar at the bottom reads
+`presence=47 background=6,491 | train AUC=0.8718 | CV AUC=0.8092`.
 
-## Spatial projection
+- **Full-data model** — `Training AUC = 0.8718` (QMaxent side of the
+  manuscript's Table 3 Lee-matched row; maxent.jar = 0.8692,
+  |Δ| = 0.0026, well within the 0.005 tolerance band).
+- **Cross-validation** — Random K-Fold n=10, seed=42. Pooled mean ±
+  std = **0.8092 ± 0.1012**. Per-fold AUCs visible in the log range
+  from 0.6150 to 0.9533 — a wider spread than Bradypus or Ariolimax,
+  reflecting the small sample (4–5 test presences per fold) typical
+  of field-survey datasets.
 
-Click **▶ Run Spatial Projection** on the Results tab. The new unified
-preflight dialog reports both the categorical codes that will be auto-
-masked to NoData and the SLOPE extrapolation:
+### Jackknife with a categorical variable
 
-![Single combined preflight dialog with categorical-mask info and SLOPE extrapolation warning](../images/ui/dialog-preflight-unified.png)
+The log surfaces a useful diagnostic that does not appear in the
+Bradypus / Ariolimax runs:
 
-After clicking **Yes**, the trained model is applied across all of
-Geoje-si and the resulting raster is auto-loaded into QGIS:
+> `only-*` skipped: dummy-column workaround produced a near-random
+> model (train AUC = 0.531); maxnet's lasso regularisation collapsed
+> the OneHot weights. Lower the regularization multiplier or read
+> importance from the `without-*` row.
 
-![Predicted breeding habitat suitability for Pitta nympha across Geoje-si — high suitability concentrated in valley forests of Mt. Nojasan, Mt. Garasan, and Mt. Bukbyeongsan](../images/examples/pitta-nympha/suitability-map.png)
+`AGE` is the only categorical variable in the stack. In the *only-
+this-variable* jackknife pass it must be one-hot encoded, but at
+β = 4 the L1 lasso penalty collapses every OneHot weight back to
+near-zero — Maxent has nothing left to score with. QMaxent detects
+this collapse, skips the affected `only-*` row, and tells you in
+plain English. The `without-*` row remains informative and is the
+right place to read AGE's incremental contribution.
 
-The high-suitability core matches the locations Lee et al. report
-(Dongbu-myeon, Nambu-myeon, Yeoncho-myeon) — independent QMaxent
-reproduction of the published spatial pattern.
+This is exactly the over-regularisation failure mode
+[Merow et al. 2013](../references.md) describe. The β = 1 Default
+run (not shown here) recovers a meaningful `only-AGE` AUC.
 
-## Priority sites for survey
+## 5. Variable behaviour
 
-For Pitta nympha — a species at the threshold of detectability — the
-**Priority Sites for Survey** workflow has direct field utility. Set
-**Discovery** mode, **Top-N (highest first)**, **20** sites, **1 km**
-minimum distance from existing presences:
+### Response curve — `ASPECT`
 
-![Priority Sites form — Discovery mode, Top-N, 20 sites, 1000 m / 500 m spacing](../images/examples/pitta-nympha/priority-form.png)
+![Response curve for ASPECT](../images/examples/pitta-nympha/response-curve-aspect.png)
 
-After clicking **▶ Extract Priority Sites**, candidates are drawn from
-the highest-suitability cells and reverse-geocoded to Korean
-administrative names (옥산리 / 이목리 / 수양동 …):
+The model assigns highest suitability to north-facing aspects
+(roughly 270°–360°), consistent with the fairy pitta's known
+preference for shaded, cool, humid microclimates on ridge shoulders.
 
-![Priority sites attribute table with Korean reverse-geocoded administrative addresses (province/city/district)](../images/results/attribute-table-priority-sites.png)
+### Jackknife importance
 
-The candidates appear on the map ready to take into the field:
+![Jackknife variable importance for the 10 Pitta nympha variables](../images/examples/pitta-nympha/jackknife.png)
 
-![20 priority sites overlaid on the Pitta nympha habitat-suitability map](../images/examples/pitta-nympha/priority-map.png)
+`ASPECT`, `TWI`, and `SPECIES` carry the strongest *without-row*
+signals — removing them costs the most. `AGE`'s `only-*` bar is
+absent for the reason described in § 4 above; its `without-*`
+ranking (~ 0.81) places it mid-pack, which is the honest reading.
 
-This output GeoPackage is what a follow-up acoustic-monitoring season
-would target — directly extending the methodology of Lee et al. (2025)
-into proactive survey design.
+### Permutation importance
 
-## Reusing the trained model later
+The permutation pass evaluates each variable on the held-out test
+set independent of the lasso shrinkage that disabled AGE's
+`only-*` row, so all ten variables get a comparable percentage:
 
-The `model.pkl` written during training can be reloaded later — useful
-for re-projecting onto an updated raster or sharing with collaborators.
-**Load existing model (.pkl)…** in the Data tab opens a variable-mapping
-dialog that protects against silent ordering errors:
+![Permutation importance bars for the 10 Pitta nympha variables](../images/examples/pitta-nympha/permutation.png)
 
-![Map model variables to rasters dialog — all 9 variables auto-matched to QGIS layer names, SPECIES correctly tagged categorical](../images/ui/dialog-load-existing-model.png)
+The agreement between Jackknife `without-*` and Permutation
+rankings (Spearman ρ at this β = 4 configuration is small, see
+manuscript § 3.3) reflects the over-regularisation effect rather
+than an implementation bug.
 
-When variable names match between the saved model and the current QGIS
-project, mapping is automatic. When they differ, the dialog forces an
-explicit mapping — the only way to load a `.pkl` that does not match the
-current naming convention is to *consciously* re-state the mapping. See
-[Saving and reusing models](../saving-models.md) for the security note
-on Python pickle files.
+## 6. Priority sites for survey
 
-## Discussion — agreement and divergence
+After projection, the **⑤ Priority Sites for Survey → Discovery**
+mode produces field-trip candidates on Geoje. Because the study
+area is much smaller than Bradypus or Ariolimax, the suitability
+threshold (~ 0.88) and spacing rules (1 km from existing
+presences, 500 m between candidates) yield a tractable list of
+about twenty new search locations:
 
-| Aspect | Agreement |
-|---|---|
-| Top-3 variables (TWI, SPECIES, ASPECT) | ✓ Identical |
-| Spatial pattern of high-suitability areas | ✓ Same mountains, same valleys |
-| AUC magnitude | Paper 0.881 ± 0.026 vs QMaxent CV 0.788 — gap explained by single-replicate vs bootstrap-mean |
-| Categorical handling | Equivalent (Java MaxEnt encodes via raster attribute table; QMaxent via OneHot in elapid) |
-| Bias correction | Different mechanism (external KDE raster vs distance-weighted points), comparable effect |
+![Discovery-mode candidates on the Geoje suitability map, with attribute table populated by Nominatim reverse geocoding](../images/examples/pitta-nympha/priority-map.png)
 
-QMaxent reproduces the published findings to a degree that would not
-change any qualitative conclusion of the paper. This is the practical
-test for cross-tool reproducibility in SDM: not "do the AUCs match to
-three decimals" (they cannot, given algorithmic differences), but
-"would a reviewer reading both reports reach the same biological
-conclusion" — and the answer is yes.
+Nominatim reverse geocoding populates the attribute table with
+administrative names down to *eup/myeon/dong* level where
+available — a one-step path from model to field-trip planning.
 
-## What this example demonstrates
+## 7. What this example demonstrates
 
-1. **End-to-end reproduction** of a published Java-MaxEnt study using
-    QMaxent's elapid backend.
-2. **Auto-detection of categorical variables** via PAM
-    `LAYER_TYPE=thematic` metadata — no user toggling required.
-3. **Unified preflight handling** of training-unseen categorical codes
-    (auto-masked to NoData) and continuous extrapolation in a single
-    dialog.
-4. **Reverse-geocoded priority sites** that take the model directly
-    into actionable field-survey design.
+1. **Real-data workflow with small-n field surveys** (47 presences,
+   10 covariates, real-world spatial scale).
+2. **Categorical variable handling** plus the OneHot-collapse
+   diagnostic when over-regularised.
+3. **The Lee-matched (β = 4) configuration** that the accompanying
+   manuscript uses for its maxent.jar numerical-compatibility
+   benchmark (§ 3.3 / Table 3).
+4. **A different, narrower kind of priority-sites use-case** —
+   targeted re-survey of known sub-populations rather than continental
+   discovery.
 
-The fairy pitta is a culturally and ecologically iconic East Asian
-species; QMaxent enables the same rigour Lee et al. brought to it
-without leaving QGIS.
+For the formal maxent.jar ↔ QMaxent comparison numbers (Training
+AUC |Δ| < 0.005, permutation-importance Spearman ρ at both β=1 and
+β=4) see the accompanying manuscript's § 3.3 and the JSON record
+under `tests/fixtures/pitta_golden_values.json`.

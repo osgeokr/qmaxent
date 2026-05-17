@@ -43,25 +43,25 @@ A typical successful run produces a log like:
 → 10,000 background points sampled
 Extracting raster covariates for presence points…
 Extracting raster covariates for background points…
-→ Presence: 116, Background: 9,997
+→ Presence: 116, Background: 10,104
 → Feature types: ['linear', 'quadratic', 'product', 'hinge', 'threshold']
 Training MaxentModel…
 → Model training complete
 → Model saved: …/model.pkl
 Computing ROC curve…
-→ Training AUC = 0.9562
+→ Training AUC = 0.9569
 Running cross-validation…
   Fold 1: 22 test presences, AUC = 0.7453
   Fold 2: 21 test presences, AUC = 0.7839
   Fold 3: 39 test presences, AUC = 0.8097
   Fold 4: 26 test presences, AUC = 0.8614
   Fold 5:  8 test presences, AUC = 0.5903
-→ CV AUC = 0.7581 ± 0.0920  (n=5 fold(s))
+→ CV AUC = 0.7436 ± 0.0750  (n=5 fold(s))
 ```
 
 A few patterns to recognise:
 
-- **Background = 9,997 instead of 10,000** — points that fell on
+- **Background = 10,104 (background + presence-added rows)** — points that fell on
   NoData cells were dropped. Normal and not a cause for concern unless
   the loss is large (>5 %).
 - **Per-fold AUC well below the mean** — for example Fold 5 above

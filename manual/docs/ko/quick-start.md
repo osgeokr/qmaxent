@@ -32,7 +32,7 @@
 
 ![Bradypus 출현 레이어(116점)와 7개 환경 래스터, biome이 categorical로 표시되고, Check Raster Consistency 결과 모든 래스터가 그리드 일치](images/ui/dock-1-data-with-bradypus.png)
 
-도크 하단 상태바에 `presence=116 background=10,113` 이 표시됩니다.
+도크 하단 상태바에 `presence=116 background=10,104` 이 표시됩니다.
 
 ## 3단계 · 기본 파라미터 사용
 
@@ -53,17 +53,17 @@ Output Files 섹션에는 학습된 모델용 `.pkl` 과 발표용 보충 표용
 
 약 30초 후 실행이 완료됩니다:
 
-![100% 완료된 Training 탭과 전체 로그: 116 presence, 9,997 background, train AUC=0.9562, CV AUC=0.7581 ± 0.0920, 변수별 jackknife](images/ui/dock-3-training-completed.png)
+![100% 완료된 Training 탭과 전체 로그: 116 presence, 10,104 background, train AUC=0.9569, CV AUC=0.7436 ± 0.0750, 변수별 jackknife](images/ui/dock-3-training-completed.png)
 
 로그를 위에서 아래로 읽으면 모델의 전체 이야기를 알 수 있습니다:
 
 - 배경 표본 추출과 공변량 추출 완료
 - 자동 규칙이 선택한 피처 유형: linear, quadratic, product, hinge, threshold
-- **Training AUC = 0.9562**(표본 내 적합)
-- **CV AUC = 0.7581 ± 0.0920**(5개 공간 폴드의 보류 검증 성능)
+- **Training AUC = 0.9569**(표본 내 적합)
+- **CV AUC = 0.7436 ± 0.0750**(5개 공간 폴드의 보류 검증 성능)
 - 9개 변수 각각의 Jackknife 결과
 
-도크 하단 상태바에 핵심 수치가 표시됩니다: `train AUC=0.9562 · CV AUC=0.7581`.
+도크 하단 상태바에 핵심 수치가 표시됩니다: `train AUC=0.9569 · CV AUC=0.7436`.
 
 ## 5단계 · 결과 확인
 

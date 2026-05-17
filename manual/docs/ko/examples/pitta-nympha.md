@@ -1,196 +1,164 @@
 # Pitta nympha
 
-팔색조 *Pitta nympha* 가 세 번째 실전 예제입니다. Bradypus가 기능 입문을,
-Ariolimax가 래스터 조화화를 보여줬다면, 이 사례 연구의 목적은 다릅니다 —
-**발표된 Java MaxEnt 분석을 QMaxent로 재현하고 두 파이프라인을 나란히
-비교**하는 것입니다.
+팔색조 *Pitta nympha*는 장거리 이동성 명금류로, 다층 구조의 활엽수림
+번식지를 선호합니다. 본 예제 자료는 출판된 현장 연구 — Lee et al.
+(2025, *Global Ecology and Conservation* 60:e03939) — 의 자료를
+재현한 것으로, 경상남도 거제도(거제시)의 둥지 위치를 조사하고
+**maxnet R**(ENMeval 2.0)으로 Maxent 모델을 학습한 사례입니다.
+같은 자료를 QMaxent로 재실행하는 데에는 두 가지 목적이 있습니다.
 
-기준 연구는 Lee et al. (2025), *Breeding habitat prediction and nest-site
-characteristics of the fairy pitta (*Pitta nympha*) in Geoje-si, South
-Korea — Insights from a species distribution model*, Global Ecology and
-Conservation 64 e03939 입니다. 이 연구는 ENMeval 기반 하이퍼파라미터 선택과
-함께 고전 Java MaxEnt를 사용했으며, 우리는 동일한 데이터를 QMaxent의 elapid
-백엔드를 통해 **동일한 최종 하이퍼파라미터**로 돌리고 두 결론이 어떻게
-다른지 묻습니다.
+1. **소규모 실측 자료(47개 둥지)에 대한 워크 예제** — 연속형 지형
+   변수와 범주형 임상 변수가 혼합된 현실적 자료.
+2. **maxent.jar와의 구현 간 비교** — 첨부 원고 § 3.3에서 IWLR ↔
+   coordinate-descent 등치성을 두 설정(Default β=1, Lee-matched β=4)에
+   대해 정량 비교한 내용을 직접 재현해 볼 수 있습니다.
 
-## 배경과 원 논문
+## 1. 자료
 
-Lee et al. (2025) 는 2019–2023년 동안 거제시 전역에서 팔색조 둥지를
-조사하여 47개 둥지를 확인했습니다. 그들은 10개 환경 변수로 번식 서식
-적합도를 모델링했으며, 변수는 **지형** (TWI, TIN, ASPECT, SLOPE), **토양**
-(SMI), **식생** (DBH, HEIGHT, AGE, PERCENT CANOPY COVER, SPECIES) 으로
-분류 — 전체 인용은 [참고문헌](../references.md) 참고. 60개 후보 모델 중
-선택된 최적 모델은 **LQH** 피처 클래스와 **정규화 배수 (RM) = 4** 를
-사용했고, 75/25 학습/검증 분할의 10 bootstrap replicate 평균
-AUC = 0.881 ± 0.026 을 보고했습니다.
-
-QMaxent로 같은 설정을 재현합니다.
-
-## 데이터셋
-
-거제시를 커버하는 30 m 해상도 환경 변수 10개와 47개 둥지 출현 지점.
-Lee et al. (2025) 보충자료가 래스터를 배포합니다 — 우리 로컬 사본에서는
-각 래스터를 Table 1 코드 (`TWI.tif`, `TIN.tif`, …) 로 이름 변경했고, 두
-범주형 래스터 (`AGE.tif`, `SPECIES.tif`) 는 `LAYER_TYPE=thematic` PAM 태그를
-가져 QMaxent가 사용자가 토글하지 않아도 **자동으로 categorical로 인식**합니다.
-
-QGIS에 모든 래스터와 출현 레이어를 로드한 모습:
-
-![거제시 환경 래스터 위에 표시된 Pitta nympha 출현 지점](../../images/examples/pitta-nympha/canvas.png)
-
-## Analysis 도크에 데이터 불러오기
-
-**① Data** 에서 자동 인식이 잘 동작합니다 — `AGE` 와 `SPECIES` 가
-`[categorical]`, 나머지 8개가 `[continuous]` 로 표시되며,
-**Check Raster Consistency** 가
-`✓ All 9 rasters share grid (CRS: EPSG:5186, resolution: 10 × 10)` 을 보고:
-
-![Pitta nympha Data 탭 — 47 출현 지점, 9개 환경 래스터 (AGE와 SPECIES 자동 categorical), 모든 래스터가 공통 격자 공유](../../images/examples/pitta-nympha/data-tab.png)
-
-도크 하단 상태바: `presence=47 background=6,980 train AUC=0.8735
-CV AUC=0.7878` — 마지막 두 수치는 학습 후 채워집니다.
-
-## 원 연구와 일치시킨 QMaxent 설정
-
-**② Parameters** 에서 도구가 허용하는 한도 내에서 Lee et al. (2025) 의
-최종 모델을 그대로 매핑:
-
-![Parameters 탭 — Manual selection LQH, Regularization multiplier 4.00, Random K-Fold k=4 (seed 0), Jackknife 활성화](../../images/examples/pitta-nympha/parameters.png)
-
-| 설정 | QMaxent | 논문 |
+| 레이어 | 타입 | 설명 |
 |---|---|---|
-| 피처 클래스 | LQH | LQH ✓ |
-| 정규화 배수 | 4.0 | 4.0 ✓ |
-| 공간 CV | Random K-Fold, k=4 | 75/25 split ≡ k=4 ✓ |
-| 배경 지점 | 10,000 | 10,000 ✓ |
-| Add presences to background | ✓ | (Java 기본값) ✓ |
-| 편향 보정 | Down-weight spatially clustered points | KDE bias raster (가장 가까운 등가) |
-| Replicate | 1 (단일 K-Fold) | 10 bootstrap replicate ★ |
+| `pitta_nympha_occurrence` | 벡터 점 | 거제도의 둥지 위치 **47점** |
+| `TWI` | 연속 래스터 | 지형 습윤 지수 |
+| `TIN` | 연속 래스터 | 지형 거칠기 |
+| `ASPECT` | 연속 래스터 | 사면 방향 (°) |
+| `SLOPE` | 연속 래스터 | 사면 경사 (°) |
+| `SMI` | 연속 래스터 | 토양 수분 지수 |
+| `AGE` | **범주형** 래스터 | 영급(1–4) |
+| `DBH` | 연속 래스터 | 평균 흉고직경 |
+| `HEIGHT` | 연속 래스터 | 평균 수관 높이 |
+| `CANOPY_COVER` | 연속 래스터 | 수관 폐쇄도(%) |
+| `SPECIES` | 연속 래스터 | 우점수종(수치 코드) |
 
-**★** 두 도구가 갈라지는 지점 — Lee et al. 은 최종 75/25 분할을 bootstrap
-재표본 추출로 **10번 반복**해 평균 AUC를 보고했습니다. QMaxent v0.1.x는
-단일 K-Fold 패스를 실행 — 논문의 bootstrap 평균 평탄화는 보고된 AUC를
-약 0.02–0.05 끌어올립니다.
+10개 래스터 전부 동일 격자(EPSG:5186 KGD2002 중부원점, 10 m × 10 m)를
+공유합니다. 본 자료는 실제 현장 조사 자료로, 플러그인의 Example
+Dataset Downloader에는 포함되어 있지 않습니다. 원고 교신저자가 자료의
+원본을 보유하고 있습니다(연락: bhyu@knps.or.kr).
 
-## ▶ Run Maxent 클릭
+## 2. 자료 적재
 
-학습 탭이 ~30초 후 완료되며 하단 상태바가 채워집니다 —
-**train AUC = 0.8735**, **CV AUC = 0.7878**.
+**① Data** 탭에서 `pitta_nympha_occurrence`를 Presence Points Layer
+드롭다운에서 선택하고(47점), 프로젝트에서 10개 래스터를 일괄 추가한 뒤,
+**`AGE`를 `[categorical]`로 표시**합니다. **Check Raster Consistency**를
+누릅니다.
 
-## ROC와 Jackknife — 논문과 비교
+![Pitta nympha 출현 레이어(47점) + 10개 래스터가 로드된 Data 탭, AGE 범주형 표시, 격자 정합 OK](../images/examples/pitta-nympha/data-tab.png)
 
-ROC 곡선은 학습과 CV 사이의 친숙한 건강한 격차를 보여줍니다:
+상태 줄에
+`✓ All 10 rasters share grid (CRS: EPSG:5186, resolution: 10 × 10)`
+이 표시됩니다. 출현점은 거제도 중부 산림 능선에 집중됩니다.
 
-![Pitta nympha ROC 곡선 — 학습 AUC 0.873, 평균 CV ROC AUC 0.788 (4 fold)](../../images/examples/pitta-nympha/roc.png)
+![47개 팔색조 둥지 위치가 표시된 거제도 캔버스](../images/examples/pitta-nympha/canvas.png)
 
-Jackknife 변수 중요도가 예측 변수의 순위를 정렬합니다:
+## 3. Lee-matched 매개변수
 
-![Jackknife 변수 중요도 — ASPECT, TWI, SPECIES가 가장 강한 고유 신호; CANOPY_COVER, SMI, DBH가 가장 약함](../../images/examples/pitta-nympha/jackknife.png)
+**② Parameters** 탭에서 Feature Types를 **Manual selection**으로
+전환하고 **Linear**, **Quadratic**, **Hinge**만 체크합니다(Product,
+Threshold 해제). **Regularization multiplier = 4.00**으로 설정.
+Spatial evaluation은 **Random K-Fold (Phillips 2006)**, **Folds = 10**,
+seed = 42. Jackknife와 Permutation importance(반복 10회)는 활성화
+유지.
 
-논문 Table 4와 나란히 비교:
+![Lee-matched 수동 설정이 적용된 Parameters 탭 — LQH 피처, β=4, Random K-Fold 10-fold](../images/examples/pitta-nympha/parameters.png)
 
-| 순위 | Lee et al. 2025 (% contribution) | QMaxent (Jackknife AUC drop) |
-|---|---|---|
-| 1 | **TWI** (48.6%) | TWI — 강한 "with-only" 0.775, 제거 시 AUC 하락 |
-| 2 | **SPECIES** (22.2%) | SPECIES — 두 번째로 큰 "without" 하락 |
-| 3 | **ASPECT** (13.8%) | ASPECT — 가장 높은 "with-only" 0.677 |
-| 4 | DBH (5.6%) | DBH ≈ |
-| 5 | SLOPE (3.2%) | SLOPE ≈ |
-| 6 | TIN (2.9%) | TIN ≈ |
-| 7 | SMI (1.4%) | SMI ≈ |
-| 8 | HEIGHT (1.1%) | HEIGHT ≈ |
-| 9 | AGE (0.6%) | AGE ≈ |
-| 10 | CANOPY COVER (0.4%) | CANOPY_COVER ≈ |
+이 설정은 Lee et al. (2025)에서 ENMeval이 최적으로 선택한 구성이며,
+첨부 원고 § 3.3의 "Lee-matched" 라벨이 가리키는 구성입니다. maxent.jar
+v3.4.4를 동일 자료에 적용하면 비교 대조군이 산출됩니다(Training AUC =
+0.8692 ± 0.0230, 10-fold CV AUC = 0.8128 ± 0.1022). 이는 § 2.3에서
+명시한 IWLR ↔ coordinate-descent의 |Δ| < 0.005 micro-convergence
+범위 안에 들어옵니다.
 
-**상위 3개 예측 변수와 그 순서가 두 파이프라인 사이에 동일합니다**
-(TWI, SPECIES, ASPECT). 하위 변수들은 약간 자리바꿈 — 그들의 기여가 단일
-백분율 잡음 안에 있으니 예상되는 일 — 하지만 큰 그림은 일관됩니다.
+## 4. 학습
 
-## 한계 반응 곡선
+**▶ Run Maxent**를 누릅니다. Training 탭이 약 20초 만에 완료됩니다.
 
-9개 패널 반응 곡선 요약은 각 변수의 부분 의존성 모양을 보여줍니다.
-지형적 선호는 **남서향 사면 (ASPECT 200–300°)**, **완만한 경사
-(SLOPE < 30°)**, **습한 골 (TWI 낮은 값에서 정점, 떨어졌다 다시 올라오는
-패턴)** 에 집중됩니다 — Lee et al. 의 3.2절이 논의하는 것과 동일한 정성적
-패턴:
+![Pitta nympha — Lee-matched 설정에 대한 Training 로그](../images/examples/pitta-nympha/training-log.png)
 
-![Pitta nympha 9개 예측 변수의 한계 반응 곡선](../../images/examples/pitta-nympha/response-curves.png)
+하단 상태 줄에
+`presence=47 background=6,491 | train AUC=0.8718 | CV AUC=0.8092`이
+표시됩니다.
 
-## 공간 투영
+- **Full-data model** — `Training AUC = 0.8718`(원고 Table 3
+  Lee-matched 행의 QMaxent 측 수치. maxent.jar = 0.8692, |Δ| = 0.0026
+  으로 0.005 허용오차 안에 들어옵니다).
+- **Cross-validation** — Random K-Fold n=10, seed=42. 통합 평균 ± 표준
+  편차 = **0.8092 ± 0.1012**. 로그에 보이는 fold별 AUC는 0.6150에서
+  0.9533까지 분포 — Bradypus나 Ariolimax보다 큰 변동성이며, 현장 조사
+  자료의 작은 표본(fold당 4–5개 검증 출현점)이 만드는 전형적 양상입니다.
 
-Results 탭의 **▶ Run Spatial Projection** 클릭. 새 통합 사전 점검
-다이얼로그가 NoData로 자동 마스킹될 범주형 코드와 SLOPE 외삽 둘 다
-보고합니다:
+### 범주형 변수가 있을 때의 Jackknife
 
-![범주형 마스크 정보와 SLOPE 외삽 경고가 결합된 단일 사전 점검 다이얼로그](../../images/ui/dialog-preflight-unified.png)
+로그에 다른 두 예제에는 없는 진단 메시지가 표시됩니다.
 
-**Yes** 클릭 후, 학습된 모델이 거제시 전역에 적용되며 결과 래스터가
-QGIS에 자동 로드됩니다:
+> `only-*` skipped: dummy-column workaround produced a near-random
+> model (train AUC = 0.531); maxnet's lasso regularisation collapsed
+> the OneHot weights. Lower the regularization multiplier or read
+> importance from the `without-*` row.
 
-![거제시 전역의 Pitta nympha 번식 서식 적합도 — 노자산, 가라산, 북병산 계곡림에 고적합도 집중](../../images/examples/pitta-nympha/suitability-map.png)
+`AGE`는 본 스택에서 유일한 범주형 변수입니다. *only-this-variable*
+잭나이프 패스에서 AGE는 one-hot 인코딩되어야 하는데, β = 4의 L1 lasso
+페널티가 OneHot 가중치를 거의 0으로 압축해 버립니다 — Maxent가 평가에
+사용할 정보가 남지 않습니다. QMaxent는 이 collapse를 감지해 해당
+`only-*` 행을 건너뛰고 사용자에게 평이한 영어로 알립니다. `without-*`
+행은 여전히 정보적이며, AGE의 증분 기여도를 읽는 올바른 위치입니다.
 
-고적합도 핵심부가 Lee et al. 이 보고한 위치 (동부면, 남부면, 연초면) 와
-일치합니다 — 발표된 공간 패턴의 독립적 QMaxent 재현.
+이는 [Merow et al. 2013](../references.md)이 기술한 과대 정규화 실패
+모드의 정확한 예시입니다. β = 1 Default 구성에서는 의미 있는 `only-AGE`
+AUC가 회복됩니다(본 가이드에는 표시하지 않음).
 
-## 우선조사 후보지
+## 5. 변수 행동
 
-탐지 한계에 있는 종 — 팔색조 — 에 대해서는 **Priority Sites for Survey**
-워크플로가 직접적인 현장 활용성을 가집니다. **Discovery** 모드, **Top-N
-(highest first)**, **20** 사이트, **1 km** 출현 지점 최소 거리 설정:
+### 반응 곡선 — `ASPECT`
 
-![Priority Sites 폼 — Discovery 모드, Top-N, 20개 사이트, 1000 m / 500 m 간격](../../images/examples/pitta-nympha/priority-form.png)
+![ASPECT의 반응 곡선](../images/examples/pitta-nympha/response-curve-aspect.png)
 
-**▶ Extract Priority Sites** 클릭 후, 후보가 가장 높은 적합도 셀에서
-추출되며 한국 행정구역 명 (옥산리 / 이목리 / 수양동 …) 으로 역지오코딩됩니다:
+모델은 북향(약 270°–360°)에 가장 높은 적합도를 할당합니다 — 능선 어깨의
+음지·저온·고습 미기후를 선호한다는 팔색조의 알려진 생태에 부합합니다.
 
-![Priority Sites 속성 테이블 — 한국어 역지오코딩된 행정 주소 (시도/시군/읍면동)](../../images/results/attribute-table-priority-sites.png)
+### Jackknife 중요도
 
-후보가 지도에 표시되며 현장으로 바로 가져갈 준비가 됩니다:
+![10개 Pitta nympha 변수의 Jackknife](../images/examples/pitta-nympha/jackknife.png)
 
-![Pitta nympha 적합도 지도 위에 표시된 20개 우선조사 후보지](../../images/examples/pitta-nympha/priority-map.png)
+`ASPECT`, `TWI`, `SPECIES`가 가장 강한 *without-row* 신호를 가집니다 —
+제거 시 손실이 가장 큰 변수들. `AGE`의 `only-*` 막대는 § 4에 설명한
+이유로 생략됩니다. AGE의 `without-*` 순위(~ 0.81)는 중간 위치로,
+이것이 정직한 해석입니다.
 
-이 출력 GeoPackage는 후속 음향 모니터링 시즌이 표적할 대상이 됩니다 —
-Lee et al. (2025) 의 방법론을 능동적 조사 설계로 직접 확장.
+### Permutation 중요도
 
-## 학습된 모델 재사용
+Permutation 패스는 lasso 압축의 영향을 받지 않는 검증 세트에서 각 변수를
+평가하므로, AGE를 포함한 10개 변수 모두 직접 비교 가능한 percentage를
+얻습니다.
 
-학습 시 작성된 `model.pkl` 은 나중에 다시 로드할 수 있습니다 — 갱신된
-래스터에 재투영하거나 협력자와 공유할 때 유용. Data 탭의 **Load existing
-model (.pkl)…** 가 silent ordering 오류를 막는 변수 매핑 다이얼로그를 엽니다:
+![10개 Pitta nympha 변수의 Permutation 중요도](../images/examples/pitta-nympha/permutation.png)
 
-![Map model variables to rasters 다이얼로그 — 9개 변수 모두 QGIS 레이어 명에 자동 매칭, SPECIES는 categorical로 정확히 태그됨](../../images/ui/dialog-load-existing-model.png)
+이 β = 4 구성에서 Jackknife `without-*` 순위와 Permutation 순위의
+Spearman ρ는 작게 나옵니다(원고 § 3.3 참조) — 이는 과대 정규화 효과
+때문이지 구현 결함이 아닙니다.
 
-저장된 모델과 현재 QGIS 프로젝트 사이의 변수 명이 일치하면 매핑이
-자동입니다. 다를 경우, 다이얼로그가 명시적 매핑을 강제 — 현재 명명 규약과
-일치하지 않는 `.pkl` 을 로드할 유일한 방법은 *의식적으로* 매핑을 다시
-명시하는 것입니다. Python pickle 보안 안내는 [모델 저장 및
-재사용](../saving-models.md) 참고.
+## 6. 우선조사 후보지
 
-## 논의 — 일치와 차이
+투영 후 **⑤ Priority Sites for Survey → Discovery** 모드에서 거제도
+영역에 대한 현장 출장 후보지를 산출합니다. 연구 영역이 Bradypus나
+Ariolimax보다 훨씬 좁아서, 적합도 임계값(~ 0.88)과 간격 규칙(기존
+출현점에서 1 km, 후보 간 500 m)으로 약 20개 정도의 적정 규모 후보지
+목록이 나옵니다.
 
-| 항목 | 일치도 |
-|---|---|
-| 상위 3개 변수 (TWI, SPECIES, ASPECT) | ✓ 동일 |
-| 고적합도 영역의 공간 패턴 | ✓ 같은 산맥, 같은 계곡 |
-| AUC 크기 | 논문 0.881 ± 0.026 vs QMaxent CV 0.788 — 단일 replicate vs bootstrap 평균 차이로 설명 |
-| 범주형 처리 | 등가 (Java MaxEnt는 raster attribute table로 인코딩, QMaxent는 elapid의 OneHot으로) |
-| 편향 보정 | 다른 메커니즘 (외부 KDE raster vs 거리 가중 점), 비슷한 효과 |
+![거제도 적합도 지도 위의 Discovery 후보지, Nominatim 역지오코딩으로 채워진 attribute table](../images/examples/pitta-nympha/priority-map.png)
 
-QMaxent는 발표된 결론을 어느 *정성적* 결론도 바뀌지 않을 정도로 재현합니다.
-이는 SDM에서의 도구 간 재현성에 대한 실용적 시험입니다 — "AUC가 소수점
-세 자리까지 일치하는가" 가 아니라 (알고리즘 차이를 고려하면 그럴 수
-없습니다), "두 보고서를 모두 읽은 reviewer가 동일한 생물학적 결론에
-도달하는가" — 답은 yes 입니다.
+Nominatim 역지오코딩으로 가용한 한도 내에서 *읍 · 면 · 동* 단위의
+행정 정보가 attribute table에 자동 부착되어, 모델 결과에서 현장 출장
+계획까지 한 걸음에 연결됩니다.
 
-## 본 예제가 보여주는 것
+## 7. 이 예제가 시연하는 것
 
-1. **발표된 Java-MaxEnt 연구의 종단간 재현** — QMaxent의 elapid 백엔드 사용
-2. **PAM `LAYER_TYPE=thematic` 메타데이터를 통한 범주형 변수 자동 인식** —
-    사용자 토글 불필요
-3. **단일 사전 점검 다이얼로그** — 학습 안 된 범주형 코드 (NoData 자동
-    마스킹) 와 연속 외삽을 한 화면에서 처리
-4. **역지오코딩된 우선조사 후보지** — 모델을 실행 가능한 현장 조사 설계로
-    직접 연결
+1. **소규모 실측 자료**(47개 출현점, 10개 공변량, 현실적 공간 규모)
+   에서의 워크플로우.
+2. **범주형 변수 처리** + 과대 정규화 시 OneHot collapse 진단 메시지.
+3. **Lee-matched (β = 4) 구성** — 첨부 원고가 maxent.jar 수치 호환성
+   벤치마크에 사용한 바로 그 설정(§ 3.3 / Table 3).
+4. **이전 예제와 다른 좁은 의미의 우선조사 후보지 활용** — 대륙 규모의
+   신규 발견이 아닌 알려진 부분 개체군의 표적 재조사.
 
-팔색조는 동아시아의 문화적·생태적 상징종이며, QMaxent는 Lee et al. 이
-이 종에 적용한 엄밀성을 QGIS를 떠나지 않고 그대로 재현할 수 있게 합니다.
+maxent.jar ↔ QMaxent 정량 비교 수치(Training AUC |Δ| < 0.005, β=1과
+β=4 두 구성의 permutation-importance Spearman ρ)는 첨부 원고 § 3.3과
+`tests/fixtures/pitta_golden_values.json`을 참고하세요.

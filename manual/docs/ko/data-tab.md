@@ -85,7 +85,7 @@ Maxent는 실제 부재 지점을 필요로 하지 않습니다 — 대신 **배
 - **출현 지점에 강한 공간 표본 편향**: [파라미터 탭](parameters-tab.md)의
     *Down-weight spatially clustered points* 옵션과 함께 사용.
 
-상태바는 표본 후 실제 개수를 보고합니다(예: `background=10,113`); 요청보다 약간 작은
+상태바는 표본 후 실제 개수를 보고합니다(예: `background=10,104`); 요청보다 약간 작은
 숫자는 NaN 셀 제외에 의한 것입니다.
 
 ## 기존 모델 (.pkl) 불러오기

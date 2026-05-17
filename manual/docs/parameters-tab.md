@@ -69,7 +69,7 @@ folds:
 
 ![CV-method drop-down expanded](images/ui/dock-2-parameters-cv-dropdown.png)
 
-The default **Geographic K-Fold (k = 5, fixed seed = 0)** strikes a balance
+The default **Geographic K-Fold (k = 5, fixed seed = 42)** strikes a balance
 recommended by [Roberts et al. 2017](references.md): geographic blocks
 break the spatial-autocorrelation cheating that random K-Fold permits,
 yet keep the held-out folds large enough for a stable AUC.
