@@ -47,10 +47,12 @@ def test_bradypus_default_fit_produces_finite_auc():
     if isinstance(sample, tuple) and len(sample) == 2:
         x_pres, x_bg = sample
         X = np.vstack([x_pres.values, x_bg.values])
-        y = np.concatenate([
-            np.ones(len(x_pres), dtype=int),
-            np.zeros(len(x_bg), dtype=int),
-        ])
+        y = np.concatenate(
+            [
+                np.ones(len(x_pres), dtype=int),
+                np.zeros(len(x_bg), dtype=int),
+            ]
+        )
     else:
         df = sample
         label_col = next(
@@ -71,6 +73,4 @@ def test_bradypus_default_fit_produces_finite_auc():
     # Generous band — purpose is to detect collapse to chance or to
     # perfect fit, not to police the exact AUC. The full numerical
     # claim is defended by the Pitta golden-values test.
-    assert 0.55 < auc < 0.999, (
-        f"Bradypus training AUC out of plausible range: {auc:.4f}"
-    )
+    assert 0.55 < auc < 0.999, f"Bradypus training AUC out of plausible range: {auc:.4f}"

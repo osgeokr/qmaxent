@@ -13,9 +13,12 @@ where the user wants to deliberately substitute a covariate.
 """
 
 from qgis.core import QgsProject, QgsRasterLayer
-from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import (
-    QComboBox, QDialog, QDialogButtonBox, QGridLayout, QLabel,
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
+    QGridLayout,
+    QLabel,
     QVBoxLayout,
 )
 
@@ -57,12 +60,14 @@ class ModelLoadDialog(QDialog):
     def _build_ui(self):
         v = QVBoxLayout(self)
 
-        intro = QLabel(tr(
-            "This model was trained on {n} variables in a specific order. "
-            "Map each model variable to a QGIS raster layer below. "
-            "Order matters: predictions are computed by raster position, "
-            "not by name."
-        ).format(n=len(self._feature_names)))
+        intro = QLabel(
+            tr(
+                "This model was trained on {n} variables in a specific order. "
+                "Map each model variable to a QGIS raster layer below. "
+                "Order matters: predictions are computed by raster position, "
+                "not by name."
+            ).format(n=len(self._feature_names))
+        )
         intro.setWordWrap(True)
         v.addWidget(intro)
 
@@ -74,20 +79,24 @@ class ModelLoadDialog(QDialog):
         # academic disclosure for any tool that distributes pickled
         # models (sklearn, joblib, elapid all carry similar warnings in
         # their own documentation).
-        sec_note = QLabel(tr(
-            "⚠ Note: .pkl is a Python pickle file. Only load models from "
-            "sources you trust (typically models you produced with this "
-            "plugin); a malicious .pkl can execute arbitrary code on load."
-        ))
+        sec_note = QLabel(
+            tr(
+                "⚠ Note: .pkl is a Python pickle file. Only load models from "
+                "sources you trust (typically models you produced with this "
+                "plugin); a malicious .pkl can execute arbitrary code on load."
+            )
+        )
         sec_note.setWordWrap(True)
         sec_note.setStyleSheet("color:#7A6A2A; font-size: 11px;")
         v.addWidget(sec_note)
 
         if not self._project_layers:
-            warn = QLabel(tr(
-                "⚠ No raster layers in the QGIS project. Add the required "
-                "rasters to the project first, then load the model again."
-            ))
+            warn = QLabel(
+                tr(
+                    "⚠ No raster layers in the QGIS project. Add the required "
+                    "rasters to the project first, then load the model again."
+                )
+            )
             warn.setWordWrap(True)
             warn.setStyleSheet("color:#B23A2A;")
             v.addWidget(warn)
@@ -132,9 +141,7 @@ class ModelLoadDialog(QDialog):
         self._summary.setWordWrap(True)
         v.addWidget(self._summary)
 
-        self._buttons = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
-        )
+        self._buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self._buttons.button(QDialogButtonBox.Ok).setText(tr("Load model"))
         self._buttons.accepted.connect(self.accept)
         self._buttons.rejected.connect(self.reject)
@@ -189,23 +196,25 @@ class ModelLoadDialog(QDialog):
         ok_btn.setEnabled(all_set and no_dupes)
 
         # Update the summary label
-        n_total   = len(self._combos)
+        n_total = len(self._combos)
         n_matched = sum(1 for l in layers if l is not None)
         if not no_dupes:
-            self._summary.setText(tr(
-                "⚠ The same raster is assigned to two or more variables. "
-                "Each model variable needs its own raster."
-            ))
+            self._summary.setText(
+                tr(
+                    "⚠ The same raster is assigned to two or more variables. "
+                    "Each model variable needs its own raster."
+                )
+            )
             self._summary.setStyleSheet("color:#B23A2A;")
         elif all_set:
-            self._summary.setText(tr(
-                "✓ All {n} variables matched."
-            ).format(n=n_total))
+            self._summary.setText(tr("✓ All {n} variables matched.").format(n=n_total))
             self._summary.setStyleSheet("color:#0F6E56;")
         else:
-            self._summary.setText(tr(
-                "Auto-matched {n}/{total} by name. Pick layers for the rest."
-            ).format(n=n_matched, total=n_total))
+            self._summary.setText(
+                tr("Auto-matched {n}/{total} by name. Pick layers for the rest.").format(
+                    n=n_matched, total=n_total
+                )
+            )
             self._summary.setStyleSheet("color:#444;")
 
     # --------------------------------------------------- result

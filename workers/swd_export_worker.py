@@ -49,7 +49,7 @@ from ..i18n import tr
 
 class SWDExportWorker(QThread):
     progress = pyqtSignal(int, str)
-    log      = pyqtSignal(str)
+    log = pyqtSignal(str)
     finished = pyqtSignal(bool, str, dict)
 
     def __init__(self, config: dict, parent=None):
@@ -73,9 +73,7 @@ class SWDExportWorker(QThread):
         except InterruptedError:
             self.finished.emit(False, "Cancelled", {})
         except Exception as e:
-            self.finished.emit(
-                False, f"{e}\n{traceback.format_exc()}", {}
-            )
+            self.finished.emit(False, f"{e}\n{traceback.format_exc()}", {})
 
     # -----------------------------------------------------------------------
     # Main execution — dispatches on cfg["format"]
@@ -88,10 +86,7 @@ class SWDExportWorker(QThread):
         elif fmt == "raster_samples":
             return self._execute_raster_samples()
         else:
-            raise ValueError(
-                f"Unknown export format '{fmt}'. "
-                f"Expected 'swd' or 'raster_samples'."
-            )
+            raise ValueError(f"Unknown export format '{fmt}'. Expected 'swd' or 'raster_samples'.")
 
     # -----------------------------------------------------------------------
     # Mode 1: SWD (Samples-With-Data CSV pair)
@@ -100,15 +95,15 @@ class SWDExportWorker(QThread):
     def _execute_swd(self) -> dict:
         from ..bridge import elapid_bridge as eb
 
-        cfg                 = self._cfg
-        presence_gdf        = cfg["presence_gdf"]
-        raster_paths        = cfg["raster_paths"]
-        feature_names       = cfg["feature_names"]
+        cfg = self._cfg
+        presence_gdf = cfg["presence_gdf"]
+        raster_paths = cfg["raster_paths"]
+        feature_names = cfg["feature_names"]
         categorical_indices = list(cfg.get("categorical_indices", []) or [])
-        n_background        = int(cfg.get("n_background", 10000))
-        output_dir          = cfg["output_dir"]
-        species_name        = cfg.get("species_name") or "species"
-        bias_path           = cfg.get("bias_path")
+        n_background = int(cfg.get("n_background", 10000))
+        output_dir = cfg["output_dir"]
+        species_name = cfg.get("species_name") or "species"
+        bias_path = cfg.get("bias_path")
 
         species_name = _normalize_species_name(species_name)
         os.makedirs(output_dir, exist_ok=True)
@@ -118,9 +113,7 @@ class SWDExportWorker(QThread):
         _ensure_raster_consistency(raster_paths)
 
         # ── Reproject presences to raster CRS if needed ──────────────────
-        presence_gdf = _reproject_to_raster_crs(
-            presence_gdf, raster_paths, log=self.log.emit
-        )
+        presence_gdf = _reproject_to_raster_crs(presence_gdf, raster_paths, log=self.log.emit)
 
         # ── Background sampling ──────────────────────────────────────────
         self._check(15, f"Sampling {n_background:,} background points...")
@@ -133,42 +126,43 @@ class SWDExportWorker(QThread):
 
         # ── Annotation ───────────────────────────────────────────────────
         self._check(40, "Extracting raster values at presence points...")
-        presence_ann = eb.annotate(
-            presence_gdf, raster_paths, labels=feature_names, quiet=True
-        )
+        presence_ann = eb.annotate(presence_gdf, raster_paths, labels=feature_names, quiet=True)
         self._check(60, "Extracting raster values at background points...")
-        background_ann = eb.annotate(
-            bg_gs, raster_paths, labels=feature_names, quiet=True
-        )
+        background_ann = eb.annotate(bg_gs, raster_paths, labels=feature_names, quiet=True)
 
         # Drop NoData rows the same way the training pipeline does.
-        presence_clean   = presence_ann.dropna(subset=feature_names).reset_index(drop=True)
+        presence_clean = presence_ann.dropna(subset=feature_names).reset_index(drop=True)
         background_clean = background_ann.dropna(subset=feature_names).reset_index(drop=True)
         n_pres = len(presence_clean)
-        n_bg   = len(background_clean)
-        self.log.emit(
-            f"  → After NoData removal: {n_pres} presence, "
-            f"{n_bg:,} background"
-        )
+        n_bg = len(background_clean)
+        self.log.emit(f"  → After NoData removal: {n_pres} presence, {n_bg:,} background")
         if n_pres == 0:
-            raise RuntimeError(tr(
-                "No valid presence points after removing rows with NoData "
-                "in the environmental rasters. Check that your presence "
-                "layer overlaps the raster extents."
-            ))
+            raise RuntimeError(
+                tr(
+                    "No valid presence points after removing rows with NoData "
+                    "in the environmental rasters. Check that your presence "
+                    "layer overlaps the raster extents."
+                )
+            )
 
         # ── Write SWD CSV files ──────────────────────────────────────────
         self._check(80, "Writing SWD files...")
-        presence_path   = os.path.join(output_dir, "presence.csv")
+        presence_path = os.path.join(output_dir, "presence.csv")
         background_path = os.path.join(output_dir, "background.csv")
 
         n_pres_written = _write_swd(
-            presence_clean, presence_path,
-            species_name, feature_names, categorical_indices,
+            presence_clean,
+            presence_path,
+            species_name,
+            feature_names,
+            categorical_indices,
         )
         n_bg_written = _write_swd(
-            background_clean, background_path,
-            "background", feature_names, categorical_indices,
+            background_clean,
+            background_path,
+            "background",
+            feature_names,
+            categorical_indices,
         )
 
         # ── README with generic command line ─────────────────────────────
@@ -184,13 +178,13 @@ class SWDExportWorker(QThread):
 
         self._check(100, "Done")
         return {
-            "format":          "swd",
-            "presence_path":   presence_path,
+            "format": "swd",
+            "presence_path": presence_path,
             "background_path": background_path,
-            "readme_path":     readme_path,
-            "n_presence":      n_pres_written,
-            "n_background":    n_bg_written,
-            "output_dir":      output_dir,
+            "readme_path": readme_path,
+            "n_presence": n_pres_written,
+            "n_background": n_bg_written,
+            "output_dir": output_dir,
         }
 
     # -----------------------------------------------------------------------
@@ -198,29 +192,27 @@ class SWDExportWorker(QThread):
     # -----------------------------------------------------------------------
 
     def _execute_raster_samples(self) -> dict:
-        cfg                 = self._cfg
-        presence_gdf        = cfg["presence_gdf"]
-        raster_paths        = cfg["raster_paths"]
-        feature_names       = cfg["feature_names"]
+        cfg = self._cfg
+        presence_gdf = cfg["presence_gdf"]
+        raster_paths = cfg["raster_paths"]
+        feature_names = cfg["feature_names"]
         categorical_indices = list(cfg.get("categorical_indices", []) or [])
-        output_dir          = cfg["output_dir"]
-        species_name        = cfg.get("species_name") or "species"
+        output_dir = cfg["output_dir"]
+        species_name = cfg.get("species_name") or "species"
 
         species_name = _normalize_species_name(species_name)
         os.makedirs(output_dir, exist_ok=True)
         samples_dir = os.path.join(output_dir, "samples")
-        layers_dir  = os.path.join(output_dir, "layers")
+        layers_dir = os.path.join(output_dir, "layers")
         os.makedirs(samples_dir, exist_ok=True)
-        os.makedirs(layers_dir,  exist_ok=True)
+        os.makedirs(layers_dir, exist_ok=True)
 
         # ── Raster consistency check ─────────────────────────────────────
         self._check(5, "Checking raster consistency...")
         _ensure_raster_consistency(raster_paths)
 
         # ── Reproject presences to raster CRS ────────────────────────────
-        presence_gdf = _reproject_to_raster_crs(
-            presence_gdf, raster_paths, log=self.log.emit
-        )
+        presence_gdf = _reproject_to_raster_crs(presence_gdf, raster_paths, log=self.log.emit)
 
         # ── Write samples CSV (Species, Longitude, Latitude) ─────────────
         self._check(15, "Writing samples CSV...")
@@ -228,10 +220,12 @@ class SWDExportWorker(QThread):
         n_pres = _write_samples_csv(presence_gdf, samples_path, species_name)
         self.log.emit(f"  → {n_pres} presence points written")
         if n_pres == 0:
-            raise RuntimeError(tr(
-                "No valid presence points to export. Check that your "
-                "presence layer has features."
-            ))
+            raise RuntimeError(
+                tr(
+                    "No valid presence points to export. Check that your "
+                    "presence layer has features."
+                )
+            )
 
         # ── Convert each raster to ESRI ASCII Grid (.asc) ────────────────
         # maxent.jar accepts .asc as its native environmental layer
@@ -244,10 +238,7 @@ class SWDExportWorker(QThread):
             pct = 20 + int(75 * i / n_rasters)
             self._check(pct, f"Converting {fname} → ASCII Grid...")
             asc_path = os.path.join(layers_dir, f"{fname}.asc")
-            _write_raster_as_asc(
-                rpath, asc_path,
-                is_categorical=(i in categorical_indices)
-            )
+            _write_raster_as_asc(rpath, asc_path, is_categorical=(i in categorical_indices))
 
         # ── README with generic command line ─────────────────────────────
         self._check(96, "Writing README.txt...")
@@ -263,19 +254,20 @@ class SWDExportWorker(QThread):
 
         self._check(100, "Done")
         return {
-            "format":         "raster_samples",
-            "samples_path":   samples_path,
-            "layers_dir":     layers_dir,
-            "readme_path":    readme_path,
-            "n_presence":     n_pres,
-            "n_rasters":      n_rasters,
-            "output_dir":     output_dir,
+            "format": "raster_samples",
+            "samples_path": samples_path,
+            "layers_dir": layers_dir,
+            "readme_path": readme_path,
+            "n_presence": n_pres,
+            "n_rasters": n_rasters,
+            "output_dir": output_dir,
         }
 
 
 # ---------------------------------------------------------------------------
 # Module-level helpers (kept outside the class for unit-testability)
 # ---------------------------------------------------------------------------
+
 
 def _normalize_species_name(name: str) -> str:
     """Strip whitespace, replace commas, collapse internal whitespace.
@@ -291,18 +283,24 @@ def _normalize_species_name(name: str) -> str:
 def _ensure_raster_consistency(raster_paths):
     """Raise RuntimeError if the raster stack does not share a grid."""
     from ..bridge.raster_bridge import check_raster_consistency
+
     consistency = check_raster_consistency(raster_paths)
     if consistency.get("is_consistent", False):
         return
     mismatches = []
-    if not consistency["crs_uniform"]:        mismatches.append("CRS")
-    if not consistency["extent_uniform"]:     mismatches.append("extent")
-    if not consistency["resolution_uniform"]: mismatches.append("resolution")
-    raise RuntimeError(tr(
-        "Environmental rasters do not share a common grid "
-        "({mismatches} differ). Run \"Check Raster Consistency\" and "
-        "\"Harmonize to Folder…\" in the ① Data tab before exporting."
-    ).format(mismatches=", ".join(mismatches)))
+    if not consistency["crs_uniform"]:
+        mismatches.append("CRS")
+    if not consistency["extent_uniform"]:
+        mismatches.append("extent")
+    if not consistency["resolution_uniform"]:
+        mismatches.append("resolution")
+    raise RuntimeError(
+        tr(
+            "Environmental rasters do not share a common grid "
+            '({mismatches} differ). Run "Check Raster Consistency" and '
+            '"Harmonize to Folder…" in the ① Data tab before exporting.'
+        ).format(mismatches=", ".join(mismatches))
+    )
 
 
 def _reproject_to_raster_crs(presence_gdf, raster_paths, log=None):
@@ -313,6 +311,7 @@ def _reproject_to_raster_crs(presence_gdf, raster_paths, log=None):
     samples and the (eventual) ASCII grid headers agree.
     """
     from ..bridge.raster_bridge import get_raster_crs
+
     raster_crs = get_raster_crs(raster_paths[0])
     if raster_crs is None or presence_gdf.crs is None:
         return presence_gdf
@@ -330,17 +329,18 @@ def _reproject_to_raster_crs(presence_gdf, raster_paths, log=None):
     return presence_gdf.to_crs(raster_crs)
 
 
-def _write_swd(gdf, path: str, species: str,
-               feature_names: list, categorical_indices: list) -> int:
+def _write_swd(gdf, path: str, species: str, feature_names: list, categorical_indices: list) -> int:
     """Write a SWD CSV. Returns the number of rows written."""
     xs = gdf.geometry.x.values
     ys = gdf.geometry.y.values
 
-    out = pd.DataFrame({
-        "Species":   [species] * len(gdf),
-        "Longitude": xs,
-        "Latitude":  ys,
-    })
+    out = pd.DataFrame(
+        {
+            "Species": [species] * len(gdf),
+            "Longitude": xs,
+            "Latitude": ys,
+        }
+    )
     for i, nm in enumerate(feature_names):
         col = gdf[nm].values
         if i in categorical_indices:
@@ -364,17 +364,18 @@ def _write_samples_csv(presence_gdf, path: str, species_name: str) -> int:
     """
     xs = presence_gdf.geometry.x.values
     ys = presence_gdf.geometry.y.values
-    df = pd.DataFrame({
-        "Species":   [species_name] * len(presence_gdf),
-        "Longitude": xs,
-        "Latitude":  ys,
-    })
+    df = pd.DataFrame(
+        {
+            "Species": [species_name] * len(presence_gdf),
+            "Longitude": xs,
+            "Latitude": ys,
+        }
+    )
     df.to_csv(path, index=False, float_format="%.6f")
     return len(df)
 
 
-def _write_raster_as_asc(src_path: str, dst_path: str,
-                         is_categorical: bool) -> None:
+def _write_raster_as_asc(src_path: str, dst_path: str, is_categorical: bool) -> None:
     """Convert a raster to ESRI ASCII Grid (.asc).
 
     ASC format requires a header followed by row-major values:
@@ -396,9 +397,9 @@ def _write_raster_as_asc(src_path: str, dst_path: str,
     import rasterio
 
     with rasterio.open(src_path) as src:
-        data      = src.read(1)
+        data = src.read(1)
         transform = src.transform
-        nodata    = src.nodata
+        nodata = src.nodata
 
         # Verify the transform is axis-aligned (no rotation/shear) and
         # has uniform positive cell size. maxent.jar will silently
@@ -418,9 +419,9 @@ def _write_raster_as_asc(src_path: str, dst_path: str,
                 f"(dx={a}, dy={e}). Resample first."
             )
 
-        cellsize  = float(abs(a))
-        ncols     = int(src.width)
-        nrows     = int(src.height)
+        cellsize = float(abs(a))
+        ncols = int(src.width)
+        nrows = int(src.height)
         # rasterio's transform: c = X of upper-left pixel CORNER,
         # f = Y of upper-left pixel CORNER (for the typical
         # negative-e north-up case). xllcorner / yllcorner are the
@@ -434,7 +435,7 @@ def _write_raster_as_asc(src_path: str, dst_path: str,
     # NoData sentinel — ASC convention is -9999 for both int and float,
     # and we apply that whether or not the source raster has a NoData
     # set (some uint8 categorical rasters don't carry one).
-    NODATA_INT   = -9999
+    NODATA_INT = -9999
     NODATA_FLOAT = -9999.0
 
     if is_categorical:
@@ -442,16 +443,15 @@ def _write_raster_as_asc(src_path: str, dst_path: str,
             mask_nan = np.isnan(data)
         else:
             mask_nan = np.zeros(data.shape, dtype=bool)
-        out = np.where(mask_nan, NODATA_INT,
-                       np.rint(data).astype(np.int64))
+        out = np.where(mask_nan, NODATA_INT, np.rint(data).astype(np.int64))
         if nodata is not None:
             try:
-                mask_nd = (data == nodata)
+                mask_nd = data == nodata
                 out = np.where(mask_nd, NODATA_INT, out)
             except Exception:
                 pass
-        nd_str  = str(NODATA_INT)
-        fmt     = "%d"
+        nd_str = str(NODATA_INT)
+        fmt = "%d"
     else:
         arr = data.astype(np.float64)
         mask = np.isnan(arr)
@@ -461,8 +461,8 @@ def _write_raster_as_asc(src_path: str, dst_path: str,
             except Exception:
                 pass
         out = np.where(mask, NODATA_FLOAT, arr)
-        nd_str  = "-9999"
-        fmt     = "%.6g"
+        nd_str = "-9999"
+        fmt = "%.6g"
 
     # Write header + data. We write line-by-line to keep memory low
     # on large rasters (e.g. country-scale at 30 m).
@@ -482,6 +482,7 @@ def _write_raster_as_asc(src_path: str, dst_path: str,
 # README writers
 # ---------------------------------------------------------------------------
 
+
 def _toggle_block(feature_names, categorical_indices) -> str:
     """Render the togglelayertype= flags for the README command line."""
     cats = [feature_names[i] for i in categorical_indices]
@@ -491,38 +492,41 @@ def _toggle_block(feature_names, categorical_indices) -> str:
     return "    " + block + " \\\n    "
 
 
-def _write_swd_readme(path, n_presence, n_background,
-                      feature_names, categorical_indices):
+def _write_swd_readme(path, n_presence, n_background, feature_names, categorical_indices):
     """Generic README for the SWD output (no study-specific recipe)."""
     cat_str = ", ".join(feature_names[i] for i in categorical_indices) or "(none)"
-    toggle  = _toggle_block(feature_names, categorical_indices)
+    toggle = _toggle_block(feature_names, categorical_indices)
     with open(path, "w", encoding="utf-8") as f:
-        f.write(_SWD_README.format(
-            n_presence=n_presence,
-            n_background=n_background,
-            n_features=len(feature_names),
-            feature_list=", ".join(feature_names),
-            categorical_list=cat_str,
-            toggle_block=toggle,
-        ))
+        f.write(
+            _SWD_README.format(
+                n_presence=n_presence,
+                n_background=n_background,
+                n_features=len(feature_names),
+                feature_list=", ".join(feature_names),
+                categorical_list=cat_str,
+                toggle_block=toggle,
+            )
+        )
 
 
-def _write_raster_samples_readme(path, samples_subpath, layers_subpath,
-                                  n_presence, feature_names,
-                                  categorical_indices):
+def _write_raster_samples_readme(
+    path, samples_subpath, layers_subpath, n_presence, feature_names, categorical_indices
+):
     """Generic README for the samples + raster output."""
     cat_str = ", ".join(feature_names[i] for i in categorical_indices) or "(none)"
-    toggle  = _toggle_block(feature_names, categorical_indices)
+    toggle = _toggle_block(feature_names, categorical_indices)
     with open(path, "w", encoding="utf-8") as f:
-        f.write(_RASTER_README.format(
-            samples_subpath=samples_subpath.replace("\\", "/"),
-            layers_subpath=layers_subpath.replace("\\", "/"),
-            n_presence=n_presence,
-            n_features=len(feature_names),
-            feature_list=", ".join(feature_names),
-            categorical_list=cat_str,
-            toggle_block=toggle,
-        ))
+        f.write(
+            _RASTER_README.format(
+                samples_subpath=samples_subpath.replace("\\", "/"),
+                layers_subpath=layers_subpath.replace("\\", "/"),
+                n_presence=n_presence,
+                n_features=len(feature_names),
+                feature_list=", ".join(feature_names),
+                categorical_list=cat_str,
+                toggle_block=toggle,
+            )
+        )
 
 
 # ---------------------------------------------------------------------------

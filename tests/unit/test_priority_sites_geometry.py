@@ -45,10 +45,15 @@ def _write_synthetic_raster(out: Path, size: int = 60, seed: int = 1) -> Path:
     # ~ 0.01° per pixel, north-up.
     transform = from_origin(west=126.0, north=37.0, xsize=0.01, ysize=0.01)
     with rasterio.open(
-        path, "w",
+        path,
+        "w",
         driver="GTiff",
-        height=size, width=size, count=1,
-        dtype="float32", crs="EPSG:4326", transform=transform,
+        height=size,
+        width=size,
+        count=1,
+        dtype="float32",
+        crs="EPSG:4326",
+        transform=transform,
         nodata=-9999.0,
     ) as dst:
         dst.write(field, 1)
@@ -63,7 +68,7 @@ def test_spacing_constraints_are_respected(tmp_path):
     sites = extract_priority_sites(
         prediction_path=str(rpath),
         presence_xy=presences,
-        threshold=0.7,                 # only the northern band qualifies
+        threshold=0.7,  # only the northern band qualifies
         n_sites=8,
         min_distance_from_presence_m=1000.0,
         min_distance_between_sites_m=2000.0,
@@ -84,7 +89,7 @@ def test_spacing_constraints_are_respected(tmp_path):
     # All site pairs must be at least 2 km apart.
     min_between_deg = 2.0 * deg_per_km
     for i, a in enumerate(sites):
-        for b in sites[i + 1:]:
+        for b in sites[i + 1 :]:
             d = math.hypot(a["lon"] - b["lon"], a["lat"] - b["lat"])
             assert d >= min_between_deg * 0.95, "two sites are too close"
 
@@ -100,7 +105,7 @@ def test_validation_mode_covers_all_four_quartiles(tmp_path):
     sites = extract_priority_sites(
         prediction_path=str(rpath),
         presence_xy=[],
-        threshold=0.05,                   # keep nearly all suitable cells
+        threshold=0.05,  # keep nearly all suitable cells
         n_sites=12,
         min_distance_from_presence_m=0.0,
         min_distance_between_sites_m=0.0,

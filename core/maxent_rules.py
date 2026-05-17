@@ -11,6 +11,7 @@ dialogs, future tests) and that does not depend on QGIS lives here.
 # Feature type auto-selection (maxnet logic)
 # ---------------------------------------------------------------------------
 
+
 def auto_feature_types(n_presence: int) -> list:
     """Select feature types based on sample size (mirrors maxnet R package).
 

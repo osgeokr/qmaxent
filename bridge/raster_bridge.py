@@ -4,11 +4,11 @@ import os
 import tempfile
 
 from qgis.core import (
-    QgsRasterLayer,
-    QgsRasterFileWriter,
-    QgsRasterPipe,
-    QgsMessageLog,
     Qgis,
+    QgsMessageLog,
+    QgsRasterFileWriter,
+    QgsRasterLayer,
+    QgsRasterPipe,
 )
 
 
@@ -33,7 +33,8 @@ def layer_to_path(layer: QgsRasterLayer) -> str:
     # Memory / virtual layer: export to temp GeoTIFF
     QgsMessageLog.logMessage(
         f"Layer '{layer.name()}' is not file-backed; exporting to temp GeoTIFF",
-        "QMaxent", Qgis.Info,
+        "QMaxent",
+        Qgis.Info,
     )
     # Race-free temp filename via mkstemp; close the fd immediately so
     # QGIS's QgsRasterFileWriter can open the path for writing itself.
@@ -81,6 +82,7 @@ def get_raster_crs(path: str):
     distance-based splits (Roberts et al. 2017).
     """
     import rasterio
+
     try:
         with rasterio.open(path) as src:
             return src.crs
@@ -107,6 +109,7 @@ def get_raster_crs(path: str):
 # raster with bilinear or cubic produces meaningless intermediate
 # values like 2.7 between class 2 and class 3).
 
+
 def check_raster_consistency(raster_paths: list) -> dict:
     """Inspect a set of rasters and report whether they share a grid.
 
@@ -122,16 +125,19 @@ def check_raster_consistency(raster_paths: list) -> dict:
     'error' key describing the first failure.
     """
     import rasterio
+
     info = []
     try:
         for p in raster_paths:
             with rasterio.open(p) as src:
-                info.append({
-                    "path":   p,
-                    "crs":    src.crs,
-                    "bounds": tuple(src.bounds),
-                    "res":    tuple(src.res),
-                })
+                info.append(
+                    {
+                        "path": p,
+                        "crs": src.crs,
+                        "bounds": tuple(src.bounds),
+                        "res": tuple(src.res),
+                    }
+                )
     except Exception as e:
         return {
             "is_consistent": False,
@@ -159,21 +165,23 @@ def check_raster_consistency(raster_paths: list) -> dict:
     # Bounds: tolerance of 1e-6 in CRS units handles float roundoff
     def _bounds_close(a, b):
         return all(abs(x - y) < 1e-6 for x, y in zip(a, b))
+
     first_bounds = info[0]["bounds"]
     extent_uniform = all(_bounds_close(r["bounds"], first_bounds) for r in info)
 
     # Resolution: tolerance of 1e-9 of CRS units
     def _res_close(a, b):
         return all(abs(x - y) < 1e-9 for x, y in zip(a, b))
+
     first_res = info[0]["res"]
     resolution_uniform = all(_res_close(r["res"], first_res) for r in info)
 
     return {
-        "is_consistent":      crs_uniform and extent_uniform and resolution_uniform,
-        "crs_uniform":        crs_uniform,
-        "extent_uniform":     extent_uniform,
+        "is_consistent": crs_uniform and extent_uniform and resolution_uniform,
+        "crs_uniform": crs_uniform,
+        "extent_uniform": extent_uniform,
         "resolution_uniform": resolution_uniform,
-        "rasters":            info,
+        "rasters": info,
     }
 
 
@@ -184,6 +192,7 @@ def _intersection_bounds_in_crs(infos: list, target_crs):
     so that an intersection is well-defined across heterogeneous CRSes.
     """
     from rasterio.warp import transform_bounds
+
     transformed = []
     for r in infos:
         if r["crs"] is None:
@@ -191,14 +200,12 @@ def _intersection_bounds_in_crs(infos: list, target_crs):
             # convention for asc/grd files written without projection info).
             transformed.append(r["bounds"])
         else:
-            transformed.append(
-                transform_bounds(r["crs"], target_crs, *r["bounds"])
-            )
+            transformed.append(transform_bounds(r["crs"], target_crs, *r["bounds"]))
     # Intersection: max of left/bottom, min of right/top
-    lefts   = [b[0] for b in transformed]
+    lefts = [b[0] for b in transformed]
     bottoms = [b[1] for b in transformed]
-    rights  = [b[2] for b in transformed]
-    tops    = [b[3] for b in transformed]
+    rights = [b[2] for b in transformed]
+    tops = [b[3] for b in transformed]
     return (max(lefts), max(bottoms), min(rights), min(tops))
 
 
@@ -243,9 +250,12 @@ def harmonize_rasters(
     """
     import os
     import tempfile
+
     import rasterio
     from rasterio.warp import (
-        calculate_default_transform, reproject, Resampling, transform_bounds,
+        Resampling,
+        reproject,
+        transform_bounds,
     )
 
     if not raster_paths:
@@ -269,8 +279,7 @@ def harmonize_rasters(
     info = []
     for p in raster_paths:
         with rasterio.open(p) as src:
-            info.append({"path": p, "crs": src.crs,
-                         "bounds": tuple(src.bounds)})
+            info.append({"path": p, "crs": src.crs, "bounds": tuple(src.bounds)})
     bounds = _intersection_bounds_in_crs(info, target_crs)
     if bounds[2] <= bounds[0] or bounds[3] <= bounds[1]:
         raise RuntimeError(
@@ -285,6 +294,7 @@ def harmonize_rasters(
     #    then we manually clip to the intersection by adjusting the
     #    transform and dimensions.
     from rasterio.transform import from_origin
+
     px_w, px_h = target_res
     # Snap intersection origin to the template's pixel grid so output
     # rasters are pixel-aligned to the template (the -tap behavior of
@@ -292,13 +302,11 @@ def harmonize_rasters(
     # whole-pixel increments.
     with rasterio.open(raster_paths[template_idx]) as tmpl:
         # Reproject template bounds into target_crs (no-op if same CRS)
-        tmpl_l, tmpl_b, tmpl_r, tmpl_t = transform_bounds(
-            tmpl.crs, target_crs, *tmpl.bounds
-        )
+        tmpl_l, tmpl_b, tmpl_r, tmpl_t = transform_bounds(tmpl.crs, target_crs, *tmpl.bounds)
     # Find the smallest-step pixel snap from the template's upper-left
     snap_x = tmpl_l + round((bounds[0] - tmpl_l) / px_w) * px_w
     snap_y = tmpl_t - round((tmpl_t - bounds[3]) / px_h) * px_h
-    width  = max(1, int(round((bounds[2] - snap_x) / px_w)))
+    width = max(1, int(round((bounds[2] - snap_x) / px_w)))
     height = max(1, int(round((snap_y - bounds[1]) / px_h)))
     dst_transform = from_origin(snap_x, snap_y, px_w, px_h)
 
@@ -314,30 +322,28 @@ def harmonize_rasters(
         if progress_callback:
             progress_callback(
                 int(((i) / n) * 100),
-                f"Harmonizing {os.path.basename(src_path)} ({i+1}/{n})",
+                f"Harmonizing {os.path.basename(src_path)} ({i + 1}/{n})",
             )
-        out_path = os.path.join(
-            output_dir, os.path.basename(src_path)
-        )
+        out_path = os.path.join(output_dir, os.path.basename(src_path))
         # Force GeoTIFF output regardless of input driver — output paths
         # are temporary and need to be readable by elapid downstream.
         if not out_path.lower().endswith((".tif", ".tiff")):
             out_path = os.path.splitext(out_path)[0] + ".tif"
 
-        resampling = (
-            Resampling.nearest if i in cat_set else Resampling.bilinear
-        )
+        resampling = Resampling.nearest if i in cat_set else Resampling.bilinear
 
         with rasterio.open(src_path) as src:
             profile = src.profile.copy()
-            profile.update({
-                "driver":    "GTiff",
-                "crs":       target_crs,
-                "transform": dst_transform,
-                "width":     width,
-                "height":    height,
-                "compress":  "lzw",
-            })
+            profile.update(
+                {
+                    "driver": "GTiff",
+                    "crs": target_crs,
+                    "transform": dst_transform,
+                    "width": width,
+                    "height": height,
+                    "compress": "lzw",
+                }
+            )
             # Preserve the source raster's NoData value when present;
             # otherwise rasterio will fill reprojected gaps with 0,
             # which contaminates the model with spurious zero values.
@@ -388,12 +394,12 @@ def load_raster_to_qgis(path: str, name: str, transform: str = "cloglog"):
         QgsRasterLayer added to the current project.
     """
     from qgis.core import (
-        QgsProject,
-        QgsRasterLayer,
         QgsColorRampShader,
-        QgsSingleBandPseudoColorRenderer,
-        QgsRasterShader,
+        QgsProject,
         QgsRasterBandStats,
+        QgsRasterLayer,
+        QgsRasterShader,
+        QgsSingleBandPseudoColorRenderer,
     )
     from qgis.PyQt.QtGui import QColor
 
@@ -410,7 +416,8 @@ def load_raster_to_qgis(path: str, name: str, transform: str = "cloglog"):
         vmin, vmax = 0.0, 1.0
     else:
         stats = layer.dataProvider().bandStatistics(
-            1, QgsRasterBandStats.Min | QgsRasterBandStats.Max,
+            1,
+            QgsRasterBandStats.Min | QgsRasterBandStats.Max,
         )
         vmin = stats.minimumValue
         vmax = stats.maximumValue
@@ -433,13 +440,12 @@ def load_raster_to_qgis(path: str, name: str, transform: str = "cloglog"):
         (0.33, QColor(204, 235, 197)),
         (0.50, QColor(168, 221, 181)),
         (0.67, QColor(123, 204, 196)),
-        (0.83, QColor( 67, 162, 202)),
-        (1.00, QColor(  8,  64, 129)),  # deepest blue
+        (0.83, QColor(67, 162, 202)),
+        (1.00, QColor(8, 64, 129)),  # deepest blue
     ]
     span = vmax - vmin
     ramp_items = [
-        QgsColorRampShader.ColorRampItem(vmin + t * span, color,
-                                          f"{vmin + t * span:.3f}")
+        QgsColorRampShader.ColorRampItem(vmin + t * span, color, f"{vmin + t * span:.3f}")
         for t, color in gnbu_stops
     ]
     color_ramp = QgsColorRampShader()
@@ -499,6 +505,7 @@ def detect_categorical_hint(path: str) -> bool:
     try:
         import rasterio
         from rasterio.enums import ColorInterp
+
         with rasterio.open(path) as src:
             # Rule 1: GDAL RAT thematic — the official categorical standard.
             # rasterio doesn't expose RAT directly so we drop to the GDAL
@@ -506,6 +513,7 @@ def detect_categorical_hint(path: str) -> bool:
             # RAT (e.g. plain GeoTIFFs without one).
             try:
                 from osgeo import gdal as _gdal  # noqa: F401
+
                 ds = _gdal.Open(path)
                 if ds is not None:
                     band = ds.GetRasterBand(1)
@@ -543,8 +551,6 @@ def detect_categorical_hint(path: str) -> bool:
             except Exception:
                 pass
     except Exception as e:
-        QgsMessageLog.logMessage(
-            f"detect_categorical_hint: {e}", "QMaxent", Qgis.Warning
-        )
+        QgsMessageLog.logMessage(f"detect_categorical_hint: {e}", "QMaxent", Qgis.Warning)
         return False
     return False

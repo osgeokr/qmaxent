@@ -18,13 +18,11 @@ attribute surface our pure-Python modules actually touch.
 
 from __future__ import annotations
 
-import os
 import sys
 import types
 from pathlib import Path
 
 import pytest
-
 
 # ---------------------------------------------------------------------------
 # Path setup: make the plugin importable as a package.
@@ -59,6 +57,7 @@ def _install_qgis_stubs() -> None:
 
     class _FakeQgis:  # noqa: D401 — naming mirrors qgis.core.Qgis
         """Stand-in for ``qgis.core.Qgis`` log-level enum."""
+
         Info = 0
         Warning = 1
         Critical = 2
@@ -144,11 +143,11 @@ def _has(module: str) -> bool:
 # for this claim" — the green/red grid in PRs stays meaningful.
 def pytest_collection_modifyitems(config, items):
     skip_no_elapid = pytest.mark.skip(reason="elapid not installed")
-    skip_no_rio    = pytest.mark.skip(reason="rasterio not installed")
+    skip_no_rio = pytest.mark.skip(reason="rasterio not installed")
     skip_no_sklearn = pytest.mark.skip(reason="scikit-learn not installed")
 
     has_elapid = _has("elapid")
-    has_rio    = _has("rasterio")
+    has_rio = _has("rasterio")
     has_sklearn = _has("sklearn")
 
     for item in items:
@@ -162,11 +161,14 @@ def pytest_collection_modifyitems(config, items):
 
 def pytest_configure(config):
     config.addinivalue_line(
-        "markers", "needs_elapid: requires the elapid Python package",
+        "markers",
+        "needs_elapid: requires the elapid Python package",
     )
     config.addinivalue_line(
-        "markers", "needs_rasterio: requires the rasterio Python package",
+        "markers",
+        "needs_rasterio: requires the rasterio Python package",
     )
     config.addinivalue_line(
-        "markers", "needs_sklearn: requires the scikit-learn Python package",
+        "markers",
+        "needs_sklearn: requires the scikit-learn Python package",
     )

@@ -10,19 +10,21 @@ Adding a new language: create i18n/lang_XX.py with a STRINGS dict.
 
 from __future__ import annotations
 
-
 # ---------------------------------------------------------------------------
 # Locale detection
 # ---------------------------------------------------------------------------
+
 
 def _detect_locale() -> str:
     """Return a two-letter locale code from QGIS settings."""
     try:
         from qgis.core import QgsApplication
-        locale = QgsApplication.locale()        # e.g. "ko", "en_US", "de"
+
+        locale = QgsApplication.locale()  # e.g. "ko", "en_US", "de"
         return locale[:2].lower()
     except Exception:
         import locale as _loc
+
         code = _loc.getdefaultlocale()[0] or "en"
         return code[:2].lower()
 
@@ -54,7 +56,7 @@ def _reload_strings() -> None:
         if _LOCALE == "ko":
             from .lang_ko import STRINGS
         else:
-            STRINGS = {}          # English = use key as-is
+            STRINGS = {}  # English = use key as-is
         _STRINGS = STRINGS
     except ImportError:
         _STRINGS = {}
@@ -66,6 +68,7 @@ _reload_strings()
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def tr(text: str) -> str:
     """Return the localised version of *text*, or *text* itself if not found."""

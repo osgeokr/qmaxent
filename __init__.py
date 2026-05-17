@@ -15,9 +15,11 @@ def classFactory(iface):
     # before tqdm was importable in the active venv.
     try:
         import tqdm as _tqdm
+
         _tqdm.tqdm.monitor_interval = 0
     except Exception:
         pass
 
     from .qmaxent_plugin import QMaxentPlugin
+
     return QMaxentPlugin(iface)

@@ -24,12 +24,11 @@ class ProjectionWorker(QThread):
     progress = pyqtSignal(int, str)
     finished = pyqtSignal(bool, str)
 
-    def __init__(self, model, raster_paths: list, output_path: str,
-                 parent=None):
+    def __init__(self, model, raster_paths: list, output_path: str, parent=None):
         super().__init__(parent)
-        self._model        = model
+        self._model = model
         self._raster_paths = raster_paths
-        self._output_path  = output_path
+        self._output_path = output_path
 
     def run(self):
         try:
@@ -39,6 +38,7 @@ class ProjectionWorker(QThread):
             # MaxentWorker for model.pkl / results.xlsx.
             try:
                 import os as _os
+
                 _d = _os.path.dirname(self._output_path)
                 if _d:
                     _os.makedirs(_d, exist_ok=True)
@@ -70,6 +70,7 @@ class ProjectionWorker(QThread):
             # be running from an earlier run.
             try:
                 import tqdm as _tqdm
+
                 _tqdm.tqdm.monitor_interval = 0
                 # Stop a previously-started monitor, if any. tqdm
                 # exposes a private `_instances` set that the monitor
@@ -80,7 +81,6 @@ class ProjectionWorker(QThread):
                 # is not officially public and may differ across
                 # tqdm versions.
                 try:
-                    from tqdm._monitor import TMonitor
                     mon = getattr(_tqdm.tqdm, "monitor", None)
                     if mon is not None and hasattr(mon, "was_killed"):
                         mon.was_killed.set()
@@ -97,13 +97,16 @@ class ProjectionWorker(QThread):
             consistency = check_raster_consistency(self._raster_paths)
             if not consistency.get("is_consistent", False):
                 mismatches = []
-                if not consistency["crs_uniform"]:        mismatches.append("CRS")
-                if not consistency["extent_uniform"]:     mismatches.append("extent")
-                if not consistency["resolution_uniform"]: mismatches.append("resolution")
+                if not consistency["crs_uniform"]:
+                    mismatches.append("CRS")
+                if not consistency["extent_uniform"]:
+                    mismatches.append("extent")
+                if not consistency["resolution_uniform"]:
+                    mismatches.append("resolution")
                 raise RuntimeError(
                     f"Projection rasters do not share a common grid "
-                    f"({', '.join(mismatches)} differ). Run \"Check "
-                    f"Raster Consistency\" and \"Harmonize to Folder…\" "
+                    f'({", ".join(mismatches)} differ). Run "Check '
+                    f'Raster Consistency" and "Harmonize to Folder…" '
                     f"in the ① Data tab to align them, then re-load "
                     f"the model and try again."
                 )
@@ -121,23 +124,27 @@ class ProjectionWorker(QThread):
             class _ProgressTqdm:
                 """tqdm replacement that emits progress signals."""
 
-                def __init__(self, iterable=None, total=None,
-                             disable=False, **kw):
+                def __init__(self, iterable=None, total=None, disable=False, **kw):
                     self._items = list(iterable) if iterable is not None else []
                     self._total = total or len(self._items)
 
                 def __iter__(self):
                     for i, item in enumerate(self._items):
                         pct = int(((i + 1) / max(self._total, 1)) * 100)
-                        worker_ref.progress.emit(
-                            pct, f"Window {i+1}/{self._total}"
-                        )
+                        worker_ref.progress.emit(pct, f"Window {i + 1}/{self._total}")
                         yield item
 
-                def __enter__(self):  return self
-                def __exit__(self, *a): pass
-                def update(self, n=1): pass
-                def close(self):       pass
+                def __enter__(self):
+                    return self
+
+                def __exit__(self, *a):
+                    pass
+
+                def update(self, n=1):
+                    pass
+
+                def close(self):
+                    pass
 
             elapid_geo.tqdm = _ProgressTqdm
             try:

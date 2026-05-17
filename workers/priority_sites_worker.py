@@ -28,46 +28,47 @@ class PrioritySitesWorker(QThread):
     """
 
     progress = pyqtSignal(int, str)
-    log      = pyqtSignal(str)
+    log = pyqtSignal(str)
     finished = pyqtSignal(bool, str, list)
 
-    def __init__(self,
-                 prediction_path: str,
-                 presence_xy: list,
-                 threshold: float,
-                 threshold_method: str,
-                 n_sites: int,
-                 min_dist_from_presence_m: float,
-                 min_dist_between_sites_m: float,
-                 stratify_by_quartile: bool,
-                 do_geocode: bool,
-                 sampling_order: str = "topn",
-                 random_seed=42,
-                 parent=None):
+    def __init__(
+        self,
+        prediction_path: str,
+        presence_xy: list,
+        threshold: float,
+        threshold_method: str,
+        n_sites: int,
+        min_dist_from_presence_m: float,
+        min_dist_between_sites_m: float,
+        stratify_by_quartile: bool,
+        do_geocode: bool,
+        sampling_order: str = "topn",
+        random_seed=42,
+        parent=None,
+    ):
         super().__init__(parent)
         self._prediction_path = prediction_path
-        self._presence_xy     = list(presence_xy)
-        self._threshold       = float(threshold)
+        self._presence_xy = list(presence_xy)
+        self._threshold = float(threshold)
         self._threshold_method = threshold_method
-        self._n_sites         = int(n_sites)
-        self._min_d_pres      = float(min_dist_from_presence_m)
-        self._min_d_site      = float(min_dist_between_sites_m)
-        self._stratify        = bool(stratify_by_quartile)
+        self._n_sites = int(n_sites)
+        self._min_d_pres = float(min_dist_from_presence_m)
+        self._min_d_site = float(min_dist_between_sites_m)
+        self._stratify = bool(stratify_by_quartile)
         # "random" or "topn" — only meaningful when stratify is False
         # (Discovery mode). Validation mode always uses topn within
         # each quartile.
-        self._sampling_order  = str(sampling_order)
+        self._sampling_order = str(sampling_order)
         # do_geocode is no longer used by the worker — it's read by
         # the main-thread caller after the worker finishes — but we
         # still accept it in the constructor so the calling code in
         # main_dock.py doesn't have to change shape.
-        self._do_geocode      = bool(do_geocode)
+        self._do_geocode = bool(do_geocode)
         # None when the user unchecked "Fix random seed" upstream —
         # numpy's default_rng(None) seeds from OS entropy, which is
         # exactly the behavior the unchecked state promises.
-        self._random_seed     = (int(random_seed)
-                                  if random_seed is not None else None)
-        self._cancel          = False
+        self._random_seed = int(random_seed) if random_seed is not None else None
+        self._cancel = False
 
     def cancel(self):
         self._cancel = True
@@ -80,6 +81,7 @@ class PrioritySitesWorker(QThread):
             # use tqdm.
             try:
                 import tqdm as _tqdm
+
                 _tqdm.tqdm.monitor_interval = 0
                 try:
                     mon = getattr(_tqdm.tqdm, "monitor", None)
@@ -93,6 +95,7 @@ class PrioritySitesWorker(QThread):
 
             self.progress.emit(0, "Extracting priority sites…")
             from ..bridge.priority_sites import extract_priority_sites
+
             sites = extract_priority_sites(
                 prediction_path=self._prediction_path,
                 presence_xy=self._presence_xy,
@@ -124,10 +127,14 @@ class PrioritySitesWorker(QThread):
             # Add empty address fields so the row schema is consistent
             # with what the main-thread geocoding step will produce.
             results = [
-                {**s,
-                 "country": "", "province": "",
-                 "city_county": "", "district": "",
-                 "display_name": ""}
+                {
+                    **s,
+                    "country": "",
+                    "province": "",
+                    "city_county": "",
+                    "district": "",
+                    "display_name": "",
+                }
                 for s in sites
             ]
             self.progress.emit(100, "Sampling done.")
@@ -135,6 +142,5 @@ class PrioritySitesWorker(QThread):
 
         except Exception as e:
             import traceback
-            self.finished.emit(
-                False, f"{e}\n{traceback.format_exc()}", []
-            )
+
+            self.finished.emit(False, f"{e}\n{traceback.format_exc()}", [])

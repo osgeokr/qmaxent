@@ -32,16 +32,20 @@ class HarmonizeWorker(QThread):
     progress = pyqtSignal(int, str)
     finished = pyqtSignal(bool, str, list)
 
-    def __init__(self, raster_paths: list, output_dir: str,
-                 categorical_indices: list = None,
-                 template_idx: int = 0,
-                 parent=None):
+    def __init__(
+        self,
+        raster_paths: list,
+        output_dir: str,
+        categorical_indices: list = None,
+        template_idx: int = 0,
+        parent=None,
+    ):
         super().__init__(parent)
-        self._raster_paths        = list(raster_paths)
-        self._output_dir          = output_dir
+        self._raster_paths = list(raster_paths)
+        self._output_dir = output_dir
         self._categorical_indices = list(categorical_indices or [])
-        self._template_idx        = int(template_idx)
-        self._cancelled           = False
+        self._template_idx = int(template_idx)
+        self._cancelled = False
 
     def cancel(self):
         """Request a clean stop. Safe to call from the GUI thread."""

@@ -12,22 +12,43 @@ import os
 
 import numpy as np
 from qgis.core import (
-    Qgis, QgsMapLayerProxyModel, QgsMessageLog, QgsProject, QgsRasterLayer,
+    Qgis,
+    QgsMapLayerProxyModel,
+    QgsMessageLog,
+    QgsProject,
+    QgsRasterLayer,
 )
 from qgis.gui import QgsMapLayerComboBox
 from qgis.PyQt.QtCore import Qt
-from qgis.PyQt.QtGui import QFont, QIntValidator, QDoubleValidator
+from qgis.PyQt.QtGui import QDoubleValidator, QFont, QIntValidator
 from qgis.PyQt.QtWidgets import (
-    QCheckBox, QComboBox, QDockWidget, QDoubleSpinBox,
-    QFileDialog, QFrame, QGroupBox, QHBoxLayout, QLabel,
-    QLineEdit, QListWidget, QListWidgetItem, QMessageBox,
-    QPlainTextEdit, QProgressBar, QProgressDialog, QPushButton,
-    QRadioButton, QScrollArea, QSizePolicy, QSpinBox, QTabWidget,
-    QVBoxLayout, QWidget,
+    QCheckBox,
+    QComboBox,
+    QDockWidget,
+    QDoubleSpinBox,
+    QFileDialog,
+    QFrame,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QListWidgetItem,
+    QMessageBox,
+    QPlainTextEdit,
+    QProgressBar,
+    QProgressDialog,
+    QPushButton,
+    QRadioButton,
+    QScrollArea,
+    QSizePolicy,
+    QSpinBox,
+    QTabWidget,
+    QVBoxLayout,
+    QWidget,
 )
 
-from ..i18n import tr, tooltip
-
+from ..i18n import tooltip, tr
 
 # ---------------------------------------------------------------------------
 # Default output directory
@@ -46,6 +67,7 @@ from ..i18n import tr, tooltip
 #
 # The folder is created on first call, so the directory always exists
 # by the time any file dialog opens or any worker writes there.
+
 
 def _default_output_dir() -> str:
     """Return the folder where QMaxent writes its outputs.
@@ -71,7 +93,6 @@ def _default_output_dir() -> str:
 
 
 class QMaxentMainDock(QDockWidget):
-
     def __init__(self, iface, parent=None):
         super().__init__(tr("QMaxent — Analysis"), parent)
         self.setObjectName("QMaxentMainDock")
@@ -86,12 +107,12 @@ class QMaxentMainDock(QDockWidget):
         self.setMinimumWidth(380)
         self.setMinimumHeight(500)
 
-        self._iface       = iface
-        self._worker      = None
+        self._iface = iface
+        self._worker = None
         self._proj_worker = None
-        self._model       = None
-        self._meta        = None
-        self._results     = None
+        self._model = None
+        self._meta = None
+        self._results = None
 
         self._build_ui()
 
@@ -106,9 +127,10 @@ class QMaxentMainDock(QDockWidget):
         screen-aware default avoids that on first show.
         """
         from qgis.PyQt.QtCore import QSize
+
         try:
             screen = self._iface.mainWindow().screen()
-            avail  = screen.availableGeometry()
+            avail = screen.availableGeometry()
             # Use 70% of screen height as a reasonable default; never
             # below the minimum, never taller than the screen.
             h = max(500, min(int(avail.height() * 0.70), avail.height() - 100))
@@ -127,6 +149,7 @@ class QMaxentMainDock(QDockWidget):
         vbox.setSpacing(6)
 
         self.tabs = QTabWidget()
+
         # Wrap each tab in a QScrollArea so the dock fits any screen
         # size: long tab content (e.g. Data tab with raster list +
         # categorical controls + harmonize panel) used to push the
@@ -138,18 +161,18 @@ class QMaxentMainDock(QDockWidget):
         def _scrolled(widget):
             sa = QScrollArea()
             sa.setWidgetResizable(True)
-            sa.setFrameShape(QScrollArea.NoFrame)   # no extra border
+            sa.setFrameShape(QScrollArea.NoFrame)  # no extra border
             sa.setWidget(widget)
             return sa
-        self.tabs.addTab(_scrolled(self._build_data_tab()),    tr("① Data"))
+
+        self.tabs.addTab(_scrolled(self._build_data_tab()), tr("① Data"))
         # _build_params_tab already returns a QScrollArea internally,
         # so wrapping it again would add a second nested scrollbar.
         # Pass it through unwrapped.
-        self.tabs.addTab(self._build_params_tab(),             tr("② Parameters"))
-        self.tabs.addTab(_scrolled(self._build_train_tab()),   tr("③ Training"))
+        self.tabs.addTab(self._build_params_tab(), tr("② Parameters"))
+        self.tabs.addTab(_scrolled(self._build_train_tab()), tr("③ Training"))
         self.tabs.addTab(_scrolled(self._build_results_tab()), tr("④ Results"))
-        self.tabs.addTab(_scrolled(self._build_priority_tab()),
-                         tr("⑤ Priority Sites for Survey"))
+        self.tabs.addTab(_scrolled(self._build_priority_tab()), tr("⑤ Priority Sites for Survey"))
         vbox.addWidget(self.tabs, stretch=1)
 
         bot = QHBoxLayout()
@@ -159,7 +182,8 @@ class QMaxentMainDock(QDockWidget):
         bot.addWidget(self._status_lbl, stretch=1)
 
         self._run_btn = QPushButton(tr("▶  Run Maxent"))
-        bold = QFont(); bold.setBold(True)
+        bold = QFont()
+        bold.setBold(True)
         self._run_btn.setFont(bold)
         self._run_btn.setMinimumWidth(130)
         self._run_btn.setMinimumHeight(36)
@@ -174,7 +198,8 @@ class QMaxentMainDock(QDockWidget):
     def _build_data_tab(self) -> QWidget:
         w = QWidget()
         v = QVBoxLayout(w)
-        v.setContentsMargins(8, 8, 8, 8); v.setSpacing(10)
+        v.setContentsMargins(8, 8, 8, 8)
+        v.setSpacing(10)
 
         # Reuse trained model — caption + button + divider.
         # Option C layout: a question-style caption explains who this row is
@@ -189,11 +214,15 @@ class QMaxentMainDock(QDockWidget):
         load_row.addWidget(load_caption)
         load_row.addStretch()
         load_btn = QPushButton(tr("Load existing model (.pkl)..."))
-        load_btn.setToolTip(tooltip(tr(
-            "Load a previously saved QMaxent model and project it to "
-            "rasters in the current QGIS project. You will be asked to "
-            "match the model's variables to your raster layers."
-        )))
+        load_btn.setToolTip(
+            tooltip(
+                tr(
+                    "Load a previously saved QMaxent model and project it to "
+                    "rasters in the current QGIS project. You will be asked to "
+                    "match the model's variables to your raster layers."
+                )
+            )
+        )
         load_btn.clicked.connect(self._on_load_model_clicked)
         load_row.addWidget(load_btn)
         v.addLayout(load_row)
@@ -234,10 +263,12 @@ class QMaxentMainDock(QDockWidget):
         rm_btn = QPushButton(tr("Remove selected"))
         rm_btn.clicked.connect(self._remove_selected_rasters)
         btn_row.addWidget(rm_btn)
-        up_btn = QPushButton("▲"); up_btn.setMaximumWidth(30)
+        up_btn = QPushButton("▲")
+        up_btn.setMaximumWidth(30)
         up_btn.clicked.connect(lambda: self._move_raster(-1))
         btn_row.addWidget(up_btn)
-        dn_btn = QPushButton("▼"); dn_btn.setMaximumWidth(30)
+        dn_btn = QPushButton("▼")
+        dn_btn.setMaximumWidth(30)
         dn_btn.clicked.connect(lambda: self._move_raster(1))
         btn_row.addWidget(dn_btn)
         rg.addLayout(btn_row)
@@ -257,21 +288,21 @@ class QMaxentMainDock(QDockWidget):
         rg.addWidget(sep)
 
         check_row = QHBoxLayout()
-        self._check_consistency_btn = QPushButton(
-            tr("Check Raster Consistency")
+        self._check_consistency_btn = QPushButton(tr("Check Raster Consistency"))
+        self._check_consistency_btn.setToolTip(
+            tooltip(
+                tr(
+                    "Inspect every raster's CRS, extent, and resolution. "
+                    "If any of them disagree, a 'Harmonize to Folder…' button "
+                    "will appear so you can write aligned copies to a folder "
+                    "of your choosing (Hijmans 2024; SDMSelect Prepare_r_multi)."
+                )
+            )
         )
-        self._check_consistency_btn.setToolTip(tooltip(tr(
-            "Inspect every raster's CRS, extent, and resolution. "
-            "If any of them disagree, a 'Harmonize to Folder…' button "
-            "will appear so you can write aligned copies to a folder "
-            "of your choosing (Hijmans 2024; SDMSelect Prepare_r_multi)."
-        )))
-        self._check_consistency_btn.clicked.connect(
-            self._on_check_consistency
-        )
+        self._check_consistency_btn.clicked.connect(self._on_check_consistency)
         check_row.addWidget(self._check_consistency_btn)
         self._harmonize_btn = QPushButton(tr("Harmonize to Folder..."))
-        self._harmonize_btn.setVisible(False)   # hidden until mismatch found
+        self._harmonize_btn.setVisible(False)  # hidden until mismatch found
         self._harmonize_btn.clicked.connect(self._on_harmonize_clicked)
         check_row.addWidget(self._harmonize_btn)
         check_row.addStretch()
@@ -288,9 +319,11 @@ class QMaxentMainDock(QDockWidget):
         bgg = QHBoxLayout(bg_grp)
         bgg.addWidget(QLabel(tr("Sample count:")))
         self._bg_spin = QSpinBox()
-        self._bg_spin.setRange(100, 100000); self._bg_spin.setValue(10000)
+        self._bg_spin.setRange(100, 100000)
+        self._bg_spin.setValue(10000)
         self._bg_spin.setSingleStep(1000)
-        bgg.addWidget(self._bg_spin); bgg.addStretch()
+        bgg.addWidget(self._bg_spin)
+        bgg.addStretch()
         v.addWidget(bg_grp)
 
         # ── Export for external Maxent (v0.1.3, dual-format in v0.1.4) ───
@@ -317,13 +350,15 @@ class QMaxentMainDock(QDockWidget):
         swd_grp = QGroupBox(tr("Export for external Maxent"))
         swdv = QVBoxLayout(swd_grp)
 
-        swd_info = QLabel(tr(
-            "Export the current presence and environmental raster "
-            "selection in a format consumable by the standalone "
-            "maxent.jar implementation. Useful for running the "
-            "original Java Maxent on the same data, or for sharing "
-            "a ready-to-use Maxent input directory."
-        ))
+        swd_info = QLabel(
+            tr(
+                "Export the current presence and environmental raster "
+                "selection in a format consumable by the standalone "
+                "maxent.jar implementation. Useful for running the "
+                "original Java Maxent on the same data, or for sharing "
+                "a ready-to-use Maxent input directory."
+            )
+        )
         swd_info.setWordWrap(True)
         swd_info.setStyleSheet("color: #555; font-size: 9pt;")
         swdv.addWidget(swd_info)
@@ -338,21 +373,29 @@ class QMaxentMainDock(QDockWidget):
         fmt_row = QHBoxLayout()
         fmt_row.addWidget(QLabel(tr("Format:")))
         self._swd_fmt_raster = QRadioButton(tr("Samples + Raster (samples CSV + .asc layers)"))
-        self._swd_fmt_raster.setToolTip(tooltip(tr(
-            "A short samples CSV (Species, Longitude, Latitude only) "
-            "plus one ESRI ASCII Grid (.asc) per environmental raster "
-            "in a layers/ folder. maxent.jar fits the model AND "
-            "produces a projection raster in a single run. Larger "
-            "files but ready to use without additional arguments."
-        )))
+        self._swd_fmt_raster.setToolTip(
+            tooltip(
+                tr(
+                    "A short samples CSV (Species, Longitude, Latitude only) "
+                    "plus one ESRI ASCII Grid (.asc) per environmental raster "
+                    "in a layers/ folder. maxent.jar fits the model AND "
+                    "produces a projection raster in a single run. Larger "
+                    "files but ready to use without additional arguments."
+                )
+            )
+        )
         self._swd_fmt_swd = QRadioButton(tr("SWD (CSV pair, extracted values)"))
-        self._swd_fmt_swd.setToolTip(tooltip(tr(
-            "Two CSVs (presence.csv + background.csv) with environmental "
-            "values pre-extracted at each point. maxent.jar will use "
-            "these exact points and values — no further sampling. "
-            "Smaller files, but produces no projection raster unless "
-            "you also pass projectionlayers= to maxent.jar."
-        )))
+        self._swd_fmt_swd.setToolTip(
+            tooltip(
+                tr(
+                    "Two CSVs (presence.csv + background.csv) with environmental "
+                    "values pre-extracted at each point. maxent.jar will use "
+                    "these exact points and values — no further sampling. "
+                    "Smaller files, but produces no projection raster unless "
+                    "you also pass projectionlayers= to maxent.jar."
+                )
+            )
+        )
         # Default to the format that matches typical maxent.jar usage —
         # samples + raster — so a first-time user gets a usable
         # projection raster out of the box.
@@ -365,13 +408,9 @@ class QMaxentMainDock(QDockWidget):
         swd_row = QHBoxLayout()
         swd_row.addWidget(QLabel(tr("Output folder:")))
         self._swd_dir_edit = QLineEdit()
-        self._swd_dir_edit.setText(
-            os.path.join(_default_output_dir(), "maxent_export")
-        )
+        self._swd_dir_edit.setText(os.path.join(_default_output_dir(), "maxent_export"))
         self._swd_dir_edit.setToolTip(self._swd_dir_edit.text())
-        self._swd_dir_edit.textChanged.connect(
-            self._swd_dir_edit.setToolTip
-        )
+        self._swd_dir_edit.textChanged.connect(self._swd_dir_edit.setToolTip)
         swd_row.addWidget(self._swd_dir_edit, stretch=1)
         swd_browse = QPushButton("...")
         swd_browse.setMaximumWidth(30)
@@ -406,11 +445,12 @@ class QMaxentMainDock(QDockWidget):
     # produce false positives on rasters like elevation that are stored as
     # integers but are continuous.
 
-    _ROLE_LAYER_ID  = Qt.UserRole
-    _ROLE_IS_CATEG  = Qt.UserRole + 1
+    _ROLE_LAYER_ID = Qt.UserRole
+    _ROLE_IS_CATEG = Qt.UserRole + 1
 
-    def _add_raster_item(self, layer_name: str, layer_id: str,
-                         is_categorical: bool, display_text: str = None):
+    def _add_raster_item(
+        self, layer_name: str, layer_id: str, is_categorical: bool, display_text: str = None
+    ):
         """Append a row to the raster list with a categorical toggle button."""
         item = QListWidgetItem("")
         item.setData(self._ROLE_LAYER_ID, layer_id)
@@ -436,9 +476,7 @@ class QMaxentMainDock(QDockWidget):
         row_w.setObjectName("qmaxentRasterRow")
         row_w.setAttribute(Qt.WA_TranslucentBackground)
         row_w.setAutoFillBackground(False)
-        row_w.setStyleSheet(
-            "QWidget#qmaxentRasterRow { background: transparent; }"
-        )
+        row_w.setStyleSheet("QWidget#qmaxentRasterRow { background: transparent; }")
         row_l = QHBoxLayout(row_w)
         row_l.setContentsMargins(6, 2, 6, 2)
         row_l.setSpacing(8)
@@ -449,9 +487,7 @@ class QMaxentMainDock(QDockWidget):
         # objectName too, since the QLabel has no descendants we
         # care about styling.
         name_lbl.setObjectName("qmaxentRasterRowLabel")
-        name_lbl.setStyleSheet(
-            "QLabel#qmaxentRasterRowLabel { background: transparent; }"
-        )
+        name_lbl.setStyleSheet("QLabel#qmaxentRasterRowLabel { background: transparent; }")
         row_l.addWidget(name_lbl, stretch=1)
 
         toggle = QPushButton()
@@ -475,16 +511,24 @@ class QMaxentMainDock(QDockWidget):
         """Update the toggle button's label and tooltip to match its state."""
         if btn.isChecked():
             btn.setText(tr("[categorical]"))
-            btn.setToolTip(tooltip(tr(
-                "Treated as categorical: one-hot encoded inside the model "
-                "(e.g. land cover, biome, soil type)."
-            )))
+            btn.setToolTip(
+                tooltip(
+                    tr(
+                        "Treated as categorical: one-hot encoded inside the model "
+                        "(e.g. land cover, biome, soil type)."
+                    )
+                )
+            )
         else:
             btn.setText(tr("[continuous]"))
-            btn.setToolTip(tooltip(tr(
-                "Treated as a continuous numeric variable "
-                "(e.g. temperature, precipitation, elevation)."
-            )))
+            btn.setToolTip(
+                tooltip(
+                    tr(
+                        "Treated as a continuous numeric variable "
+                        "(e.g. temperature, precipitation, elevation)."
+                    )
+                )
+            )
 
     def _on_categorical_toggled(self, item, btn, checked: bool):
         item.setData(self._ROLE_IS_CATEG, bool(checked))
@@ -493,30 +537,39 @@ class QMaxentMainDock(QDockWidget):
     # ── Tab 2: Parameters ───────────────────────────────────────────────────
 
     def _build_params_tab(self) -> QWidget:
-        scroll = QScrollArea(); scroll.setWidgetResizable(True)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
         inner = QWidget()
         v = QVBoxLayout(inner)
-        v.setContentsMargins(8, 8, 8, 8); v.setSpacing(10)
+        v.setContentsMargins(8, 8, 8, 8)
+        v.setSpacing(10)
 
         # Feature Types
         ft_grp = QGroupBox(tr("Feature Types"))
         ftv = QVBoxLayout(ft_grp)
-        self._ft_auto_radio   = QRadioButton(tr("Auto (sample-size based, Phillips et al. 2017)"))
+        self._ft_auto_radio = QRadioButton(tr("Auto (sample-size based, Phillips et al. 2017)"))
         self._ft_manual_radio = QRadioButton(tr("Manual selection"))
         self._ft_auto_radio.setChecked(True)
         ftv.addWidget(self._ft_auto_radio)
         ftv.addWidget(self._ft_manual_radio)
         ft_row = QHBoxLayout()
         self._ft_checks = {}
-        for code, label in [("linear","Linear"), ("quadratic","Quadratic"),
-                             ("hinge","Hinge"), ("product","Product"),
-                             ("threshold","Threshold")]:
+        for code, label in [
+            ("linear", "Linear"),
+            ("quadratic", "Quadratic"),
+            ("hinge", "Hinge"),
+            ("product", "Product"),
+            ("threshold", "Threshold"),
+        ]:
             cb = QCheckBox(label)
             # Default: all five checked (LQPHT) — consistent with the
             # maxnet auto rule for n >= 80 (Phillips et al. 2017).
-            cb.setChecked(True); cb.setEnabled(False)
-            self._ft_checks[code] = cb; ft_row.addWidget(cb)
-        ft_row.addStretch(); ftv.addLayout(ft_row)
+            cb.setChecked(True)
+            cb.setEnabled(False)
+            self._ft_checks[code] = cb
+            ft_row.addWidget(cb)
+        ft_row.addStretch()
+        ftv.addLayout(ft_row)
         self._ft_auto_radio.toggled.connect(
             lambda on: [cb.setEnabled(not on) for cb in self._ft_checks.values()]
         )
@@ -527,20 +580,26 @@ class QMaxentMainDock(QDockWidget):
         regv = QHBoxLayout(reg_grp)
         regv.addWidget(QLabel(tr("Regularization multiplier:")))
         self._beta_spin = QDoubleSpinBox()
-        self._beta_spin.setRange(0.1, 10.0); self._beta_spin.setSingleStep(0.1)
+        self._beta_spin.setRange(0.1, 10.0)
+        self._beta_spin.setSingleStep(0.1)
         # Default 1.0 follows the maxent.jar / maxnet learning standard
         # (Phillips et al. 2017; ENMeval default), NOT elapid's own
         # MaxentModel default of 1.5. We deliberately track the published
         # Maxent learning convention so that QMaxent results are directly
         # comparable to maxent.jar and ENMeval out of the box.
         self._beta_spin.setValue(1.0)
-        self._beta_spin.setToolTip(tooltip(tr(
-            "Regularization multiplier (Phillips et al. 2017). "
-            "Higher values produce smoother, more conservative response "
-            "curves; lower values fit training data more tightly. "
-            "Default 1.0 follows the maxent.jar / maxnet standard."
-        )))
-        regv.addWidget(self._beta_spin); regv.addStretch()
+        self._beta_spin.setToolTip(
+            tooltip(
+                tr(
+                    "Regularization multiplier (Phillips et al. 2017). "
+                    "Higher values produce smoother, more conservative response "
+                    "curves; lower values fit training data more tightly. "
+                    "Default 1.0 follows the maxent.jar / maxnet standard."
+                )
+            )
+        )
+        regv.addWidget(self._beta_spin)
+        regv.addStretch()
         v.addWidget(reg_grp)
 
         # Advanced
@@ -549,30 +608,38 @@ class QMaxentMainDock(QDockWidget):
         row1 = QHBoxLayout()
         row1.addWidget(QLabel(tr("Hinge knots:")))
         self._hinge_spin = QSpinBox()
-        self._hinge_spin.setRange(5, 200); self._hinge_spin.setValue(50)
-        self._hinge_spin.setToolTip(tooltip(tr(
-            "Each variable contributes 2*nknots-2 hinge features "
-            "(maxnet default: 50)."
-        )))
-        row1.addWidget(self._hinge_spin); row1.addSpacing(20)
+        self._hinge_spin.setRange(5, 200)
+        self._hinge_spin.setValue(50)
+        self._hinge_spin.setToolTip(
+            tooltip(tr("Each variable contributes 2*nknots-2 hinge features (maxnet default: 50)."))
+        )
+        row1.addWidget(self._hinge_spin)
+        row1.addSpacing(20)
         row1.addWidget(QLabel(tr("Threshold knots:")))
         self._thresh_spin = QSpinBox()
-        self._thresh_spin.setRange(5, 200); self._thresh_spin.setValue(50)
-        self._thresh_spin.setToolTip(tooltip(tr(
-            "Each variable contributes 2*nknots-2 threshold features "
-            "(maxnet default: 50)."
-        )))
-        row1.addWidget(self._thresh_spin); row1.addStretch()
+        self._thresh_spin.setRange(5, 200)
+        self._thresh_spin.setValue(50)
+        self._thresh_spin.setToolTip(
+            tooltip(
+                tr("Each variable contributes 2*nknots-2 threshold features (maxnet default: 50).")
+            )
+        )
+        row1.addWidget(self._thresh_spin)
+        row1.addStretch()
         advv.addLayout(row1)
         # addsamplestobackground — keep the user-facing label clean and put
         # the maxnet identifier in the tooltip (where developers expect it).
         self._addtobg_chk = QCheckBox(tr("Add presences to background"))
         self._addtobg_chk.setChecked(True)
-        self._addtobg_chk.setToolTip(tooltip(tr(
-            "Add presences to the background sample so that the fitted "
-            "density is consistent over the full study area "
-            "(addsamplestobackground; Phillips et al. 2006, 2017)."
-        )))
+        self._addtobg_chk.setToolTip(
+            tooltip(
+                tr(
+                    "Add presences to the background sample so that the fitted "
+                    "density is consistent over the full study area "
+                    "(addsamplestobackground; Phillips et al. 2006, 2017)."
+                )
+            )
+        )
         advv.addWidget(self._addtobg_chk)
 
         # distance_weights — opt-in spatial bias correction.
@@ -590,18 +657,20 @@ class QMaxentMainDock(QDockWidget):
         # function down-weights spatially clustered presence points so
         # the fitted model reflects habitat suitability rather than
         # sampling effort.
-        self._distweights_chk = QCheckBox(tr(
-            "Down-weight spatially clustered points"
-        ))
+        self._distweights_chk = QCheckBox(tr("Down-weight spatially clustered points"))
         self._distweights_chk.setChecked(False)
-        self._distweights_chk.setToolTip(tooltip(tr(
-            "Reduce the influence of spatially clustered presences to "
-            "correct for sample selection bias (Phillips et al. 2009; "
-            "elapid distance_weights). Recommended when occurrence data "
-            "come from opportunistic sources (e.g. GBIF, citizen "
-            "science). Not recommended for systematic surveys or when "
-            "clustering reflects genuine habitat preference."
-        )))
+        self._distweights_chk.setToolTip(
+            tooltip(
+                tr(
+                    "Reduce the influence of spatially clustered presences to "
+                    "correct for sample selection bias (Phillips et al. 2009; "
+                    "elapid distance_weights). Recommended when occurrence data "
+                    "come from opportunistic sources (e.g. GBIF, citizen "
+                    "science). Not recommended for systematic surveys or when "
+                    "clustering reflects genuine habitat preference."
+                )
+            )
+        )
         advv.addWidget(self._distweights_chk)
         v.addWidget(adv_grp)
 
@@ -612,24 +681,28 @@ class QMaxentMainDock(QDockWidget):
         row_cv = QHBoxLayout()
         row_cv.addWidget(QLabel(tr("Method:")))
         self._cv_combo = QComboBox()
-        self._cv_combo.addItems([
-            tr("None (no cross-validation; training AUC only)"),
-            tr("Geographic K-Fold (Anderson 2023)"),
-            tr("Random K-Fold (Phillips 2006)"),
-            tr("Checkerboard (single spatial split; Muscarella 2014)"),
-            tr("Buffered LOO (Pearson 2007; Ploton 2020)"),
-        ])
-        self._cv_combo.setCurrentIndex(1)   # Geographic K-Fold (default)
-        self._cv_combo.setToolTip(tr(
-            "Geographic K-Fold (default) provides spatially-independent "
-            "folds and is the recommended choice for unbiased "
-            "generalization assessment when presence points show any "
-            "spatial clustering (Roberts 2017).\n\n"
-            "Random K-Fold is included for direct comparability with "
-            "maxent.jar / ENMeval / dismo workflows; note it tends to "
-            "inflate AUC estimates relative to spatial methods when "
-            "presences are spatially autocorrelated."
-        ))
+        self._cv_combo.addItems(
+            [
+                tr("None (no cross-validation; training AUC only)"),
+                tr("Geographic K-Fold (Anderson 2023)"),
+                tr("Random K-Fold (Phillips 2006)"),
+                tr("Checkerboard (single spatial split; Muscarella 2014)"),
+                tr("Buffered LOO (Pearson 2007; Ploton 2020)"),
+            ]
+        )
+        self._cv_combo.setCurrentIndex(1)  # Geographic K-Fold (default)
+        self._cv_combo.setToolTip(
+            tr(
+                "Geographic K-Fold (default) provides spatially-independent "
+                "folds and is the recommended choice for unbiased "
+                "generalization assessment when presence points show any "
+                "spatial clustering (Roberts 2017).\n\n"
+                "Random K-Fold is included for direct comparability with "
+                "maxent.jar / ENMeval / dismo workflows; note it tends to "
+                "inflate AUC estimates relative to spatial methods when "
+                "presences are spatially autocorrelated."
+            )
+        )
         self._cv_combo.currentIndexChanged.connect(self._on_cv_method_changed)
         row_cv.addWidget(self._cv_combo, stretch=1)
         cvv.addLayout(row_cv)
@@ -638,11 +711,13 @@ class QMaxentMainDock(QDockWidget):
         # Keep references to the labels so _on_cv_method_changed can grey
         # them out together with the spin boxes when the active CV method
         # does not use a given parameter.
-        self._folds_lbl  = QLabel(tr("Folds:"))
+        self._folds_lbl = QLabel(tr("Folds:"))
         row_folds.addWidget(self._folds_lbl)
         self._folds_spin = QSpinBox()
-        self._folds_spin.setRange(2, 20); self._folds_spin.setValue(5)
-        row_folds.addWidget(self._folds_spin); row_folds.addSpacing(16)
+        self._folds_spin.setRange(2, 20)
+        self._folds_spin.setValue(5)
+        row_folds.addWidget(self._folds_spin)
+        row_folds.addSpacing(16)
 
         # Grid size — for Checkerboard (was missing)
         self._grid_lbl = QLabel(tr("Grid size (m):"))
@@ -651,39 +726,51 @@ class QMaxentMainDock(QDockWidget):
         # Range: 1m to 10,000km. 50000 (50 km) is a reasonable
         # default for continent-wide SDMs; users with finer-grained
         # study areas can drop it to a few kilometres.
-        self._grid_spin.setRange(1.0, 1e7); self._grid_spin.setValue(50000.0)
+        self._grid_spin.setRange(1.0, 1e7)
+        self._grid_spin.setValue(50000.0)
         self._grid_spin.setSingleStep(10000.0)
         self._grid_spin.setDecimals(0)
         # v0.1.7: Grid size is always in metres regardless of the
         # presence-layer CRS. Internally the worker reprojects to
         # EPSG:6933 (area-preserving metric) before handing the
         # GeoDataFrame to elapid's checkerboard_split.
-        self._grid_spin.setToolTip(tooltip(tr(
-            "Checkerboard cell size in metres. Choose a value "
-            "matching the environmental autocorrelation length of "
-            "the study area (Muscarella et al. 2014, ENMeval). "
-            "Internally reprojected to EPSG:6933 so this value is "
-            "metres regardless of the presence layer's CRS."
-        )))
-        row_folds.addWidget(self._grid_spin); row_folds.addSpacing(16)
+        self._grid_spin.setToolTip(
+            tooltip(
+                tr(
+                    "Checkerboard cell size in metres. Choose a value "
+                    "matching the environmental autocorrelation length of "
+                    "the study area (Muscarella et al. 2014, ENMeval). "
+                    "Internally reprojected to EPSG:6933 so this value is "
+                    "metres regardless of the presence layer's CRS."
+                )
+            )
+        )
+        row_folds.addWidget(self._grid_spin)
+        row_folds.addSpacing(16)
 
         self._buffer_lbl = QLabel(tr("Buffer (m):"))
         row_folds.addWidget(self._buffer_lbl)
         self._buffer_spin = QDoubleSpinBox()
-        self._buffer_spin.setRange(0, 1e7); self._buffer_spin.setValue(50000)
+        self._buffer_spin.setRange(0, 1e7)
+        self._buffer_spin.setValue(50000)
         self._buffer_spin.setSingleStep(10000)
         self._buffer_spin.setDecimals(0)
         # v0.1.7: Buffer is always in metres regardless of the
         # presence-layer CRS — same reprojection treatment as
         # Grid size above.
-        self._buffer_spin.setToolTip(tooltip(tr(
-            "Buffer distance in metres. Choose a value appropriate "
-            "to the species' dispersal range (Roberts et al. 2017; "
-            "Ploton et al. 2020). Internally reprojected to "
-            "EPSG:6933 so this value is metres regardless of the "
-            "presence layer's CRS."
-        )))
-        row_folds.addWidget(self._buffer_spin); row_folds.addStretch()
+        self._buffer_spin.setToolTip(
+            tooltip(
+                tr(
+                    "Buffer distance in metres. Choose a value appropriate "
+                    "to the species' dispersal range (Roberts et al. 2017; "
+                    "Ploton et al. 2020). Internally reprojected to "
+                    "EPSG:6933 so this value is metres regardless of the "
+                    "presence layer's CRS."
+                )
+            )
+        )
+        row_folds.addWidget(self._buffer_spin)
+        row_folds.addStretch()
         cvv.addLayout(row_folds)
 
         # Random seed — controls every stochastic operation in the
@@ -703,16 +790,18 @@ class QMaxentMainDock(QDockWidget):
         seed_row = QHBoxLayout()
         self._seed_check = QCheckBox(tr("Fix random seed:"))
         self._seed_check.setChecked(True)
-        self._seed_check.setToolTip(tr(
-            "On (default): use the seed value below for every "
-            "stochastic operation (CV fold partitions, hold-out "
-            "splits, priority-site shuffling, background draws). "
-            "Same seed → identical results across runs.\n\n"
-            "Off: a fresh random seed is drawn from the OS each "
-            "run; results will vary slightly between runs. Useful "
-            "when checking robustness to fold assignment without "
-            "having to manually try multiple values."
-        ))
+        self._seed_check.setToolTip(
+            tr(
+                "On (default): use the seed value below for every "
+                "stochastic operation (CV fold partitions, hold-out "
+                "splits, priority-site shuffling, background draws). "
+                "Same seed → identical results across runs.\n\n"
+                "Off: a fresh random seed is drawn from the OS each "
+                "run; results will vary slightly between runs. Useful "
+                "when checking robustness to fold assignment without "
+                "having to manually try multiple values."
+            )
+        )
         seed_row.addWidget(self._seed_check)
         self._seed_spin = QSpinBox()
         self._seed_spin.setRange(0, 2_147_483_647)
@@ -725,11 +814,13 @@ class QMaxentMainDock(QDockWidget):
         # Overview sheet of results.xlsx for citation in the paper's
         # Methods section.
         self._seed_spin.setValue(42)
-        self._seed_spin.setToolTip(tr(
-            "The seed value. The Overview sheet of results.xlsx "
-            "records this value (or 'random (not fixed)' when the "
-            "checkbox is off) so the run is fully reproducible."
-        ))
+        self._seed_spin.setToolTip(
+            tr(
+                "The seed value. The Overview sheet of results.xlsx "
+                "records this value (or 'random (not fixed)' when the "
+                "checkbox is off) so the run is fully reproducible."
+            )
+        )
         seed_row.addWidget(self._seed_spin)
         seed_row.addStretch()
         cvv.addLayout(seed_row)
@@ -747,12 +838,16 @@ class QMaxentMainDock(QDockWidget):
         # what the worker actually does.
         self._jackknife_chk = QCheckBox(tr("Jackknife variable importance"))
         self._jackknife_chk.setChecked(True)
-        self._jackknife_chk.setToolTip(tooltip(tr(
-            "Train models with each variable alone and with each "
-            "variable removed; report train and held-out test AUC. "
-            "Robust to multicollinearity but slower (requires "
-            "retraining N×2 times)."
-        )))
+        self._jackknife_chk.setToolTip(
+            tooltip(
+                tr(
+                    "Train models with each variable alone and with each "
+                    "variable removed; report train and held-out test AUC. "
+                    "Robust to multicollinearity but slower (requires "
+                    "retraining N×2 times)."
+                )
+            )
+        )
         v.addWidget(self._jackknife_chk)
 
         # Permutation importance (added v0.1.3) — the same metric
@@ -765,32 +860,38 @@ class QMaxentMainDock(QDockWidget):
         pi_row = QHBoxLayout()
         self._permutation_chk = QCheckBox(tr("Permutation importance"))
         self._permutation_chk.setChecked(True)
-        self._permutation_chk.setToolTip(tooltip(tr(
-            "Shuffle each variable's values in the fitted model and "
-            "measure the AUC drop (sklearn permutation_importance). "
-            "Same metric reported by maxent.jar; enables direct "
-            "ranking comparison with maxent.jar-based SDM studies. "
-            "Fast (no retraining) but can underestimate the "
-            "importance of correlated variables — interpret "
-            "alongside jackknife rather than alone."
-        )))
+        self._permutation_chk.setToolTip(
+            tooltip(
+                tr(
+                    "Shuffle each variable's values in the fitted model and "
+                    "measure the AUC drop (sklearn permutation_importance). "
+                    "Same metric reported by maxent.jar; enables direct "
+                    "ranking comparison with maxent.jar-based SDM studies. "
+                    "Fast (no retraining) but can underestimate the "
+                    "importance of correlated variables — interpret "
+                    "alongside jackknife rather than alone."
+                )
+            )
+        )
         pi_row.addWidget(self._permutation_chk)
         pi_row.addWidget(QLabel(tr("Repeats:")))
         self._permutation_repeats_spin = QSpinBox()
         self._permutation_repeats_spin.setRange(2, 100)
         self._permutation_repeats_spin.setValue(10)
-        self._permutation_repeats_spin.setToolTip(tooltip(tr(
-            "Number of independent shuffles per variable. The "
-            "default of 10 matches sklearn and maxent.jar; higher "
-            "values reduce noise in the std column at linear cost."
-        )))
+        self._permutation_repeats_spin.setToolTip(
+            tooltip(
+                tr(
+                    "Number of independent shuffles per variable. The "
+                    "default of 10 matches sklearn and maxent.jar; higher "
+                    "values reduce noise in the std column at linear cost."
+                )
+            )
+        )
         pi_row.addWidget(self._permutation_repeats_spin)
         pi_row.addStretch()
         # Enable/disable the spin box alongside the checkbox so the UI
         # state never lies about what will actually be computed.
-        self._permutation_chk.toggled.connect(
-            self._permutation_repeats_spin.setEnabled
-        )
+        self._permutation_chk.toggled.connect(self._permutation_repeats_spin.setEnabled)
         v.addLayout(pi_row)
 
         # Output Files
@@ -811,9 +912,7 @@ class QMaxentMainDock(QDockWidget):
             # verbatim.
             if default_filename:
                 if not os.path.isabs(default_filename):
-                    default_filename = os.path.join(
-                        _default_output_dir(), default_filename
-                    )
+                    default_filename = os.path.join(_default_output_dir(), default_filename)
                 le.setText(default_filename)
             # Show the full path on hover so a narrow dock that
             # visually truncates the line edit doesn't hide where the
@@ -821,18 +920,21 @@ class QMaxentMainDock(QDockWidget):
             le.setToolTip(le.text())
             le.textChanged.connect(le.setToolTip)
             hl.addWidget(le, stretch=1)
-            btn = QPushButton("..."); btn.setMaximumWidth(30)
+            btn = QPushButton("...")
+            btn.setMaximumWidth(30)
             btn.clicked.connect(lambda: self._browse_save(le, filter_str))
             hl.addWidget(btn)
             return hl, le
 
         row_m, self._model_path = _path_row(
-            tr("Model (.pkl):"), tr("Pickle files (*.pkl)"),
+            tr("Model (.pkl):"),
+            tr("Pickle files (*.pkl)"),
             default_filename="model.pkl",
         )
         outg.addLayout(row_m)
         row_c, self._xlsx_path = _path_row(
-            tr("Results XLSX:"), tr("Excel files (*.xlsx)"),
+            tr("Results XLSX:"),
+            tr("Excel files (*.xlsx)"),
             default_filename="results.xlsx",
         )
         outg.addLayout(row_c)
@@ -868,29 +970,35 @@ class QMaxentMainDock(QDockWidget):
         """
         # Both Geographic K-Fold and Random K-Fold consume the "folds"
         # parameter; the other rows stay greyed out for them.
-        uses_folds  = (idx == 1 or idx == 2)
-        uses_grid   = (idx == 3)
-        uses_buffer = (idx == 4)
+        uses_folds = idx == 1 or idx == 2
+        uses_grid = idx == 3
+        uses_buffer = idx == 4
 
-        for w in (self._folds_lbl,  self._folds_spin):  w.setEnabled(uses_folds)
-        for w in (self._grid_lbl,   self._grid_spin):   w.setEnabled(uses_grid)
-        for w in (self._buffer_lbl, self._buffer_spin): w.setEnabled(uses_buffer)
+        for w in (self._folds_lbl, self._folds_spin):
+            w.setEnabled(uses_folds)
+        for w in (self._grid_lbl, self._grid_spin):
+            w.setEnabled(uses_grid)
+        for w in (self._buffer_lbl, self._buffer_spin):
+            w.setEnabled(uses_buffer)
 
     # ─── Tab 3: Training ─────────────────────────────────────────────────────
 
     def _build_train_tab(self) -> QWidget:
         w = QWidget()
         v = QVBoxLayout(w)
-        v.setContentsMargins(8, 8, 8, 8); v.setSpacing(8)
+        v.setContentsMargins(8, 8, 8, 8)
+        v.setSpacing(8)
         self._train_progress = QProgressBar()
-        self._train_progress.setRange(0, 100); self._train_progress.setValue(0)
+        self._train_progress.setRange(0, 100)
+        self._train_progress.setValue(0)
         self._train_progress.setTextVisible(True)
         v.addWidget(self._train_progress)
         self._train_status = QLabel(tr("Waiting..."))
         self._train_status.setStyleSheet("font-weight: bold;")
         v.addWidget(self._train_status)
         self._train_log = QPlainTextEdit()
-        self._train_log.setReadOnly(True); self._train_log.setMaximumBlockCount(500)
+        self._train_log.setReadOnly(True)
+        self._train_log.setMaximumBlockCount(500)
         self._train_log.setFont(QFont("Courier New", 9))
         v.addWidget(self._train_log, stretch=1)
         # Three-button row: clear / copy / save-as. "Copy log" and
@@ -903,19 +1011,19 @@ class QMaxentMainDock(QDockWidget):
         # in the QPlainTextEdit — same single source of truth as the
         # auto-save path.
         log_btn_row = QHBoxLayout()
-        clr_btn  = QPushButton(tr("Clear log"))
+        clr_btn = QPushButton(tr("Clear log"))
         clr_btn.clicked.connect(self._train_log.clear)
         copy_btn = QPushButton(tr("Copy log"))
-        copy_btn.setToolTip(tr(
-            "Copy the entire training log to the clipboard."
-        ))
+        copy_btn.setToolTip(tr("Copy the entire training log to the clipboard."))
         copy_btn.clicked.connect(self._copy_train_log_to_clipboard)
         save_btn = QPushButton(tr("Save log as..."))
-        save_btn.setToolTip(tr(
-            "Save the entire training log to a text file at a "
-            "location of your choice. This is independent of the "
-            "auto-save next to model.pkl."
-        ))
+        save_btn.setToolTip(
+            tr(
+                "Save the entire training log to a text file at a "
+                "location of your choice. This is independent of the "
+                "auto-save next to model.pkl."
+            )
+        )
         save_btn.clicked.connect(self._save_train_log_as)
         log_btn_row.addWidget(clr_btn)
         log_btn_row.addWidget(copy_btn)
@@ -927,18 +1035,21 @@ class QMaxentMainDock(QDockWidget):
     # ─── Tab 4: Results ──────────────────────────────────────────────────────
 
     def _build_results_tab(self) -> QWidget:
-        w = QWidget(); v = QVBoxLayout(w)
-        v.setContentsMargins(6, 6, 6, 6); v.setSpacing(6)
+        w = QWidget()
+        v = QVBoxLayout(w)
+        v.setContentsMargins(6, 6, 6, 6)
+        v.setSpacing(6)
         self._result_tabs = QTabWidget()
-        self._result_tabs.addTab(self._build_response_tab(),   tr("Response Curves"))
+        self._result_tabs.addTab(self._build_response_tab(), tr("Response Curves"))
         self._result_tabs.addTab(self._build_importance_tab(), tr("Jackknife Importance"))
         self._result_tabs.addTab(self._build_permutation_tab(), tr("Permutation Importance"))
-        self._result_tabs.addTab(self._build_project_tab(),    tr("Spatial Projection"))
+        self._result_tabs.addTab(self._build_project_tab(), tr("Spatial Projection"))
         v.addWidget(self._result_tabs)
         return w
 
     def _build_response_tab(self) -> QWidget:
-        w = QWidget(); v = QVBoxLayout(w)
+        w = QWidget()
+        v = QVBoxLayout(w)
         v.setContentsMargins(4, 4, 4, 4)
 
         # v0.1.7: one-paragraph explanation matching the pattern used
@@ -949,21 +1060,23 @@ class QMaxentMainDock(QDockWidget):
         # training-set means" caveat is spelled out because it's the
         # single most common misreading — users intuitively want to
         # read the curve as an absolute probability map.
-        info = QLabel(tr(
-            "Marginal effect: how the predicted suitability changes "
-            "across the range of one variable while the other "
-            "variables are held at their training-set means. The "
-            "Y-axis reads as relative habitat suitability (cloglog: "
-            "0 to 1, saturates near 1 in the most suitable region). "
-            "The shaded green band marks the variable's training-data "
-            "range — curves outside it are extrapolation and should "
-            "be interpreted with caution; the dotted line marks the "
-            "training-data mean. Useful for inspecting whether the "
-            "model has learned ecologically plausible shapes (e.g. "
-            "unimodal temperature optima) and for spotting variables "
-            "whose curves are nearly flat — candidates for removal "
-            "in a parsimonious model."
-        ))
+        info = QLabel(
+            tr(
+                "Marginal effect: how the predicted suitability changes "
+                "across the range of one variable while the other "
+                "variables are held at their training-set means. The "
+                "Y-axis reads as relative habitat suitability (cloglog: "
+                "0 to 1, saturates near 1 in the most suitable region). "
+                "The shaded green band marks the variable's training-data "
+                "range — curves outside it are extrapolation and should "
+                "be interpreted with caution; the dotted line marks the "
+                "training-data mean. Useful for inspecting whether the "
+                "model has learned ecologically plausible shapes (e.g. "
+                "unimodal temperature optima) and for spotting variables "
+                "whose curves are nearly flat — candidates for removal "
+                "in a parsimonious model."
+            )
+        )
         info.setWordWrap(True)
         info.setStyleSheet("QLabel { padding: 6px; font-size: 9pt; }")
         v.addWidget(info)
@@ -975,14 +1088,13 @@ class QMaxentMainDock(QDockWidget):
         bar.addWidget(self._response_var_combo, stretch=1)
         v.addLayout(bar)
         self._response_canvas_widget = QWidget()
-        self._response_canvas_widget.setSizePolicy(
-            QSizePolicy.Expanding, QSizePolicy.Expanding
-        )
+        self._response_canvas_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         v.addWidget(self._response_canvas_widget, stretch=1)
         return w
 
     def _build_importance_tab(self) -> QWidget:
-        w = QWidget(); v = QVBoxLayout(w)
+        w = QWidget()
+        v = QVBoxLayout(w)
         v.setContentsMargins(4, 4, 4, 4)
 
         # v0.1.7: explanation strip matching the other two
@@ -990,24 +1102,24 @@ class QMaxentMainDock(QDockWidget):
         # with each variable alone / removed) from Permutation
         # (shuffle in the fitted model) so users know why both are
         # offered and which one to cite for which question.
-        info = QLabel(tr(
-            "Retraining test: trains the model with each variable "
-            "alone (per-variable AUC) and with each variable removed "
-            "(per-variable drop in AUC), then averages across CV "
-            "folds. Robust to correlated variables — unlike "
-            "permutation importance — because each retrained model "
-            "sees a different variable set. Slower (requires N×2 "
-            "retrains) but the standard Maxent variable-importance "
-            "diagnostic since Phillips et al. (2006)."
-        ))
+        info = QLabel(
+            tr(
+                "Retraining test: trains the model with each variable "
+                "alone (per-variable AUC) and with each variable removed "
+                "(per-variable drop in AUC), then averages across CV "
+                "folds. Robust to correlated variables — unlike "
+                "permutation importance — because each retrained model "
+                "sees a different variable set. Slower (requires N×2 "
+                "retrains) but the standard Maxent variable-importance "
+                "diagnostic since Phillips et al. (2006)."
+            )
+        )
         info.setWordWrap(True)
         info.setStyleSheet("QLabel { padding: 6px; font-size: 9pt; }")
         v.addWidget(info)
 
         self._importance_canvas_widget = QWidget()
-        self._importance_canvas_widget.setSizePolicy(
-            QSizePolicy.Expanding, QSizePolicy.Expanding
-        )
+        self._importance_canvas_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         v.addWidget(self._importance_canvas_widget, stretch=1)
         return w
 
@@ -1021,7 +1133,8 @@ class QMaxentMainDock(QDockWidget):
         are randomly shuffled — a direct measure of model reliance on
         each variable.
         """
-        w = QWidget(); v = QVBoxLayout(w)
+        w = QWidget()
+        v = QVBoxLayout(w)
         v.setContentsMargins(4, 4, 4, 4)
 
         # Short explanation strip so users know how this differs from
@@ -1029,16 +1142,18 @@ class QMaxentMainDock(QDockWidget):
         # correlation-underestimation caveat (Strobl et al. 2007)
         # up-front prevents the "but TWI shows lower here than in
         # Jackknife" confusion.
-        info = QLabel(tr(
-            "Model reliance: how much the trained model's predictions "
-            "depend on each variable, measured by the AUC drop after "
-            "shuffling that variable's values. Same metric reported "
-            "by maxent.jar as \"permutation importance\". Fast to "
-            "compute but can underestimate the importance of "
-            "variables correlated with other variables in the model "
-            "(Strobl et al. 2007); read alongside the Jackknife tab "
-            "rather than alone."
-        ))
+        info = QLabel(
+            tr(
+                "Model reliance: how much the trained model's predictions "
+                "depend on each variable, measured by the AUC drop after "
+                "shuffling that variable's values. Same metric reported "
+                'by maxent.jar as "permutation importance". Fast to '
+                "compute but can underestimate the importance of "
+                "variables correlated with other variables in the model "
+                "(Strobl et al. 2007); read alongside the Jackknife tab "
+                "rather than alone."
+            )
+        )
         info.setWordWrap(True)
         # v0.1.7: grey background removed for visual consistency with
         # the Response Curves and Jackknife Importance tabs (which
@@ -1049,24 +1164,18 @@ class QMaxentMainDock(QDockWidget):
         v.addWidget(info)
 
         self._permutation_canvas_widget = QWidget()
-        self._permutation_canvas_widget.setSizePolicy(
-            QSizePolicy.Expanding, QSizePolicy.Expanding
-        )
+        self._permutation_canvas_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         v.addWidget(self._permutation_canvas_widget, stretch=1)
 
         # Action row: save the chart as PNG / data as CSV.
         btn_row = QHBoxLayout()
         self._permutation_save_png_btn = QPushButton(tr("Save PNG..."))
-        self._permutation_save_png_btn.clicked.connect(
-            self._on_save_permutation_png
-        )
+        self._permutation_save_png_btn.clicked.connect(self._on_save_permutation_png)
         self._permutation_save_png_btn.setEnabled(False)
         btn_row.addWidget(self._permutation_save_png_btn)
 
         self._permutation_save_csv_btn = QPushButton(tr("Save CSV..."))
-        self._permutation_save_csv_btn.clicked.connect(
-            self._on_save_permutation_csv
-        )
+        self._permutation_save_csv_btn.clicked.connect(self._on_save_permutation_csv)
         self._permutation_save_csv_btn.setEnabled(False)
         btn_row.addWidget(self._permutation_save_csv_btn)
         btn_row.addStretch()
@@ -1075,13 +1184,18 @@ class QMaxentMainDock(QDockWidget):
         return w
 
     def _build_project_tab(self) -> QWidget:
-        w = QWidget(); v = QVBoxLayout(w)
-        v.setContentsMargins(8, 8, 8, 8); v.setSpacing(8)
+        w = QWidget()
+        v = QVBoxLayout(w)
+        v.setContentsMargins(8, 8, 8, 8)
+        v.setSpacing(8)
         info = QLabel(
-            tr("Applies the trained model to environmental rasters to produce a "
-               "habitat suitability map.\nUses the layers set in the ① Data tab.")
+            tr(
+                "Applies the trained model to environmental rasters to produce a "
+                "habitat suitability map.\nUses the layers set in the ① Data tab."
+            )
         )
-        info.setWordWrap(True); v.addWidget(info)
+        info.setWordWrap(True)
+        v.addWidget(info)
 
         tr_row = QHBoxLayout()
         tr_row.addWidget(QLabel(tr("Output transform:")))
@@ -1090,10 +1204,9 @@ class QMaxentMainDock(QDockWidget):
         # Changing the transform should immediately redraw the response
         # curve to match (ROC is rank-only and unaffected by monotonic
         # transforms, so we don't need to redraw it).
-        self._proj_transform.currentIndexChanged.connect(
-            self._on_transform_changed
-        )
-        tr_row.addWidget(self._proj_transform); tr_row.addStretch()
+        self._proj_transform.currentIndexChanged.connect(self._on_transform_changed)
+        tr_row.addWidget(self._proj_transform)
+        tr_row.addStretch()
         v.addLayout(tr_row)
 
         out_row = QHBoxLayout()
@@ -1104,22 +1217,21 @@ class QMaxentMainDock(QDockWidget):
         # so the user can read the field and know exactly where the
         # GeoTIFF will be saved. Same rationale as the Output Files
         # rows in the ② Parameters tab — see _default_output_dir.
-        self._proj_path.setText(
-            os.path.join(_default_output_dir(), "prediction.tif")
-        )
+        self._proj_path.setText(os.path.join(_default_output_dir(), "prediction.tif"))
         # Hover tooltip mirrors the field in case it gets truncated
         # in a narrow dock; kept in sync as the user edits.
         self._proj_path.setToolTip(self._proj_path.text())
         self._proj_path.textChanged.connect(self._proj_path.setToolTip)
         out_row.addWidget(self._proj_path, stretch=1)
-        pbr = QPushButton("..."); pbr.setMaximumWidth(30)
-        pbr.clicked.connect(
-            lambda: self._browse_save(self._proj_path, tr("GeoTIFF (*.tif)"))
-        )
-        out_row.addWidget(pbr); v.addLayout(out_row)
+        pbr = QPushButton("...")
+        pbr.setMaximumWidth(30)
+        pbr.clicked.connect(lambda: self._browse_save(self._proj_path, tr("GeoTIFF (*.tif)")))
+        out_row.addWidget(pbr)
+        v.addLayout(out_row)
 
         self._proj_load_chk = QCheckBox(tr("Auto-load result as QGIS layer"))
-        self._proj_load_chk.setChecked(True); v.addWidget(self._proj_load_chk)
+        self._proj_load_chk.setChecked(True)
+        v.addWidget(self._proj_load_chk)
 
         # Auto-save analysis charts (Response Curves, ROC, Jackknife) as
         # PNG files alongside the prediction raster. Surfaced as a
@@ -1130,33 +1242,38 @@ class QMaxentMainDock(QDockWidget):
         # the figures, so opt-in friction would be net-negative for
         # most users.
         self._proj_save_charts_chk = QCheckBox(
-            tr("Save analysis charts as PNG "
-               "(Response Curves, ROC, Jackknife, Permutation)")
+            tr("Save analysis charts as PNG (Response Curves, ROC, Jackknife, Permutation)")
         )
         self._proj_save_charts_chk.setChecked(True)
-        self._proj_save_charts_chk.setToolTip(tr(
-            "When the projection finishes, four sets of PNG files are "
-            "written next to the GeoTIFF:\n"
-            "  • <name>_response_curves.png — one image with all response curves\n"
-            "  • <name>_roc.png — ROC panel (training + CV folds + mean)\n"
-            "  • <name>_jackknife.png — variable-importance bars (jackknife)\n"
-            "  • <name>_permutation.png — variable-importance bars (permutation)\n"
-            "Uncheck to skip this step entirely."
-        ))
+        self._proj_save_charts_chk.setToolTip(
+            tr(
+                "When the projection finishes, four sets of PNG files are "
+                "written next to the GeoTIFF:\n"
+                "  • <name>_response_curves.png — one image with all response curves\n"
+                "  • <name>_roc.png — ROC panel (training + CV folds + mean)\n"
+                "  • <name>_jackknife.png — variable-importance bars (jackknife)\n"
+                "  • <name>_permutation.png — variable-importance bars (permutation)\n"
+                "Uncheck to skip this step entirely."
+            )
+        )
         v.addWidget(self._proj_save_charts_chk)
 
         self._proj_btn = QPushButton(tr("▶  Run Spatial Projection"))
         self._proj_btn.setMinimumHeight(34)
         self._proj_btn.clicked.connect(self._project_model)
-        self._proj_btn.setEnabled(False); v.addWidget(self._proj_btn)
+        self._proj_btn.setEnabled(False)
+        v.addWidget(self._proj_btn)
 
         # Deterministic progress bar (⑤ fix)
         self._proj_progress = QProgressBar()
-        self._proj_progress.setRange(0, 100); self._proj_progress.setValue(0)
+        self._proj_progress.setRange(0, 100)
+        self._proj_progress.setValue(0)
         self._proj_progress.setTextVisible(True)
-        self._proj_progress.hide(); v.addWidget(self._proj_progress)
+        self._proj_progress.hide()
+        v.addWidget(self._proj_progress)
 
-        self._proj_status = QLabel(""); self._proj_status.setWordWrap(True)
+        self._proj_status = QLabel("")
+        self._proj_status.setWordWrap(True)
         v.addWidget(self._proj_status)
         v.addStretch()
         return w
@@ -1183,8 +1300,10 @@ class QMaxentMainDock(QDockWidget):
     # sub-section 2.3.
 
     def _build_priority_tab(self) -> QWidget:
-        w = QWidget(); v = QVBoxLayout(w)
-        v.setContentsMargins(8, 8, 8, 8); v.setSpacing(10)
+        w = QWidget()
+        v = QVBoxLayout(w)
+        v.setContentsMargins(8, 8, 8, 8)
+        v.setSpacing(10)
 
         # ── Survey purpose (mode selection) ───────────────────────────────
         # Two distinct workflows that share the same downstream code path
@@ -1201,25 +1320,27 @@ class QMaxentMainDock(QDockWidget):
         #     model across its full predicted gradient.
         purpose_grp = QGroupBox(tr("Survey purpose"))
         pg = QVBoxLayout(purpose_grp)
-        self._priority_mode_discovery = QRadioButton(tr(
-            "Discovery mode — find new populations in unsurveyed areas"
-        ))
-        self._priority_mode_validation = QRadioButton(tr(
-            "Validation mode — test the suitability gradient"
-        ))
-        self._priority_mode_discovery.setChecked(True)
-        self._priority_mode_discovery.setToolTip(tr(
-            "Sample sites within a high-suitability band, focused on "
-            "the most likely habitat for the species."
-        ))
-        self._priority_mode_validation.setToolTip(tr(
-            "Sample equal numbers from four suitability quartiles "
-            "(Rhoden 2017). Will include lower-suitability sites by "
-            "design — useful for evaluating the model gradient."
-        ))
-        self._priority_mode_discovery.toggled.connect(
-            self._on_priority_mode_changed
+        self._priority_mode_discovery = QRadioButton(
+            tr("Discovery mode — find new populations in unsurveyed areas")
         )
+        self._priority_mode_validation = QRadioButton(
+            tr("Validation mode — test the suitability gradient")
+        )
+        self._priority_mode_discovery.setChecked(True)
+        self._priority_mode_discovery.setToolTip(
+            tr(
+                "Sample sites within a high-suitability band, focused on "
+                "the most likely habitat for the species."
+            )
+        )
+        self._priority_mode_validation.setToolTip(
+            tr(
+                "Sample equal numbers from four suitability quartiles "
+                "(Rhoden 2017). Will include lower-suitability sites by "
+                "design — useful for evaluating the model gradient."
+            )
+        )
+        self._priority_mode_discovery.toggled.connect(self._on_priority_mode_changed)
         pg.addWidget(self._priority_mode_discovery)
         pg.addWidget(self._priority_mode_validation)
         v.addWidget(purpose_grp)
@@ -1244,11 +1365,13 @@ class QMaxentMainDock(QDockWidget):
         self._priority_min_suit.setValidator(suit_validator)
         self._priority_min_suit.setText("0.9000")
         self._priority_min_suit.setMaximumWidth(120)
-        self._priority_min_suit.setToolTip(tr(
-            "Cells with suitability ≥ this value form the candidate "
-            "pool. Default is auto-filled to (raster max × 0.9) when "
-            "the prediction raster is selected."
-        ))
+        self._priority_min_suit.setToolTip(
+            tr(
+                "Cells with suitability ≥ this value form the candidate "
+                "pool. Default is auto-filled to (raster max × 0.9) when "
+                "the prediction raster is selected."
+            )
+        )
         sf_row.addWidget(self._priority_min_suit)
         sf_row.addStretch()
         dg.addLayout(sf_row)
@@ -1256,7 +1379,7 @@ class QMaxentMainDock(QDockWidget):
         order_row = QHBoxLayout()
         order_row.addWidget(QLabel(tr("Sampling order:")))
         self._priority_order_random = QRadioButton(tr("Random"))
-        self._priority_order_topn   = QRadioButton(tr("Top-N (highest first)"))
+        self._priority_order_topn = QRadioButton(tr("Top-N (highest first)"))
         self._priority_order_random.setChecked(True)
         order_row.addWidget(self._priority_order_random)
         order_row.addWidget(self._priority_order_topn)
@@ -1275,12 +1398,14 @@ class QMaxentMainDock(QDockWidget):
         tr_row = QHBoxLayout()
         tr_row.addWidget(QLabel(tr("Threshold method:")))
         self._priority_thr_method = QComboBox()
-        self._priority_thr_method.addItems([
-            tr("10th percentile training presence (T10; Pearson 2007)"),
-            tr("Minimum training presence (MTP; Pearson 2007)"),
-            tr("Maximum sum of sensitivity + specificity (MaxSSS; Liu 2013)"),
-            tr("Custom value..."),
-        ])
+        self._priority_thr_method.addItems(
+            [
+                tr("10th percentile training presence (T10; Pearson 2007)"),
+                tr("Minimum training presence (MTP; Pearson 2007)"),
+                tr("Maximum sum of sensitivity + specificity (MaxSSS; Liu 2013)"),
+                tr("Custom value..."),
+            ]
+        )
         self._priority_thr_method.currentIndexChanged.connect(
             self._on_priority_threshold_method_changed
         )
@@ -1339,15 +1464,17 @@ class QMaxentMainDock(QDockWidget):
         # ── Reverse geocoding ─────────────────────────────────────────────
         gc_grp = QGroupBox(tr("Reverse geocoding"))
         gc = QVBoxLayout(gc_grp)
-        self._priority_geocode = QCheckBox(tr(
-            "Add administrative address (province/city/district)"
-        ))
+        self._priority_geocode = QCheckBox(
+            tr("Add administrative address (province/city/district)")
+        )
         self._priority_geocode.setChecked(True)
-        self._priority_geocode.setToolTip(tr(
-            "Uses OpenStreetMap Nominatim. No API key required. "
-            "Rate limit 1 req/sec is applied automatically. "
-            "Results carry © OpenStreetMap contributors attribution."
-        ))
+        self._priority_geocode.setToolTip(
+            tr(
+                "Uses OpenStreetMap Nominatim. No API key required. "
+                "Rate limit 1 req/sec is applied automatically. "
+                "Results carry © OpenStreetMap contributors attribution."
+            )
+        )
         gc.addWidget(self._priority_geocode)
         v.addWidget(gc_grp)
 
@@ -1361,22 +1488,18 @@ class QMaxentMainDock(QDockWidget):
         # Absolute path under the unified output folder for the same
         # reason as the other Output fields — make the destination
         # visible on screen instead of leaving it implicit.
-        self._priority_path.setText(
-            os.path.join(_default_output_dir(), "priority_sites.gpkg")
-        )
+        self._priority_path.setText(os.path.join(_default_output_dir(), "priority_sites.gpkg"))
         self._priority_path.setToolTip(self._priority_path.text())
         self._priority_path.textChanged.connect(self._priority_path.setToolTip)
         out_row.addWidget(self._priority_path, stretch=1)
-        browse = QPushButton("..."); browse.setMaximumWidth(30)
+        browse = QPushButton("...")
+        browse.setMaximumWidth(30)
         browse.clicked.connect(
-            lambda: self._browse_save(self._priority_path,
-                                       tr("GeoPackage (*.gpkg)"))
+            lambda: self._browse_save(self._priority_path, tr("GeoPackage (*.gpkg)"))
         )
         out_row.addWidget(browse)
         og.addLayout(out_row)
-        self._priority_autoload = QCheckBox(tr(
-            "Auto-add to QGIS project"
-        ))
+        self._priority_autoload = QCheckBox(tr("Auto-add to QGIS project"))
         self._priority_autoload.setChecked(True)
         og.addWidget(self._priority_autoload)
         v.addWidget(out_grp)
@@ -1417,9 +1540,7 @@ class QMaxentMainDock(QDockWidget):
         if is_discovery:
             self._refresh_discovery_floor()
         else:
-            self._on_priority_threshold_method_changed(
-                self._priority_thr_method.currentIndex()
-            )
+            self._on_priority_threshold_method_changed(self._priority_thr_method.currentIndex())
 
     def _refresh_discovery_floor(self):
         """Auto-fill the Discovery minimum-suitability floor to
@@ -1435,8 +1556,9 @@ class QMaxentMainDock(QDockWidget):
                 return
             cached_path = getattr(self, "_priority_raster_cached_path", None)
             if cached_path != proj_path:
-                import rasterio
                 import numpy as np
+                import rasterio
+
                 with rasterio.open(proj_path) as src:
                     arr = src.read(1, masked=True)
                 arr_valid = arr.compressed() if hasattr(arr, "compressed") else arr
@@ -1474,9 +1596,9 @@ class QMaxentMainDock(QDockWidget):
             return
         self._priority_thr_value.setReadOnly(True)
         self._priority_thr_value.setEnabled(False)
-        meta = getattr(self._model, "_qmaxent_meta", None) if getattr(
-            self, "_model", None
-        ) else None
+        meta = (
+            getattr(self._model, "_qmaxent_meta", None) if getattr(self, "_model", None) else None
+        )
         if meta is not None:
             thresholds = meta.get("thresholds", {}) or {}
             if key in thresholds:
@@ -1496,14 +1618,17 @@ class QMaxentMainDock(QDockWidget):
             # the QGIS message log (View → Panels → Log Messages →
             # QMaxent) so users can paste it into a bug report.
             import traceback
+
             tb = traceback.format_exc()
             QgsMessageLog.logMessage(
                 f"Priority Sites extraction failed:\n{tb}",
-                "QMaxent", Qgis.Critical,
+                "QMaxent",
+                Qgis.Critical,
             )
             try:
                 QMessageBox.critical(
-                    self, tr("Priority Sites"),
+                    self,
+                    tr("Priority Sites"),
                     tr(
                         "Priority site extraction failed:\n{e}\n\n"
                         "Full traceback in: View → Panels → Log "
@@ -1527,8 +1652,7 @@ class QMaxentMainDock(QDockWidget):
         # 1. We need a trained model with metadata.
         if not getattr(self, "_model", None):
             QMessageBox.warning(
-                self, tr("Priority Sites"),
-                tr("Train a model first (or load an existing .pkl).")
+                self, tr("Priority Sites"), tr("Train a model first (or load an existing .pkl).")
             )
             return
         # 2. We need a prediction raster — the Spatial Projection tab
@@ -1538,33 +1662,33 @@ class QMaxentMainDock(QDockWidget):
         proj_path = self._proj_path.text().strip()
         if not proj_path or not os.path.isfile(proj_path):
             QMessageBox.warning(
-                self, tr("Priority Sites"),
+                self,
+                tr("Priority Sites"),
                 tr(
                     "Run a spatial projection first — the priority "
                     "sampling needs a prediction raster.\n\n"
                     "Tip: ④ Results → Spatial Projection → ▶ Run Spatial Projection."
-                )
+                ),
             )
             return
         # 3. Presence layer must still be set in the ① Data tab.
-        pres_layer = self._pres_combo.currentLayer() \
-            if hasattr(self._pres_combo, "currentLayer") else None
+        pres_layer = (
+            self._pres_combo.currentLayer() if hasattr(self._pres_combo, "currentLayer") else None
+        )
         if pres_layer is None:
             QMessageBox.warning(
-                self, tr("Priority Sites"),
-                tr("No presence layer selected (① Data tab).")
+                self, tr("Priority Sites"), tr("No presence layer selected (① Data tab).")
             )
             return
         # Convert presence layer to a list of (lon, lat) — the layer's
         # geometry is reprojected to EPSG:4326 to match the lat/lon
         # convention used inside priority_sites.py.
         try:
-            from qgis.core import QgsCoordinateReferenceSystem, \
-                QgsCoordinateTransform, QgsProject as _QP
+            from qgis.core import QgsCoordinateReferenceSystem, QgsCoordinateTransform
+            from qgis.core import QgsProject as _QP
+
             wgs = QgsCoordinateReferenceSystem("EPSG:4326")
-            xform = QgsCoordinateTransform(
-                pres_layer.crs(), wgs, _QP.instance()
-            )
+            xform = QgsCoordinateTransform(pres_layer.crs(), wgs, _QP.instance())
             presence_xy = []
             for feat in pres_layer.getFeatures():
                 geom = feat.geometry()
@@ -1588,14 +1712,12 @@ class QMaxentMainDock(QDockWidget):
                 presence_xy.append((float(p.x()), float(p.y())))
         except Exception as e:
             QMessageBox.critical(
-                self, tr("Priority Sites"),
-                tr("Could not read presence layer:\n{e}").format(e=e)
+                self, tr("Priority Sites"), tr("Could not read presence layer:\n{e}").format(e=e)
             )
             return
         if not presence_xy:
             QMessageBox.warning(
-                self, tr("Priority Sites"),
-                tr("Presence layer has no point features.")
+                self, tr("Priority Sites"), tr("Presence layer has no point features.")
             )
             return
 
@@ -1625,24 +1747,22 @@ class QMaxentMainDock(QDockWidget):
             method = "MinSuit"
             threshold = _parse_float(self._priority_min_suit, 0.9)
             stratify = False
-            sampling_order = (
-                "random" if self._priority_order_random.isChecked()
-                else "topn"
-            )
+            sampling_order = "random" if self._priority_order_random.isChecked() else "topn"
         else:
             method_keys = ("T10", "MTP", "MaxSSS", "Custom")
             method = method_keys[self._priority_thr_method.currentIndex()]
             threshold = _parse_float(self._priority_thr_value, 0.0)
             stratify = True
-            sampling_order = "topn"   # ignored when stratify=True
+            sampling_order = "topn"  # ignored when stratify=True
 
         if threshold <= 0.0:
             QMessageBox.warning(
-                self, tr("Priority Sites"),
+                self,
+                tr("Priority Sites"),
                 tr(
                     "Threshold value is 0 or unset. Enter a value > 0 "
                     "or pick a different threshold method."
-                )
+                ),
             )
             return
 
@@ -1654,17 +1774,20 @@ class QMaxentMainDock(QDockWidget):
         # think the plugin froze. The 1 req/sec policy is hard-coded.
         if do_geocode and n >= 30:
             secs = n * 1.05
-            mins = int(secs // 60); rem = int(secs - mins * 60)
+            mins = int(secs // 60)
+            rem = int(secs - mins * 60)
             QMessageBox.information(
-                self, tr("Priority Sites"),
+                self,
+                tr("Priority Sites"),
                 tr(
                     "Reverse geocoding {n} sites at 1 request/second "
                     "will take about {mins}m {rem}s. The progress bar "
                     "will report each step."
-                ).format(n=n, mins=mins, rem=rem)
+                ).format(n=n, mins=mins, rem=rem),
             )
 
         from ..workers.priority_sites_worker import PrioritySitesWorker
+
         self._priority_worker = PrioritySitesWorker(
             prediction_path=proj_path,
             presence_xy=presence_xy,
@@ -1676,16 +1799,13 @@ class QMaxentMainDock(QDockWidget):
             stratify_by_quartile=stratify,
             sampling_order=sampling_order,
             do_geocode=do_geocode,
-            random_seed=(self._seed_spin.value()
-                          if self._seed_check.isChecked() else None),
+            random_seed=(self._seed_spin.value() if self._seed_check.isChecked() else None),
             parent=self,
         )
         self._priority_worker.progress.connect(self._on_priority_progress)
         self._priority_worker.log.connect(self._log_append)
         self._priority_worker.finished.connect(
-            lambda ok, msg, rows: self._on_priority_finished(
-                ok, msg, rows, method, threshold
-            )
+            lambda ok, msg, rows: self._on_priority_finished(ok, msg, rows, method, threshold)
         )
 
         self._priority_btn.setEnabled(False)
@@ -1698,16 +1818,16 @@ class QMaxentMainDock(QDockWidget):
         self._priority_progress.setValue(pct)
         self._priority_status.setText(msg)
 
-    def _on_priority_finished(self, ok: bool, msg: str, rows: list,
-                              method: str, threshold: float):
+    def _on_priority_finished(self, ok: bool, msg: str, rows: list, method: str, threshold: float):
         self._priority_worker = None
         if not ok:
             self._priority_btn.setEnabled(True)
             self._priority_progress.hide()
             self._priority_status.setText(tr("Failed."))
             QMessageBox.critical(
-                self, tr("Priority Sites"),
-                tr("Priority site extraction failed:\n{msg}").format(msg=msg)
+                self,
+                tr("Priority Sites"),
+                tr("Priority site extraction failed:\n{msg}").format(msg=msg),
             )
             return
 
@@ -1729,10 +1849,10 @@ class QMaxentMainDock(QDockWidget):
         # because each step is a single 1-second-or-less blocking
         # call between event-loop ticks.
         if self._priority_geocode.isChecked():
-            self._geocode_pending   = list(rows)
-            self._geocode_done      = []
-            self._geocode_total     = len(rows)
-            self._geocode_method    = method
+            self._geocode_pending = list(rows)
+            self._geocode_done = []
+            self._geocode_total = len(rows)
+            self._geocode_method = method
             self._geocode_threshold = threshold
             # Repurpose the same progress bar and Run button.
             self._priority_progress.setValue(0)
@@ -1762,16 +1882,15 @@ class QMaxentMainDock(QDockWidget):
         if not getattr(self, "_geocode_pending", None):
             # Done — finalise.
             rows = list(getattr(self, "_geocode_done", []))
-            method    = getattr(self, "_geocode_method", "")
+            method = getattr(self, "_geocode_method", "")
             threshold = float(getattr(self, "_geocode_threshold", 0.0))
             n_geocoded = sum(1 for r in rows if r.get("display_name"))
             self._log_append(
-                f"Reverse geocoding complete — {n_geocoded}/{len(rows)} "
-                f"resolved (Nominatim)"
+                f"Reverse geocoding complete — {n_geocoded}/{len(rows)} resolved (Nominatim)"
             )
             # Free the queue state so a second run starts clean.
             self._geocode_pending = None
-            self._geocode_done    = None
+            self._geocode_done = None
             self._priority_btn.setEnabled(True)
             self._save_and_finalise_priority(rows, method, threshold)
             return
@@ -1779,23 +1898,27 @@ class QMaxentMainDock(QDockWidget):
         site = self._geocode_pending.pop(0)
         try:
             from ..bridge.priority_sites import reverse_geocode_one
+
             addr = reverse_geocode_one(site["lat"], site["lon"])
         except Exception:
             # Best-effort; never fatal. The site row is kept with
             # empty address fields so the GeoPackage schema is intact.
-            addr = {"country": "", "province": "", "city_county": "",
-                    "district": "", "display_name": ""}
+            addr = {
+                "country": "",
+                "province": "",
+                "city_county": "",
+                "district": "",
+                "display_name": "",
+            }
         # Merge: site already has empty address fields from the worker;
         # the spread updates them in place.
         self._geocode_done.append({**site, **addr})
 
         completed = len(self._geocode_done)
-        total     = self._geocode_total
-        pct       = int(completed / max(total, 1) * 100)
+        total = self._geocode_total
+        pct = int(completed / max(total, 1) * 100)
         self._priority_progress.setValue(pct)
-        self._priority_status.setText(
-            tr("Reverse geocoding {i}/{n}…").format(i=completed, n=total)
-        )
+        self._priority_status.setText(tr("Reverse geocoding {i}/{n}…").format(i=completed, n=total))
 
         # Re-arm. 1050 ms ≈ Nominatim's 1 req/sec policy with a small
         # safety margin. Using QTimer.singleShot rather than time.sleep
@@ -1808,8 +1931,7 @@ class QMaxentMainDock(QDockWidget):
             # so the UI gets one final paint at 100%.
             QTimer.singleShot(0, self._geocode_one_step)
 
-    def _save_and_finalise_priority(self, rows: list, method: str,
-                                     threshold: float):
+    def _save_and_finalise_priority(self, rows: list, method: str, threshold: float):
         """Write GeoPackage, optionally add to project, update status."""
         out_path = self._priority_path.text().strip() or "priority_sites.gpkg"
         if not os.path.isabs(out_path):
@@ -1818,8 +1940,7 @@ class QMaxentMainDock(QDockWidget):
             self._save_priority_sites_gpkg(rows, out_path)
         except Exception as e:
             QMessageBox.critical(
-                self, tr("Priority Sites"),
-                tr("Could not write output:\n{e}").format(e=e)
+                self, tr("Priority Sites"), tr("Could not write output:\n{e}").format(e=e)
             )
             return
 
@@ -1828,17 +1949,14 @@ class QMaxentMainDock(QDockWidget):
             try:
                 self._load_priority_sites_layer(out_path)
             except Exception as e:
-                self._log_append(
-                    tr("Could not auto-load priority sites layer: {e}")
-                    .format(e=e)
-                )
+                self._log_append(tr("Could not auto-load priority sites layer: {e}").format(e=e))
 
         n_geocoded = sum(1 for r in rows if r.get("display_name"))
-        self._priority_status.setText(tr(
-            "✓ {n} priority sites extracted ({m} = {t:.4f}); "
-            "{g}/{n} geocoded. Output: {p}"
-        ).format(n=len(rows), m=method, t=threshold,
-                 g=n_geocoded, p=out_path))
+        self._priority_status.setText(
+            tr(
+                "✓ {n} priority sites extracted ({m} = {t:.4f}); {g}/{n} geocoded. Output: {p}"
+            ).format(n=len(rows), m=method, t=threshold, g=n_geocoded, p=out_path)
+        )
 
     # ── Output writing ───────────────────────────────────────────────────
     def _save_priority_sites_gpkg(self, rows: list, out_path: str):
@@ -1853,8 +1971,13 @@ class QMaxentMainDock(QDockWidget):
         attribution field for OSM data.
         """
         from qgis.core import (
-            QgsVectorFileWriter, QgsFields, QgsField, QgsFeature,
-            QgsGeometry, QgsPointXY, QgsCoordinateReferenceSystem,
+            QgsCoordinateReferenceSystem,
+            QgsFeature,
+            QgsField,
+            QgsFields,
+            QgsGeometry,
+            QgsPointXY,
+            QgsVectorFileWriter,
             QgsWkbTypes,
         )
         from qgis.PyQt.QtCore import QVariant
@@ -1868,29 +1991,28 @@ class QMaxentMainDock(QDockWidget):
             pass
 
         fields = QgsFields()
-        fields.append(QgsField("id",            QVariant.Int))
-        fields.append(QgsField("lat",           QVariant.Double))
-        fields.append(QgsField("lon",           QVariant.Double))
-        fields.append(QgsField("suitability",   QVariant.Double))
+        fields.append(QgsField("id", QVariant.Int))
+        fields.append(QgsField("lat", QVariant.Double))
+        fields.append(QgsField("lon", QVariant.Double))
+        fields.append(QgsField("suitability", QVariant.Double))
         # Suitability quartile id (0..3) so the layer can be styled
         # by quartile in Validation mode. Stored as Int — categorized
         # symbology renders integer fields more reliably than strings
         # across QGIS versions.
-        fields.append(QgsField("quartile",      QVariant.Int))
-        fields.append(QgsField("country",       QVariant.String))
-        fields.append(QgsField("province",      QVariant.String))
-        fields.append(QgsField("city_county",   QVariant.String))
-        fields.append(QgsField("district",      QVariant.String))
-        fields.append(QgsField("display_name",  QVariant.String))
+        fields.append(QgsField("quartile", QVariant.Int))
+        fields.append(QgsField("country", QVariant.String))
+        fields.append(QgsField("province", QVariant.String))
+        fields.append(QgsField("city_county", QVariant.String))
+        fields.append(QgsField("district", QVariant.String))
+        fields.append(QgsField("display_name", QVariant.String))
 
         wgs = QgsCoordinateReferenceSystem("EPSG:4326")
         opts = QgsVectorFileWriter.SaveVectorOptions()
         opts.driverName = "GPKG"
         from qgis.core import QgsProject as _QP
+
         ctx = _QP.instance().transformContext()
-        writer = QgsVectorFileWriter.create(
-            out_path, fields, QgsWkbTypes.Point, wgs, ctx, opts
-        )
+        writer = QgsVectorFileWriter.create(out_path, fields, QgsWkbTypes.Point, wgs, ctx, opts)
         # Some QGIS builds return a writer that is None on failure
         # (locked file, read-only directory, GPKG driver missing).
         # Calling .hasError() on None would AttributeError-crash; check
@@ -1909,18 +2031,21 @@ class QMaxentMainDock(QDockWidget):
         try:
             for i, r in enumerate(rows, start=1):
                 f = QgsFeature(fields)
-                f.setGeometry(QgsGeometry.fromPointXY(
-                    QgsPointXY(float(r["lon"]), float(r["lat"]))
-                ))
-                f.setAttributes([
-                    i,
-                    float(r["lat"]), float(r["lon"]),
-                    float(r["suitability"]),
-                    int(r.get("quartile", 0)),
-                    r.get("country", ""), r.get("province", ""),
-                    r.get("city_county", ""), r.get("district", ""),
-                    r.get("display_name", ""),
-                ])
+                f.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(float(r["lon"]), float(r["lat"]))))
+                f.setAttributes(
+                    [
+                        i,
+                        float(r["lat"]),
+                        float(r["lon"]),
+                        float(r["suitability"]),
+                        int(r.get("quartile", 0)),
+                        r.get("country", ""),
+                        r.get("province", ""),
+                        r.get("city_county", ""),
+                        r.get("district", ""),
+                        r.get("display_name", ""),
+                    ]
+                )
                 # addFeature returns False on failure (attribute type
                 # mismatch, invalid geometry, OGR-level error). Track
                 # the count and surface a warning if any drop.
@@ -1932,10 +2057,12 @@ class QMaxentMainDock(QDockWidget):
             # attempt fails mysteriously.
             del writer
         if n_written < len(rows):
-            self._log_append(tr(
-                "⚠ {dropped} of {total} priority sites could not be "
-                "written to the GeoPackage and were dropped."
-            ).format(dropped=len(rows) - n_written, total=len(rows)))
+            self._log_append(
+                tr(
+                    "⚠ {dropped} of {total} priority sites could not be "
+                    "written to the GeoPackage and were dropped."
+                ).format(dropped=len(rows) - n_written, total=len(rows))
+            )
 
     def _load_priority_sites_layer(self, gpkg_path: str):
         """Load the priority sites layer with simple, robust styling.
@@ -1958,7 +2085,9 @@ class QMaxentMainDock(QDockWidget):
         marker (same as Discovery mode) without aborting.
         """
         from qgis.core import (
-            QgsVectorLayer, QgsProject, QgsSymbol,
+            QgsProject,
+            QgsSymbol,
+            QgsVectorLayer,
         )
         from qgis.PyQt.QtGui import QColor
 
@@ -2000,8 +2129,10 @@ class QMaxentMainDock(QDockWidget):
         if wants_categorized:
             try:
                 from qgis.core import (
-                    QgsCategorizedSymbolRenderer, QgsRendererCategory,
+                    QgsCategorizedSymbolRenderer,
+                    QgsRendererCategory,
                 )
+
                 # Quartile palette — sequential YlOrRd (yellow→red,
                 # warm sequential color scheme). Q4 (highest
                 # suitability) is red — the SAME red used for
@@ -2019,9 +2150,7 @@ class QMaxentMainDock(QDockWidget):
                 }
                 categories = []
                 for q in sorted(qvals, reverse=True):
-                    color_hex, label = palette.get(
-                        q, ("#888888", f"Q{q+1}")
-                    )
+                    color_hex, label = palette.get(q, ("#888888", f"Q{q + 1}"))
                     s = QgsSymbol.defaultSymbol(layer.geometryType())
                     if s is None:
                         continue
@@ -2030,13 +2159,9 @@ class QMaxentMainDock(QDockWidget):
                         s.symbolLayer(0).setSize(3.5)
                     except Exception:
                         pass
-                    categories.append(
-                        QgsRendererCategory(q, s, label)
-                    )
+                    categories.append(QgsRendererCategory(q, s, label))
                 if categories:
-                    renderer = QgsCategorizedSymbolRenderer(
-                        "quartile", categories
-                    )
+                    renderer = QgsCategorizedSymbolRenderer("quartile", categories)
                     layer.setRenderer(renderer)
             except Exception as e:
                 # Categorized symbology failed — surface a one-line
@@ -2045,8 +2170,7 @@ class QMaxentMainDock(QDockWidget):
                 # never let a styling glitch block the user from
                 # seeing their sites on the map.
                 self._log_append(
-                    tr("(Categorized symbology fell back to single "
-                       "marker: {e})").format(e=e)
+                    tr("(Categorized symbology fell back to single marker: {e})").format(e=e)
                 )
 
         QgsProject.instance().addMapLayer(layer)
@@ -2057,20 +2181,22 @@ class QMaxentMainDock(QDockWidget):
             return
         try:
             n = layer.featureCount()
-            self._pres_info.setText(
-                tr("{n} presence points loaded").format(n=f"{n:,}")
-            )
+            self._pres_info.setText(tr("{n} presence points loaded").format(n=f"{n:,}"))
         except Exception:
             self._pres_info.setText(tr("Cannot read layer info."))
 
     def _add_raster_from_project(self):
         from ..bridge.raster_bridge import detect_categorical_hint
+
         layers = QgsProject.instance().mapLayers().values()
         rasters = [l for l in layers if isinstance(l, QgsRasterLayer)]
         if not rasters:
-            self._log_append(tr("No raster layers in project.")); return
-        existing = {self._raster_list.item(i).data(self._ROLE_LAYER_ID)
-                    for i in range(self._raster_list.count())}
+            self._log_append(tr("No raster layers in project."))
+            return
+        existing = {
+            self._raster_list.item(i).data(self._ROLE_LAYER_ID)
+            for i in range(self._raster_list.count())
+        }
         added = 0
         for layer in rasters:
             if layer.id() in existing:
@@ -2131,8 +2257,9 @@ class QMaxentMainDock(QDockWidget):
         grey row. Instead we leave the items in place and swap the
         *contents* of adjacent rows.
         """
-        selected_rows = sorted({self._raster_list.row(it)
-                                for it in self._raster_list.selectedItems()})
+        selected_rows = sorted(
+            {self._raster_list.row(it) for it in self._raster_list.selectedItems()}
+        )
         if not selected_rows:
             # Fallback: no explicit selection — operate on the
             # current row (keeps single-click + ▲ / ▼ workflow
@@ -2205,6 +2332,7 @@ class QMaxentMainDock(QDockWidget):
         # selection atomically and survives any focus changes.
         if new_selected:
             from qgis.PyQt.QtCore import QItemSelection, QItemSelectionModel
+
             new_rows = sorted(set(new_selected))
             sel_model = self._raster_list.selectionModel()
             selection = QItemSelection()
@@ -2248,8 +2376,10 @@ class QMaxentMainDock(QDockWidget):
 
         # 1. Swap UserRole data on the items themselves.
         for role in (self._ROLE_LAYER_ID, self._ROLE_IS_CATEG):
-            ad = a.data(role); bd = b.data(role)
-            a.setData(role, bd); b.setData(role, ad)
+            ad = a.data(role)
+            bd = b.data(role)
+            a.setData(role, bd)
+            b.setData(role, ad)
 
         # 2. Swap visible label text. The label is the first child
         #    QLabel inside the row widget — the QHBoxLayout in
@@ -2258,7 +2388,8 @@ class QMaxentMainDock(QDockWidget):
         lb = wb.findChild(QLabel)
         if la is not None and lb is not None:
             ta, tb = la.text(), lb.text()
-            la.setText(tb); lb.setText(ta)
+            la.setText(tb)
+            lb.setText(ta)
 
         # 3. Swap toggle button state. The toggle's `toggled` signal
         #    fires `_on_categorical_toggled`, which writes the new
@@ -2270,9 +2401,12 @@ class QMaxentMainDock(QDockWidget):
             cba, cbb = ba.isChecked(), bb.isChecked()
             # blockSignals so swap doesn't double-fire categorical
             # change handlers (we already swapped the role data).
-            ba.blockSignals(True); bb.blockSignals(True)
-            ba.setChecked(cbb); bb.setChecked(cba)
-            ba.blockSignals(False); bb.blockSignals(False)
+            ba.blockSignals(True)
+            bb.blockSignals(True)
+            ba.setChecked(cbb)
+            bb.setChecked(cba)
+            ba.blockSignals(False)
+            bb.blockSignals(False)
             # Manually refresh the toggle text now that signals are
             # silenced (blockSignals also suppressed the visual sync).
             self._sync_categorical_toggle(ba)
@@ -2299,15 +2433,15 @@ class QMaxentMainDock(QDockWidget):
         "Harmonize to Folder…" button.
         """
         from ..bridge.raster_bridge import (
-            check_raster_consistency, layer_to_path,
+            check_raster_consistency,
+            layer_to_path,
         )
 
         layers = self._get_raster_layers()
         if not layers:
-            self._consistency_lbl.setText(tr(
-                "Status: add at least one raster, then click "
-                "Check Raster Consistency."
-            ))
+            self._consistency_lbl.setText(
+                tr("Status: add at least one raster, then click Check Raster Consistency.")
+            )
             self._consistency_lbl.setStyleSheet("color: gray;")
             self._harmonize_btn.setVisible(False)
             return
@@ -2316,23 +2450,22 @@ class QMaxentMainDock(QDockWidget):
         result = check_raster_consistency(paths)
 
         if result.get("error"):
-            self._consistency_lbl.setText(tr(
-                "Status: ⚠ Could not read rasters ({err})."
-            ).format(err=result["error"]))
+            self._consistency_lbl.setText(
+                tr("Status: ⚠ Could not read rasters ({err}).").format(err=result["error"])
+            )
             self._consistency_lbl.setStyleSheet("color: #B23A2A;")
             self._harmonize_btn.setVisible(False)
             return
 
         if result.get("is_consistent"):
             first = result["rasters"][0]
-            self._consistency_lbl.setText(tr(
-                "Status: ✓ All {n} rasters share grid (CRS: {crs}, "
-                "resolution: {res})."
-            ).format(
-                n=len(paths),
-                crs=str(first["crs"]) if first["crs"] else "—",
-                res=f"{first['res'][0]:g} × {first['res'][1]:g}",
-            ))
+            self._consistency_lbl.setText(
+                tr("Status: ✓ All {n} rasters share grid (CRS: {crs}, resolution: {res}).").format(
+                    n=len(paths),
+                    crs=str(first["crs"]) if first["crs"] else "—",
+                    res=f"{first['res'][0]:g} × {first['res'][1]:g}",
+                )
+            )
             self._consistency_lbl.setStyleSheet("color: #2A8A2A;")
             self._harmonize_btn.setVisible(False)
         else:
@@ -2343,10 +2476,12 @@ class QMaxentMainDock(QDockWidget):
                 mismatches.append(tr("extent"))
             if not result["resolution_uniform"]:
                 mismatches.append(tr("resolution"))
-            self._consistency_lbl.setText(tr(
-                "Status: ⚠ Grid mismatch — {dims} differ across "
-                "rasters. Click \"Harmonize to Folder…\" to align."
-            ).format(dims=", ".join(mismatches)))
+            self._consistency_lbl.setText(
+                tr(
+                    "Status: ⚠ Grid mismatch — {dims} differ across "
+                    'rasters. Click "Harmonize to Folder…" to align.'
+                ).format(dims=", ".join(mismatches))
+            )
             self._consistency_lbl.setStyleSheet("color: #B23A2A;")
             self._harmonize_btn.setVisible(True)
 
@@ -2396,7 +2531,8 @@ class QMaxentMainDock(QDockWidget):
             os.makedirs(chosen, exist_ok=True)
         except OSError as e:
             QMessageBox.critical(
-                self, tr("Harmonize Rasters"),
+                self,
+                tr("Harmonize Rasters"),
                 tr("Could not create output folder:\n{e}").format(e=e),
             )
             return
@@ -2407,8 +2543,11 @@ class QMaxentMainDock(QDockWidget):
         # path; mixing it into the training bar would hide what's
         # actually running.
         progress = QProgressDialog(
-            tr("Harmonizing rasters..."), tr("Cancel"),
-            0, 100, self,
+            tr("Harmonizing rasters..."),
+            tr("Cancel"),
+            0,
+            100,
+            self,
         )
         progress.setWindowModality(Qt.WindowModal)
         progress.setAutoClose(False)
@@ -2438,13 +2577,12 @@ class QMaxentMainDock(QDockWidget):
                 # User-cancel is not an error — show a non-modal status
                 # message and return without the alarming red dialog.
                 if msg == "Cancelled":
-                    self._consistency_lbl.setText(tr(
-                        "Status: harmonization cancelled by user."
-                    ))
+                    self._consistency_lbl.setText(tr("Status: harmonization cancelled by user."))
                     self._consistency_lbl.setStyleSheet("color: #B23A2A;")
                     return
                 QMessageBox.critical(
-                    self, tr("Harmonize Rasters"),
+                    self,
+                    tr("Harmonize Rasters"),
                     tr("Harmonization failed:\n{msg}").format(msg=msg),
                 )
                 return
@@ -2464,40 +2602,34 @@ class QMaxentMainDock(QDockWidget):
             mbox = QMessageBox(self)
             mbox.setWindowTitle(tr("Harmonize Rasters"))
             mbox.setIcon(QMessageBox.Question)
-            mbox.setText(tr(
-                "Harmonized {n} raster(s) to:\n{path}"
-            ).format(n=len(new_paths), path=chosen))
-            mbox.setInformativeText(tr(
-                "Replace the unaligned originals in this project with "
-                "the harmonized versions?"
-            ))
-            btn_replace = mbox.addButton(
-                tr("Replace"), QMessageBox.AcceptRole
+            mbox.setText(
+                tr("Harmonized {n} raster(s) to:\n{path}").format(n=len(new_paths), path=chosen)
             )
-            btn_add = mbox.addButton(
+            mbox.setInformativeText(
+                tr("Replace the unaligned originals in this project with the harmonized versions?")
+            )
+            btn_replace = mbox.addButton(tr("Replace"), QMessageBox.AcceptRole)
+            mbox.addButton(
                 tr("Add as additional layers"),
                 QMessageBox.ActionRole,
             )
-            btn_cancel = mbox.addButton(
-                tr("Cancel"), QMessageBox.RejectRole
-            )
+            btn_cancel = mbox.addButton(tr("Cancel"), QMessageBox.RejectRole)
             mbox.setDefaultButton(btn_replace)
             mbox.exec_()
             clicked = mbox.clickedButton()
 
             if clicked is btn_cancel:
                 # Files on disk are kept; nothing added to project.
-                self._consistency_lbl.setText(tr(
-                    "Status: harmonized files written to {path}; "
-                    "project not changed."
-                ).format(path=chosen))
+                self._consistency_lbl.setText(
+                    tr("Status: harmonized files written to {path}; project not changed.").format(
+                        path=chosen
+                    )
+                )
                 self._consistency_lbl.setStyleSheet("color: #2E7D32;")
                 return
 
-            replace_originals = (clicked is btn_replace)
-            self._replace_rasters_with_harmonized(
-                new_paths, remove_originals=replace_originals
-            )
+            replace_originals = clicked is btn_replace
+            self._replace_rasters_with_harmonized(new_paths, remove_originals=replace_originals)
             # Auto-refresh the consistency label
             self._on_check_consistency()
 
@@ -2511,8 +2643,7 @@ class QMaxentMainDock(QDockWidget):
         progress.canceled.connect(worker.cancel)
         worker.start()
 
-    def _replace_rasters_with_harmonized(self, new_paths: list,
-                                          remove_originals: bool = True):
+    def _replace_rasters_with_harmonized(self, new_paths: list, remove_originals: bool = True):
         """Swap the raster list so subsequent runs use the aligned copies.
 
         Each harmonized output is loaded into the QGIS project as a
@@ -2583,10 +2714,9 @@ class QMaxentMainDock(QDockWidget):
             start_dir = cand if os.path.isdir(cand) else _default_output_dir()
         else:
             start_dir = _default_output_dir()
-        path, _ = QFileDialog.getSaveFileName(
-            self, tr("Select save location"), start_dir, ffilter
-        )
-        if path: le.setText(path)
+        path, _ = QFileDialog.getSaveFileName(self, tr("Select save location"), start_dir, ffilter)
+        if path:
+            le.setText(path)
 
     # =========================================================================
     # Run
@@ -2596,61 +2726,69 @@ class QMaxentMainDock(QDockWidget):
         if self._worker and self._worker.isRunning():
             self._worker.cancel()
             self._run_btn.setText(tr("▶  Run Maxent"))
-            self._set_status(tr("Stopping...")); return
+            self._set_status(tr("Stopping..."))
+            return
 
         try:
             presence_layer = self._get_presence_layer()
         except ValueError as e:
-            self._set_status(f"⚠ {e}"); return
+            self._set_status(f"⚠ {e}")
+            return
 
         raster_layers = self._get_raster_layers()
         if not raster_layers:
-            self._set_status(f"⚠ {tr('Add environmental raster layers.')}"); return
+            self._set_status(f"⚠ {tr('Add environmental raster layers.')}")
+            return
 
         try:
             from ..core.venv_manager import ensure_venv_packages_available
+
             ensure_venv_packages_available()
-            from ..bridge.vector_bridge import presence_layer_to_geodataframe
             from ..bridge.raster_bridge import layers_to_paths
-            presence_gdf  = presence_layer_to_geodataframe(presence_layer)
-            raster_paths  = layers_to_paths(raster_layers)
+            from ..bridge.vector_bridge import presence_layer_to_geodataframe
+
+            presence_gdf = presence_layer_to_geodataframe(presence_layer)
+            raster_paths = layers_to_paths(raster_layers)
             feature_names = [l.name() for l in raster_layers]
         except Exception as e:
-            self._set_status(tr("Data error: {e}").format(e=e)); return
+            self._set_status(tr("Data error: {e}").format(e=e))
+            return
 
-        ft_auto   = self._ft_auto_radio.isChecked()
-        ft_manual = [code for code, cb in self._ft_checks.items() if cb.isChecked()
-                     ] if not ft_auto else []
+        ft_auto = self._ft_auto_radio.isChecked()
+        ft_manual = (
+            [code for code, cb in self._ft_checks.items() if cb.isChecked()] if not ft_auto else []
+        )
 
         config = {
-            "presence_gdf":       presence_gdf,
-            "raster_paths":       raster_paths,
-            "feature_names":      feature_names,
+            "presence_gdf": presence_gdf,
+            "raster_paths": raster_paths,
+            "feature_names": feature_names,
             "categorical_indices": self._get_categorical_indices(),
-            "n_background":       self._bg_spin.value(),
+            "n_background": self._bg_spin.value(),
             "feature_types_auto": ft_auto,
-            "feature_types":      ft_manual,
-            "beta_mult":          self._beta_spin.value(),
-            "transform":          self._proj_transform.currentText(),
-            "n_hinge":            self._hinge_spin.value(),
-            "n_threshold":        self._thresh_spin.value(),
-            "add_to_bg":          self._addtobg_chk.isChecked(),
-            "distance_weights":   self._distweights_chk.isChecked(),
-            "cv_method":          self._cv_combo.currentIndex(),
-            "n_folds":            self._folds_spin.value(),
-            "grid_size":          self._grid_spin.value(),      # ⑤ was missing
-            "buffer_dist":        self._buffer_spin.value(),
-            "random_seed":        (self._seed_spin.value()
-                                    if self._seed_check.isChecked() else None),
-            "do_jackknife":       self._jackknife_chk.isChecked(),
-            "do_permutation":     self._permutation_chk.isChecked(),
+            "feature_types": ft_manual,
+            "beta_mult": self._beta_spin.value(),
+            "transform": self._proj_transform.currentText(),
+            "n_hinge": self._hinge_spin.value(),
+            "n_threshold": self._thresh_spin.value(),
+            "add_to_bg": self._addtobg_chk.isChecked(),
+            "distance_weights": self._distweights_chk.isChecked(),
+            "cv_method": self._cv_combo.currentIndex(),
+            "n_folds": self._folds_spin.value(),
+            "grid_size": self._grid_spin.value(),  # ⑤ was missing
+            "buffer_dist": self._buffer_spin.value(),
+            "random_seed": (self._seed_spin.value() if self._seed_check.isChecked() else None),
+            "do_jackknife": self._jackknife_chk.isChecked(),
+            "do_permutation": self._permutation_chk.isChecked(),
             "permutation_repeats": self._permutation_repeats_spin.value(),
-            "output_model":       self._model_path.text().strip() or None,
-            "output_xlsx":        self._xlsx_path.text().strip() or None,
+            "output_model": self._model_path.text().strip() or None,
+            "output_xlsx": self._xlsx_path.text().strip() or None,
         }
 
         from ..workers.maxent_worker import MaxentWorker
-        self._train_log.clear(); self._train_progress.setValue(0)
+
+        self._train_log.clear()
+        self._train_progress.setValue(0)
         self._run_btn.setText(tr("■  Stop"))
         self.tabs.setCurrentIndex(2)
 
@@ -2671,13 +2809,9 @@ class QMaxentMainDock(QDockWidget):
 
     def _get_raster_layers(self) -> list:
         return [
-            QgsProject.instance().mapLayer(
-                self._raster_list.item(i).data(self._ROLE_LAYER_ID)
-            )
+            QgsProject.instance().mapLayer(self._raster_list.item(i).data(self._ROLE_LAYER_ID))
             for i in range(self._raster_list.count())
-            if QgsProject.instance().mapLayer(
-                self._raster_list.item(i).data(self._ROLE_LAYER_ID)
-            )
+            if QgsProject.instance().mapLayer(self._raster_list.item(i).data(self._ROLE_LAYER_ID))
         ]
 
     def _get_categorical_indices(self) -> list:
@@ -2724,6 +2858,7 @@ class QMaxentMainDock(QDockWidget):
 
     def _copy_train_log_to_clipboard(self):
         from qgis.PyQt.QtWidgets import QApplication
+
         text = self._train_log.toPlainText()
         if not text:
             self._set_status(tr("Log is empty — nothing to copy."))
@@ -2735,6 +2870,7 @@ class QMaxentMainDock(QDockWidget):
 
     def _save_train_log_as(self):
         from qgis.PyQt.QtWidgets import QFileDialog
+
         text = self._train_log.toPlainText()
         if not text:
             self._set_status(tr("Log is empty — nothing to save."))
@@ -2752,10 +2888,13 @@ class QMaxentMainDock(QDockWidget):
         except Exception:
             pass
         from datetime import datetime
+
         stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         default_name = os.path.join(default_dir, f"training_log_{stamp}.txt")
         out_path, _ = QFileDialog.getSaveFileName(
-            self, tr("Save training log"), default_name,
+            self,
+            tr("Save training log"),
+            default_name,
             tr("Text files (*.txt);;All files (*)"),
         )
         if not out_path:
@@ -2794,9 +2933,7 @@ class QMaxentMainDock(QDockWidget):
             log_path = os.path.join(out_dir, "training_log.txt")
             with open(log_path, "w", encoding="utf-8") as f:
                 f.write(text)
-            self._log_append(
-                tr("Training log saved: {path}").format(path=log_path)
-            )
+            self._log_append(tr("Training log saved: {path}").format(path=log_path))
         except Exception as e:
             # Never let a log-save failure break the run — the model
             # is the primary deliverable.
@@ -2808,11 +2945,12 @@ class QMaxentMainDock(QDockWidget):
 
         if not success:
             self._set_status(f"✗ {msg[:120]}")
-            self._log_append(f"\n[Error]\n{msg}"); return
+            self._log_append(f"\n[Error]\n{msg}")
+            return
 
         self._results = results
-        self._model   = results.get("model")
-        self._meta    = results.get("meta", {})
+        self._model = results.get("model")
+        self._meta = results.get("meta", {})
 
         self._populate_response_combo()
         self._plot_importance()
@@ -2828,22 +2966,18 @@ class QMaxentMainDock(QDockWidget):
         # minimum-suitability floor from the new prediction raster
         # (raster_max × 0.9), if any has been generated.
         try:
-            self._on_priority_threshold_method_changed(
-                self._priority_thr_method.currentIndex()
-            )
+            self._on_priority_threshold_method_changed(self._priority_thr_method.currentIndex())
             self._refresh_discovery_floor()
         except Exception:
             pass
 
-        n_p     = self._meta.get("n_presence", "?")
-        n_b     = self._meta.get("n_background", "?")
-        fauc    = results.get("full_auc")
+        n_p = self._meta.get("n_presence", "?")
+        n_b = self._meta.get("n_background", "?")
+        fauc = results.get("full_auc")
         cv_aucs = results.get("cv_aucs", [])
         if isinstance(n_b, int):
             parts = [
-                tr("presence={n}").format(n=n_p)
-                + "  "
-                + tr("background={n}").format(n=f"{n_b:,}")
+                tr("presence={n}").format(n=n_p) + "  " + tr("background={n}").format(n=f"{n_b:,}")
             ]
         else:
             parts = [tr("presence={n}").format(n=n_p)]
@@ -2892,22 +3026,25 @@ class QMaxentMainDock(QDockWidget):
             self._plot_response(cur)
 
     def _plot_response(self, idx: int):
-        if self._model is None or not self._meta: return
+        if self._model is None or not self._meta:
+            return
         names = self._meta.get("feature_names", [])
-        if not names or idx < 0 or idx >= len(names): return
+        if not names or idx < 0 or idx >= len(names):
+            return
 
         self._clear_widget(self._response_canvas_widget)
 
         try:
             import matplotlib
+
             matplotlib.use("Agg")
             import matplotlib.pyplot as plt
             from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 
-            var   = names[idx]
-            vmin  = self._meta["varmin"].get(var, 0.0)
-            vmax  = self._meta["varmax"].get(var, 1.0)
-            sm    = self._meta.get("samplemeans", {})
+            var = names[idx]
+            vmin = self._meta["varmin"].get(var, 0.0)
+            vmax = self._meta["varmax"].get(var, 1.0)
+            sm = self._meta.get("samplemeans", {})
             # Single source of truth: the Results-tab Output transform
             # combo. When it differs from the value baked into the model
             # at training time, update the model so predict() returns the
@@ -2952,8 +3089,9 @@ class QMaxentMainDock(QDockWidget):
                     # only hit when loading legacy saved models.
                     lo, hi = int(round(vmin)), int(round(vmax))
                     cats = list(range(lo, hi + 1))
-                X = np.tile([float(sm.get(n, 0.0)) for n in names],
-                            (len(cats), 1)).astype(np.float32)
+                X = np.tile([float(sm.get(n, 0.0)) for n in names], (len(cats), 1)).astype(
+                    np.float32
+                )
                 for k, c in enumerate(cats):
                     X[k, idx] = float(c)
                 preds = self._model.predict(X)
@@ -2974,15 +3112,14 @@ class QMaxentMainDock(QDockWidget):
             else:
                 # Continuous: smooth sweep across training range.
                 xs = np.linspace(vmin - margin, vmax + margin, 100)
-                X  = np.tile([float(sm.get(n, 0.0)) for n in names],
-                             (100, 1)).astype(np.float32)
+                X = np.tile([float(sm.get(n, 0.0)) for n in names], (100, 1)).astype(np.float32)
                 X[:, idx] = xs.astype(np.float32)
                 preds = self._model.predict(X)
                 ax.plot(xs, preds, color="#1D9E75", linewidth=2)
-                ax.axvspan(vmin, vmax, alpha=0.08, color="#1D9E75",
-                           label="Training range")
-                ax.axvline(float(sm.get(var, 0)), color="#666",
-                           linewidth=1, linestyle=":", label="Mean")
+                ax.axvspan(vmin, vmax, alpha=0.08, color="#1D9E75", label="Training range")
+                ax.axvline(
+                    float(sm.get(var, 0)), color="#666", linewidth=1, linestyle=":", label="Mean"
+                )
                 ax.set_xlabel(var, fontsize=9)
                 ax.legend(fontsize=7)
 
@@ -3017,6 +3154,7 @@ class QMaxentMainDock(QDockWidget):
     def _make_response_figure(self):
         """Create a grid figure of all response curves (for PNG export)."""
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
@@ -3024,24 +3162,23 @@ class QMaxentMainDock(QDockWidget):
         if not names or self._model is None:
             return None
 
-        sm    = self._meta.get("samplemeans", {})
+        sm = self._meta.get("samplemeans", {})
         # Single source of truth: Results-tab Output transform combo.
         trans = self._proj_transform.currentText()
         if getattr(self._model, "transform", None) != trans:
             self._model.transform = trans
-        n     = len(names)
+        n = len(names)
         ncols = min(3, n)
-        nrows = -(-n // ncols)   # ceiling division
+        nrows = -(-n // ncols)  # ceiling division
 
-        fig, axes = plt.subplots(nrows, ncols,
-                                 figsize=(5 * ncols, 3.5 * nrows))
+        fig, axes = plt.subplots(nrows, ncols, figsize=(5 * ncols, 3.5 * nrows))
         axes = np.array(axes).flatten()
 
         cat_indices = set(self._meta.get("categorical_indices", []) or [])
 
         for i, var in enumerate(names):
-            vmin  = self._meta["varmin"].get(var, 0.0)
-            vmax  = self._meta["varmax"].get(var, 1.0)
+            vmin = self._meta["varmin"].get(var, 0.0)
+            vmax = self._meta["varmax"].get(var, 1.0)
             margin = 0.1 * (vmax - vmin) if vmax > vmin else 0.1
             try:
                 ax = axes[i]
@@ -3055,8 +3192,9 @@ class QMaxentMainDock(QDockWidget):
                     if not cats:
                         lo, hi = int(round(vmin)), int(round(vmax))
                         cats = list(range(lo, hi + 1))
-                    X = np.tile([float(sm.get(n2, 0.0)) for n2 in names],
-                                (len(cats), 1)).astype(np.float32)
+                    X = np.tile([float(sm.get(n2, 0.0)) for n2 in names], (len(cats), 1)).astype(
+                        np.float32
+                    )
                     for k, c in enumerate(cats):
                         X[k, i] = float(c)
                     preds = self._model.predict(X)
@@ -3069,14 +3207,14 @@ class QMaxentMainDock(QDockWidget):
                     ax.set_xlabel(f"{var} (category code)", fontsize=9)
                 else:
                     xs = np.linspace(vmin - margin, vmax + margin, 100)
-                    X  = np.tile([float(sm.get(n2, 0.0)) for n2 in names],
-                                 (100, 1)).astype(np.float32)
+                    X = np.tile([float(sm.get(n2, 0.0)) for n2 in names], (100, 1)).astype(
+                        np.float32
+                    )
                     X[:, i] = xs.astype(np.float32)
                     preds = self._model.predict(X)
                     ax.plot(xs, preds, color="#1D9E75", linewidth=2)
                     ax.axvspan(vmin, vmax, alpha=0.08, color="#1D9E75")
-                    ax.axvline(float(sm.get(var, 0)), color="#666",
-                               linewidth=1, linestyle=":")
+                    ax.axvline(float(sm.get(var, 0)), color="#666", linewidth=1, linestyle=":")
                     ax.set_xlabel(var, fontsize=9)
                 # Same Y-axis label convention as the on-screen single
                 # plot above — see comment there.
@@ -3106,32 +3244,38 @@ class QMaxentMainDock(QDockWidget):
 
     def _plot_importance(self):
         self._clear_widget(self._importance_canvas_widget)
-        if self._results is None: return
+        if self._results is None:
+            return
 
-        jk       = self._results.get("jackknife_results", [])
-        cv_aucs  = self._results.get("cv_aucs", [])
-        roc_fpr  = self._results.get("roc_fpr", [])
-        roc_tpr  = self._results.get("roc_tpr", [])
+        jk = self._results.get("jackknife_results", [])
+        cv_aucs = self._results.get("cv_aucs", [])
+        roc_fpr = self._results.get("roc_fpr", [])
+        roc_tpr = self._results.get("roc_tpr", [])
         full_auc = self._results.get("full_auc")
 
         if not jk and not cv_aucs and not roc_fpr:
-            lbl = QLabel(tr("No jackknife or CV results.\n"
-                            "Enable them in Parameters and re-run."))
+            lbl = QLabel(tr("No jackknife or CV results.\nEnable them in Parameters and re-run."))
             lbl.setWordWrap(True)
             self._importance_canvas_widget.layout().addWidget(lbl)
             return
 
         try:
             fig = self._make_importance_figure(
-                jk, cv_aucs, roc_fpr, roc_tpr, full_auc,
+                jk,
+                cv_aucs,
+                roc_fpr,
+                roc_tpr,
+                full_auc,
                 full_test_auc=self._results.get("jk_full_test_auc"),
                 cv_roc_fpr_list=self._results.get("cv_roc_fpr_list", []),
                 cv_roc_tpr_list=self._results.get("cv_roc_tpr_list", []),
             )
             import matplotlib.backends.backend_qt5agg as _mplqt
+
             canvas = _mplqt.FigureCanvasQTAgg(fig)
             self._importance_canvas_widget.layout().addWidget(canvas)
             import matplotlib.pyplot as plt
+
             plt.close(fig)
         except Exception as e:
             lbl = QLabel(tr("Chart error: {e}").format(e=e))
@@ -3151,10 +3295,9 @@ class QMaxentMainDock(QDockWidget):
 
         pi_rows = self._results.get("permutation_results", []) or []
         if not pi_rows:
-            lbl = QLabel(tr(
-                "No permutation importance results.\n"
-                "Enable it in Parameters and re-run."
-            ))
+            lbl = QLabel(
+                tr("No permutation importance results.\nEnable it in Parameters and re-run.")
+            )
             lbl.setWordWrap(True)
             self._permutation_canvas_widget.layout().addWidget(lbl)
             self._permutation_save_png_btn.setEnabled(False)
@@ -3164,17 +3307,16 @@ class QMaxentMainDock(QDockWidget):
         try:
             fig = self._make_permutation_figure(
                 pi_rows,
-                source=self._results.get("permutation_source",
-                                          "training set"),
+                source=self._results.get("permutation_source", "training set"),
                 n_repeats=self._results.get("permutation_n_repeats", 10),
             )
             import matplotlib.backends.backend_qt5agg as _mplqt
+
             canvas = _mplqt.FigureCanvasQTAgg(fig)
             self._permutation_canvas_widget.layout().addWidget(canvas)
             self._permutation_fig_cached = fig
             self._permutation_save_png_btn.setEnabled(True)
             self._permutation_save_csv_btn.setEnabled(True)
-            import matplotlib.pyplot as plt
             # Note: we do NOT close the figure here because the canvas
             # holds a reference to it for redrawing. The same pattern
             # applies in _plot_importance.
@@ -3185,8 +3327,7 @@ class QMaxentMainDock(QDockWidget):
             self._permutation_save_png_btn.setEnabled(False)
             self._permutation_save_csv_btn.setEnabled(False)
 
-    def _make_permutation_figure(self, pi_rows, source: str,
-                                  n_repeats):
+    def _make_permutation_figure(self, pi_rows, source: str, n_repeats):
         """Build the matplotlib Figure for the permutation tab.
 
         Horizontal bar chart with ±std error bars; variables sorted
@@ -3195,6 +3336,7 @@ class QMaxentMainDock(QDockWidget):
         maxent.jar's "permutation importance" column convention).
         """
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
@@ -3204,7 +3346,7 @@ class QMaxentMainDock(QDockWidget):
         # the academic-paper convention.
         rows = list(reversed(pi_rows))
         names = [r["variable"] for r in rows]
-        pcts  = [r.get("importance_pct", 0.0) for r in rows]
+        pcts = [r.get("importance_pct", 0.0) for r in rows]
 
         # Convert std (which is in raw AUC-drop units) to the same
         # percentage scale as importance_pct so the error bars are
@@ -3212,10 +3354,7 @@ class QMaxentMainDock(QDockWidget):
         # across rows so we can factor it out.
         total_raw = sum(r.get("importance_mean", 0.0) for r in rows)
         if total_raw > 0:
-            stds_pct = [
-                100.0 * r.get("importance_std", 0.0) / total_raw
-                for r in rows
-            ]
+            stds_pct = [100.0 * r.get("importance_std", 0.0) / total_raw for r in rows]
         else:
             stds_pct = [0.0] * len(rows)
 
@@ -3228,10 +3367,15 @@ class QMaxentMainDock(QDockWidget):
         # matching the Jackknife "with only variable" bars in
         # _make_jackknife_only_figure for visual consistency across
         # the Results sub-tabs.
-        ax.barh(y_pos, pcts, xerr=stds_pct,
-                color="#1D9E75", edgecolor="#0F4D3A", linewidth=0.5,
-                error_kw={"capsize": 3, "alpha": 0.5,
-                          "ecolor": "#666"})
+        ax.barh(
+            y_pos,
+            pcts,
+            xerr=stds_pct,
+            color="#1D9E75",
+            edgecolor="#0F4D3A",
+            linewidth=0.5,
+            error_kw={"capsize": 3, "alpha": 0.5, "ecolor": "#666"},
+        )
 
         # Per-bar value labels — same convention as the Jackknife
         # importance bars: white text inside a long bar, dark text
@@ -3245,23 +3389,25 @@ class QMaxentMainDock(QDockWidget):
                 # Inside the bar, white text near the left edge so
                 # the error bar's right whisker doesn't visually
                 # collide with the label.
-                ax.text(p * 0.02, i, f"{p:.1f}",
-                        va="center", ha="left",
-                        fontsize=9, color="white")
+                ax.text(p * 0.02, i, f"{p:.1f}", va="center", ha="left", fontsize=9, color="white")
             else:
                 # Outside the bar, dark text just past the error
                 # bar's right whisker.
                 err = stds_pct[i] if i < len(stds_pct) else 0.0
-                ax.text(p + err + max_pct * 0.015, i, f"{p:.1f}",
-                        va="center", ha="left",
-                        fontsize=9, color="#222")
+                ax.text(
+                    p + err + max_pct * 0.015,
+                    i,
+                    f"{p:.1f}",
+                    va="center",
+                    ha="left",
+                    fontsize=9,
+                    color="#222",
+                )
 
         ax.set_yticks(y_pos)
         ax.set_yticklabels(names)
         ax.set_xlabel("Permutation importance (% of total)")
-        ax.set_title(
-            f"Permutation importance — {source}, n_repeats={n_repeats}"
-        )
+        ax.set_title(f"Permutation importance — {source}, n_repeats={n_repeats}")
         ax.grid(axis="x", alpha=0.3)
         # A subtle note for users comparing against maxent.jar's
         # exact percentage values: the absolute % depends on the
@@ -3275,20 +3421,17 @@ class QMaxentMainDock(QDockWidget):
         if not getattr(self, "_permutation_fig_cached", None):
             return
         path, _ = QFileDialog.getSaveFileName(
-            self, tr("Save permutation importance chart"),
-            os.path.join(_default_output_dir(),
-                          "permutation_importance.png"),
-            "PNG (*.png)"
+            self,
+            tr("Save permutation importance chart"),
+            os.path.join(_default_output_dir(), "permutation_importance.png"),
+            "PNG (*.png)",
         )
         if path:
             try:
                 self._permutation_fig_cached.savefig(path, dpi=150)
                 self._set_status(tr("Saved: {p}").format(p=path))
             except Exception as e:
-                QMessageBox.critical(
-                    self, "QMaxent",
-                    tr("Failed to save PNG: {e}").format(e=e)
-                )
+                QMessageBox.critical(self, "QMaxent", tr("Failed to save PNG: {e}").format(e=e))
 
     def _on_save_permutation_csv(self):
         """Save the permutation importance data as CSV."""
@@ -3298,42 +3441,40 @@ class QMaxentMainDock(QDockWidget):
         if not pi_rows:
             return
         path, _ = QFileDialog.getSaveFileName(
-            self, tr("Save permutation importance data"),
-            os.path.join(_default_output_dir(),
-                          "permutation_importance.csv"),
-            "CSV (*.csv)"
+            self,
+            tr("Save permutation importance data"),
+            os.path.join(_default_output_dir(), "permutation_importance.csv"),
+            "CSV (*.csv)",
         )
         if not path:
             return
         try:
             import csv
+
             with open(path, "w", encoding="utf-8", newline="") as f:
                 w = csv.writer(f)
-                w.writerow([
-                    "Variable", "Mean importance",
-                    "Std", "Normalized (%)"
-                ])
+                w.writerow(["Variable", "Mean importance", "Std", "Normalized (%)"])
                 for r in pi_rows:
-                    w.writerow([
-                        r.get("variable", ""),
-                        f"{r.get('importance_mean', 0.0):.6f}",
-                        f"{r.get('importance_std', 0.0):.6f}",
-                        f"{r.get('importance_pct', 0.0):.2f}",
-                    ])
+                    w.writerow(
+                        [
+                            r.get("variable", ""),
+                            f"{r.get('importance_mean', 0.0):.6f}",
+                            f"{r.get('importance_std', 0.0):.6f}",
+                            f"{r.get('importance_pct', 0.0):.2f}",
+                        ]
+                    )
             self._set_status(tr("Saved: {p}").format(p=path))
         except Exception as e:
-            QMessageBox.critical(
-                self, "QMaxent",
-                tr("Failed to save CSV: {e}").format(e=e)
-            )
+            QMessageBox.critical(self, "QMaxent", tr("Failed to save CSV: {e}").format(e=e))
 
     # ── SWD export handlers (added v0.1.3) ──────────────────────────────
 
     def _browse_swd_dir(self):
         """Pick the output folder for SWD export."""
         d = QFileDialog.getExistingDirectory(
-            self, tr("Select output folder for SWD export"),
-            self._swd_dir_edit.text() or _default_output_dir()
+            self,
+            tr("Select output folder for SWD export"),
+            self._swd_dir_edit.text() or _default_output_dir(),
         )
         if d:
             self._swd_dir_edit.setText(d)
@@ -3360,35 +3501,28 @@ class QMaxentMainDock(QDockWidget):
         # Validate raster list — at least one continuous variable.
         raster_layers = self._get_raster_layers()
         if not raster_layers:
-            QMessageBox.warning(
-                self, "QMaxent",
-                tr("Add at least one environmental raster.")
-            )
+            QMessageBox.warning(self, "QMaxent", tr("Add at least one environmental raster."))
             return
 
         # Validate output folder.
         output_dir = self._swd_dir_edit.text().strip()
         if not output_dir:
-            QMessageBox.warning(
-                self, "QMaxent",
-                tr("Specify an output folder.")
-            )
+            QMessageBox.warning(self, "QMaxent", tr("Specify an output folder."))
             return
 
         # Build worker config — same data dependencies as a real run.
         try:
             from ..core.venv_manager import ensure_venv_packages_available
+
             ensure_venv_packages_available()
-            from ..bridge.vector_bridge import presence_layer_to_geodataframe
             from ..bridge.raster_bridge import layers_to_paths
-            presence_gdf  = presence_layer_to_geodataframe(presence_layer)
-            raster_paths  = layers_to_paths(raster_layers)
+            from ..bridge.vector_bridge import presence_layer_to_geodataframe
+
+            presence_gdf = presence_layer_to_geodataframe(presence_layer)
+            raster_paths = layers_to_paths(raster_layers)
             feature_names = [l.name() for l in raster_layers]
         except Exception as e:
-            QMessageBox.critical(
-                self, "QMaxent",
-                tr("Data error: {e}").format(e=e)
-            )
+            QMessageBox.critical(self, "QMaxent", tr("Data error: {e}").format(e=e))
             return
 
         # Resolve format choice from the radio buttons. The "raster +
@@ -3403,15 +3537,15 @@ class QMaxentMainDock(QDockWidget):
             progress_label = tr("Exporting samples + raster...")
 
         cfg = {
-            "format":               fmt,
-            "presence_gdf":         presence_gdf,
-            "raster_paths":         raster_paths,
-            "feature_names":        feature_names,
-            "categorical_indices":  self._get_categorical_indices(),
-            "n_background":         self._bg_spin.value(),
-            "output_dir":           output_dir,
-            "species_name":         presence_layer.name(),
-            "bias_path":            None,
+            "format": fmt,
+            "presence_gdf": presence_gdf,
+            "raster_paths": raster_paths,
+            "feature_names": feature_names,
+            "categorical_indices": self._get_categorical_indices(),
+            "n_background": self._bg_spin.value(),
+            "output_dir": output_dir,
+            "species_name": presence_layer.name(),
+            "bias_path": None,
         }
 
         # Launch worker with a modal progress dialog. The QProgressDialog
@@ -3419,10 +3553,7 @@ class QMaxentMainDock(QDockWidget):
         # interaction with the main dock while data extraction runs.
         from ..workers.swd_export_worker import SWDExportWorker
 
-        progress = QProgressDialog(
-            progress_label,
-            tr("Cancel"), 0, 100, self
-        )
+        progress = QProgressDialog(progress_label, tr("Cancel"), 0, 100, self)
         progress.setWindowModality(Qt.WindowModal)
         progress.setAutoClose(False)
         progress.setAutoReset(False)
@@ -3433,7 +3564,7 @@ class QMaxentMainDock(QDockWidget):
         # Keep references so they survive past the local scope of this
         # method — Qt requires both the worker and the dialog to stay
         # alive until finished() fires.
-        self._swd_worker   = worker
+        self._swd_worker = worker
         self._swd_progress = progress
 
         def _on_progress(pct, msg):
@@ -3481,24 +3612,30 @@ class QMaxentMainDock(QDockWidget):
                     )
                 QMessageBox.information(self, "QMaxent", body)
             else:
-                QMessageBox.critical(
-                    self, "QMaxent",
-                    tr("Export failed:\n{msg}").format(msg=msg)
-                )
+                QMessageBox.critical(self, "QMaxent", tr("Export failed:\n{msg}").format(msg=msg))
 
         worker.progress.connect(_on_progress)
         worker.finished.connect(_on_finished)
         progress.canceled.connect(worker.cancel)
         worker.start()
 
-    def _make_importance_figure(self, jk, cv_aucs, roc_fpr, roc_tpr,
-                                 full_auc, full_test_auc=None,
-                                 cv_roc_fpr_list=None, cv_roc_tpr_list=None):
+    def _make_importance_figure(
+        self,
+        jk,
+        cv_aucs,
+        roc_fpr,
+        roc_tpr,
+        full_auc,
+        full_test_auc=None,
+        cv_roc_fpr_list=None,
+        cv_roc_tpr_list=None,
+    ):
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
-        n_vars  = len(jk)
+        n_vars = len(jk)
         # Combined figure size: keep the dock readable regardless of how
         # many variables are present.
         #   • Width 11 with two columns gives each panel ~5.5 inches
@@ -3510,10 +3647,10 @@ class QMaxentMainDock(QDockWidget):
         #     comfortably tall, but with a higher floor (4.5) than
         #     before so the ROC panel doesn't get squeezed when
         #     n_vars is small.
-        fig_h   = max(4.5, 1.6 + n_vars * 0.35)
+        fig_h = max(4.5, 1.6 + n_vars * 0.35)
         has_roc = len(roc_fpr) > 0
-        n_cols  = 2 if (jk or has_roc) else 1
-        fig_w   = 11 if n_cols == 2 else 5.5
+        n_cols = 2 if (jk or has_roc) else 1
+        fig_w = 11 if n_cols == 2 else 5.5
         fig, axes = plt.subplots(1, n_cols, figsize=(fig_w, fig_h))
         if n_cols == 1:
             axes = [axes]
@@ -3538,10 +3675,18 @@ class QMaxentMainDock(QDockWidget):
                 for f_fpr, f_tpr in zip(cv_fpr_list, cv_tpr_list):
                     if not f_fpr or not f_tpr:
                         continue
-                    ax0.plot(f_fpr, f_tpr, color="#9FE1CB", linewidth=0.8,
-                             alpha=0.55,
-                             label=("CV folds (n=" + str(len(cv_fpr_list)) + ")"
-                                    if not fold_label_used else None))
+                    ax0.plot(
+                        f_fpr,
+                        f_tpr,
+                        color="#9FE1CB",
+                        linewidth=0.8,
+                        alpha=0.55,
+                        label=(
+                            "CV folds (n=" + str(len(cv_fpr_list)) + ")"
+                            if not fold_label_used
+                            else None
+                        ),
+                    )
                     fold_label_used = True
                 try:
                     mean_fpr = np.linspace(0, 1, 101)
@@ -3555,29 +3700,31 @@ class QMaxentMainDock(QDockWidget):
                     if tprs:
                         tprs_arr = np.vstack(tprs)
                         mean_tpr = tprs_arr.mean(axis=0)
-                        std_tpr  = tprs_arr.std(axis=0)
-                        upper    = np.minimum(mean_tpr + std_tpr, 1.0)
-                        lower    = np.maximum(mean_tpr - std_tpr, 0.0)
+                        std_tpr = tprs_arr.std(axis=0)
+                        upper = np.minimum(mean_tpr + std_tpr, 1.0)
+                        lower = np.maximum(mean_tpr - std_tpr, 0.0)
 
                         cv_label = "Mean CV ROC"
                         if cv_aucs:
                             valid = [a for a in cv_aucs if not np.isnan(a)]
                             if valid:
                                 cv_label += f" (mean AUC={np.mean(valid):.3f})"
-                        ax0.fill_between(mean_fpr, lower, upper,
-                                         color="#1D9E75", alpha=0.18)
-                        ax0.plot(mean_fpr, mean_tpr, color="#1D9E75",
-                                 linewidth=1.6, linestyle="--",
-                                 label=cv_label)
+                        ax0.fill_between(mean_fpr, lower, upper, color="#1D9E75", alpha=0.18)
+                        ax0.plot(
+                            mean_fpr,
+                            mean_tpr,
+                            color="#1D9E75",
+                            linewidth=1.6,
+                            linestyle="--",
+                            label=cv_label,
+                        )
                 except Exception:
                     pass
 
             train_label = f"Training ROC (AUC={full_auc:.3f})"
-            ax0.plot(roc_fpr, roc_tpr, color="#0F4D3A", linewidth=2,
-                     label=train_label)
+            ax0.plot(roc_fpr, roc_tpr, color="#0F4D3A", linewidth=2, label=train_label)
 
-            ax0.plot([0, 1], [0, 1], "k--", linewidth=0.8,
-                     label="Random classifier")
+            ax0.plot([0, 1], [0, 1], "k--", linewidth=0.8, label="Random classifier")
             ax0.set_xlabel("False Positive Rate", fontsize=9)
             ax0.set_ylabel("True Positive Rate", fontsize=9)
             ax0.set_title("ROC Curve", fontsize=10)
@@ -3593,37 +3740,42 @@ class QMaxentMainDock(QDockWidget):
                 "CV folds",
                 "Random classifier",
             ]
+
             def _rank(lbl):
                 for i, key in enumerate(preferred_order):
                     if lbl.startswith(key):
                         return i
                 return len(preferred_order)
+
             paired = sorted(zip(handles, labels), key=lambda p: _rank(p[1]))
             handles, labels = zip(*paired) if paired else ([], [])
             ax0.legend(handles, labels, fontsize=7, loc="lower right")
-            ax0.set_xlim(0, 1); ax0.set_ylim(0, 1)
+            ax0.set_xlim(0, 1)
+            ax0.set_ylim(0, 1)
         elif cv_aucs:
             valid = [a for a in cv_aucs if not np.isnan(a)]
-            ax0.boxplot(valid, vert=True, patch_artist=True,
-                        boxprops=dict(facecolor="#9FE1CB"))
+            ax0.boxplot(valid, vert=True, patch_artist=True, boxprops=dict(facecolor="#9FE1CB"))
             mean_v = float(np.mean(valid))
-            ax0.axhline(mean_v, color="#0F6E56", linewidth=1.2,
-                        linestyle="--", label=f"Mean={mean_v:.3f}")
+            ax0.axhline(
+                mean_v, color="#0F6E56", linewidth=1.2, linestyle="--", label=f"Mean={mean_v:.3f}"
+            )
             ax0.legend(fontsize=8)
             ax0.set_title(f"CV AUC  (n={len(valid)} folds)", fontsize=10)
-            ax0.set_ylim(0, 1); ax0.set_ylabel("AUC", fontsize=9)
-            ax0.set_xticks([1]); ax0.set_xticklabels(["CV folds"], fontsize=8)
+            ax0.set_ylim(0, 1)
+            ax0.set_ylabel("AUC", fontsize=9)
+            ax0.set_xticks([1])
+            ax0.set_xticklabels(["CV folds"], fontsize=8)
 
         # ── Right: Jackknife (maxent.jar single-row overlay layout) ──────
         if jk and n_cols == 2:
-            ax1   = axes[1]
+            ax1 = axes[1]
             vars_ = [r["variable"] for r in jk]
-            only_tr  = [r["only_train_auc"]    for r in jk]
-            only_te  = [r["only_test_auc"]     for r in jk]
-            wo_tr    = [r["without_train_auc"] for r in jk]
-            wo_te    = [r["without_test_auc"]  for r in jk]
-            drop_tr  = [r.get("train_drop_without", float("nan")) for r in jk]
-            drop_te  = [r.get("test_drop_without",  float("nan")) for r in jk]
+            only_tr = [r["only_train_auc"] for r in jk]
+            only_te = [r["only_test_auc"] for r in jk]
+            wo_tr = [r["without_train_auc"] for r in jk]
+            wo_te = [r["without_test_auc"] for r in jk]
+            drop_tr = [r.get("train_drop_without", float("nan")) for r in jk]
+            drop_te = [r.get("test_drop_without", float("nan")) for r in jk]
             has_test = any(not np.isnan(v) for v in only_te + wo_te)
 
             # Sort variables by importance: largest test-AUC drop on
@@ -3632,39 +3784,50 @@ class QMaxentMainDock(QDockWidget):
             def _drop(i):
                 d = drop_te[i] if has_test else drop_tr[i]
                 return float("-inf") if np.isnan(d) else d
+
             order = sorted(range(len(vars_)), key=_drop)
-            vars_   = [vars_[i]   for i in order]
+            vars_ = [vars_[i] for i in order]
             only_tr = [only_tr[i] for i in order]
             only_te = [only_te[i] for i in order]
-            wo_tr   = [wo_tr[i]   for i in order]
-            wo_te   = [wo_te[i]   for i in order]
+            wo_tr = [wo_tr[i] for i in order]
+            wo_te = [wo_te[i] for i in order]
             drop_tr = [drop_tr[i] for i in order]
             drop_te = [drop_te[i] for i in order]
 
-            n_vars  = len(vars_)
-            yp      = list(range(n_vars))
-            h       = 0.35     # two-bar layout per variable
+            n_vars = len(vars_)
+            yp = list(range(n_vars))
+            h = 0.35  # two-bar layout per variable
 
             if has_test:
                 only_vals = only_te
-                wo_vals   = wo_te
-                only_lbl  = "With only variable"
-                wo_lbl    = "Without variable"
+                wo_vals = wo_te
+                only_lbl = "With only variable"
+                wo_lbl = "Without variable"
             else:
                 only_vals = only_tr
-                wo_vals   = wo_tr
-                only_lbl  = "With only variable (train)"
-                wo_lbl    = "Without variable (train)"
+                wo_vals = wo_tr
+                only_lbl = "With only variable (train)"
+                wo_lbl = "Without variable (train)"
 
             # Two-row layout per variable, top-to-bottom:
             #   With only variable  (dark green, same hue as response line)
             #   Without variable    (light green, same hue as response shading)
-            ax1.barh([p + 0.5*h for p in yp], only_vals, height=h,
-                     color="#1D9E75", linewidth=0,
-                     label=only_lbl)
-            ax1.barh([p - 0.5*h for p in yp], wo_vals, height=h,
-                     color="#C0E6D6", linewidth=0,
-                     label=wo_lbl)
+            ax1.barh(
+                [p + 0.5 * h for p in yp],
+                only_vals,
+                height=h,
+                color="#1D9E75",
+                linewidth=0,
+                label=only_lbl,
+            )
+            ax1.barh(
+                [p - 0.5 * h for p in yp],
+                wo_vals,
+                height=h,
+                color="#C0E6D6",
+                linewidth=0,
+                label=wo_lbl,
+            )
 
             # Numeric labels on each bar — Reuters-style. Long enough
             # bars get the value inside the bar in white (high
@@ -3674,25 +3837,41 @@ class QMaxentMainDock(QDockWidget):
                 if np.isnan(value):
                     return
                 if value >= 0.08:
-                    ax1.text(0.012, y_pos, f"{value:.3f}",
-                             va="center", ha="left", fontsize=7,
-                             color="white" if dark_bg else "#222222")
+                    ax1.text(
+                        0.012,
+                        y_pos,
+                        f"{value:.3f}",
+                        va="center",
+                        ha="left",
+                        fontsize=7,
+                        color="white" if dark_bg else "#222222",
+                    )
                 else:
-                    ax1.text(value + 0.008, y_pos, f"{value:.3f}",
-                             va="center", ha="left", fontsize=7,
-                             color="#222222")
+                    ax1.text(
+                        value + 0.008,
+                        y_pos,
+                        f"{value:.3f}",
+                        va="center",
+                        ha="left",
+                        fontsize=7,
+                        color="#222222",
+                    )
 
             for k in range(n_vars):
-                _label_bar(only_vals[k], k + 0.5*h, dark_bg=True)
-                _label_bar(wo_vals[k],   k - 0.5*h, dark_bg=False)
+                _label_bar(only_vals[k], k + 0.5 * h, dark_bg=True)
+                _label_bar(wo_vals[k], k - 0.5 * h, dark_bg=False)
 
             for k in range(n_vars):
                 if np.isnan(only_vals[k]):
                     ax1.text(
-                        0.02, k + 0.5*h,
+                        0.02,
+                        k + 0.5 * h,
                         "only-* skipped (categorical)",
-                        va="center", ha="left",
-                        fontsize=7, style="italic", color="#444444",
+                        va="center",
+                        ha="left",
+                        fontsize=7,
+                        style="italic",
+                        color="#444444",
                     )
 
             ax1.set_yticks(yp)
@@ -3705,8 +3884,9 @@ class QMaxentMainDock(QDockWidget):
         fig.tight_layout()
         return fig
 
-    def _make_roc_only_figure(self, roc_fpr, roc_tpr, cv_aucs, full_auc,
-                               cv_roc_fpr_list=None, cv_roc_tpr_list=None):
+    def _make_roc_only_figure(
+        self, roc_fpr, roc_tpr, cv_aucs, full_auc, cv_roc_fpr_list=None, cv_roc_tpr_list=None
+    ):
         """Build a standalone ROC figure for PNG export.
 
         Same artistic content as the left panel of the dock chart —
@@ -3716,6 +3896,7 @@ class QMaxentMainDock(QDockWidget):
         looking compressed when it's read on its own.
         """
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
@@ -3749,28 +3930,36 @@ class QMaxentMainDock(QDockWidget):
                 if tprs:
                     tprs_arr = np.vstack(tprs)
                     mean_tpr = tprs_arr.mean(axis=0)
-                    std_tpr  = tprs_arr.std(axis=0)
-                    upper    = np.minimum(mean_tpr + std_tpr, 1.0)
-                    lower    = np.maximum(mean_tpr - std_tpr, 0.0)
+                    std_tpr = tprs_arr.std(axis=0)
+                    upper = np.minimum(mean_tpr + std_tpr, 1.0)
+                    lower = np.maximum(mean_tpr - std_tpr, 0.0)
 
                     cv_label = "Mean CV ROC"
                     if cv_aucs:
                         valid = [a for a in cv_aucs if not np.isnan(a)]
                         if valid:
                             cv_label += f" (mean AUC={np.mean(valid):.3f})"
-                    ax0.fill_between(mean_fpr, lower, upper,
-                                     color="#1D9E75", alpha=0.18)
-                    ax0.plot(mean_fpr, mean_tpr, color="#1D9E75",
-                             linewidth=1.6, linestyle="--",
-                             label=cv_label)
+                    ax0.fill_between(mean_fpr, lower, upper, color="#1D9E75", alpha=0.18)
+                    ax0.plot(
+                        mean_fpr,
+                        mean_tpr,
+                        color="#1D9E75",
+                        linewidth=1.6,
+                        linestyle="--",
+                        label=cv_label,
+                    )
             except Exception:
                 pass
 
         if len(roc_fpr) > 0:
-            ax0.plot(roc_fpr, roc_tpr, color="#0F4D3A", linewidth=2,
-                     label=f"Training ROC (AUC={full_auc:.3f})")
-        ax0.plot([0, 1], [0, 1], "k--", linewidth=0.8,
-                 label="Random classifier")
+            ax0.plot(
+                roc_fpr,
+                roc_tpr,
+                color="#0F4D3A",
+                linewidth=2,
+                label=f"Training ROC (AUC={full_auc:.3f})",
+            )
+        ax0.plot([0, 1], [0, 1], "k--", linewidth=0.8, label="Random classifier")
         ax0.set_xlabel("False Positive Rate", fontsize=10)
         ax0.set_ylabel("True Positive Rate", fontsize=10)
         ax0.set_title("ROC Curve", fontsize=11)
@@ -3782,15 +3971,18 @@ class QMaxentMainDock(QDockWidget):
             "CV folds",
             "Random classifier",
         ]
+
         def _rank(lbl):
             for i, key in enumerate(preferred_order):
                 if lbl.startswith(key):
                     return i
             return len(preferred_order)
+
         paired = sorted(zip(handles, labels), key=lambda p: _rank(p[1]))
         handles, labels = zip(*paired) if paired else ([], [])
         ax0.legend(handles, labels, fontsize=8, loc="lower right")
-        ax0.set_xlim(0, 1); ax0.set_ylim(0, 1)
+        ax0.set_xlim(0, 1)
+        ax0.set_ylim(0, 1)
         # Force 1:1 aspect — the academic standard for ROC plots; the
         # diagonal random reference should look like a 45° line.
         ax0.set_aspect("equal", adjustable="box")
@@ -3806,6 +3998,7 @@ class QMaxentMainDock(QDockWidget):
         dock chart (Only on top, Without below, no Full bar).
         """
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
@@ -3813,43 +4006,51 @@ class QMaxentMainDock(QDockWidget):
             return None
 
         vars_ = [r["variable"] for r in jk]
-        only_tr = [r["only_train_auc"]    for r in jk]
-        only_te = [r["only_test_auc"]     for r in jk]
-        wo_tr   = [r["without_train_auc"] for r in jk]
-        wo_te   = [r["without_test_auc"]  for r in jk]
+        only_tr = [r["only_train_auc"] for r in jk]
+        only_te = [r["only_test_auc"] for r in jk]
+        wo_tr = [r["without_train_auc"] for r in jk]
+        wo_te = [r["without_test_auc"] for r in jk]
         drop_tr = [r.get("train_drop_without", float("nan")) for r in jk]
-        drop_te = [r.get("test_drop_without",  float("nan")) for r in jk]
+        drop_te = [r.get("test_drop_without", float("nan")) for r in jk]
         has_test = any(not np.isnan(v) for v in only_te + wo_te)
 
         def _drop(i):
             d = drop_te[i] if has_test else drop_tr[i]
             return float("-inf") if np.isnan(d) else d
+
         order = sorted(range(len(vars_)), key=_drop)
-        vars_   = [vars_[i]   for i in order]
+        vars_ = [vars_[i] for i in order]
         only_tr = [only_tr[i] for i in order]
         only_te = [only_te[i] for i in order]
-        wo_tr   = [wo_tr[i]   for i in order]
-        wo_te   = [wo_te[i]   for i in order]
+        wo_tr = [wo_tr[i] for i in order]
+        wo_te = [wo_te[i] for i in order]
 
         n_vars = len(vars_)
         if has_test:
             only_vals, wo_vals = only_te, wo_te
             only_lbl = "With only variable"
-            wo_lbl   = "Without variable"
+            wo_lbl = "Without variable"
         else:
             only_vals, wo_vals = only_tr, wo_tr
             only_lbl = "With only variable (train)"
-            wo_lbl   = "Without variable (train)"
+            wo_lbl = "Without variable (train)"
 
         fig_h = max(3.5, 1.4 + n_vars * 0.4)
         fig, ax1 = plt.subplots(figsize=(6, fig_h))
 
         yp = list(range(n_vars))
-        h  = 0.35
-        ax1.barh([p + 0.5*h for p in yp], only_vals, height=h,
-                 color="#1D9E75", linewidth=0, label=only_lbl)
-        ax1.barh([p - 0.5*h for p in yp], wo_vals,   height=h,
-                 color="#C0E6D6", linewidth=0, label=wo_lbl)
+        h = 0.35
+        ax1.barh(
+            [p + 0.5 * h for p in yp],
+            only_vals,
+            height=h,
+            color="#1D9E75",
+            linewidth=0,
+            label=only_lbl,
+        )
+        ax1.barh(
+            [p - 0.5 * h for p in yp], wo_vals, height=h, color="#C0E6D6", linewidth=0, label=wo_lbl
+        )
 
         # Numeric labels — same approach as the dock figure: long bars
         # get a white in-bar label, short bars get a dark out-of-bar
@@ -3858,24 +4059,42 @@ class QMaxentMainDock(QDockWidget):
             if np.isnan(value):
                 return
             if value >= 0.08:
-                ax1.text(0.012, y_pos, f"{value:.3f}",
-                         va="center", ha="left", fontsize=8,
-                         color="white" if dark_bg else "#222222")
+                ax1.text(
+                    0.012,
+                    y_pos,
+                    f"{value:.3f}",
+                    va="center",
+                    ha="left",
+                    fontsize=8,
+                    color="white" if dark_bg else "#222222",
+                )
             else:
-                ax1.text(value + 0.008, y_pos, f"{value:.3f}",
-                         va="center", ha="left", fontsize=8,
-                         color="#222222")
+                ax1.text(
+                    value + 0.008,
+                    y_pos,
+                    f"{value:.3f}",
+                    va="center",
+                    ha="left",
+                    fontsize=8,
+                    color="#222222",
+                )
 
         for k in range(n_vars):
-            _label_bar(only_vals[k], k + 0.5*h, dark_bg=True)
-            _label_bar(wo_vals[k],   k - 0.5*h, dark_bg=False)
+            _label_bar(only_vals[k], k + 0.5 * h, dark_bg=True)
+            _label_bar(wo_vals[k], k - 0.5 * h, dark_bg=False)
 
         for k in range(n_vars):
             if np.isnan(only_vals[k]):
-                ax1.text(0.02, k + 0.5*h,
-                         "only-* skipped (categorical)",
-                         va="center", ha="left",
-                         fontsize=7, style="italic", color="#444444")
+                ax1.text(
+                    0.02,
+                    k + 0.5 * h,
+                    "only-* skipped (categorical)",
+                    va="center",
+                    ha="left",
+                    fontsize=7,
+                    style="italic",
+                    color="#444444",
+                )
 
         ax1.set_yticks(yp)
         ax1.set_yticklabels(vars_, fontsize=9)
@@ -3914,8 +4133,8 @@ class QMaxentMainDock(QDockWidget):
         resolution targeting ~40k pixels. This keeps preflight under
         a second even for continent-scale rasters.
         """
-        import rasterio
         import numpy as np
+        import rasterio
 
         varmin = meta.get("varmin", {}) or {}
         varmax = meta.get("varmax", {}) or {}
@@ -3958,9 +4177,7 @@ class QMaxentMainDock(QDockWidget):
                 if i in cat_set:
                     trained = set(cat_levels.get(name, []))
                     if trained:
-                        new_codes = set(
-                            int(round(float(v))) for v in vals
-                        )
+                        new_codes = set(int(round(float(v))) for v in vals)
                         unseen = new_codes - trained
                         if unseen:
                             unknown_cats[name] = sorted(unseen)
@@ -3993,9 +4210,7 @@ class QMaxentMainDock(QDockWidget):
         from qgis.PyQt.QtWidgets import QMessageBox
 
         EXTRAP_THRESHOLD = 10.0
-        over = {
-            n: p for n, p in extrap_pct.items() if p >= EXTRAP_THRESHOLD
-        }
+        over = {n: p for n, p in extrap_pct.items() if p >= EXTRAP_THRESHOLD}
         if not unknown_cats and not over:
             return True
 
@@ -4040,16 +4255,16 @@ class QMaxentMainDock(QDockWidget):
         QMessageBox.information(
             self,
             tr("Projection preflight"),
-            body + "\n\n" + tr(
+            body
+            + "\n\n"
+            + tr(
                 "The projection will continue. Masked pixels appear "
                 "as transparent / no-data in the output map."
             ),
         )
         return True
 
-    def _mask_unknown_categorical_codes(
-        self, raster_paths, unknown_cats, feature_names
-    ):
+    def _mask_unknown_categorical_codes(self, raster_paths, unknown_cats, feature_names):
         """Write temp copies of categorical rasters where codes the
         model never saw during training are replaced with NoData.
 
@@ -4058,6 +4273,7 @@ class QMaxentMainDock(QDockWidget):
         """
         import os
         import tempfile
+
         import numpy as np
         import rasterio
 
@@ -4079,10 +4295,7 @@ class QMaxentMainDock(QDockWidget):
                 if nodata is None:
                     if np.issubdtype(arr.dtype, np.integer):
                         info = np.iinfo(arr.dtype)
-                        nodata = (
-                            -9999 if info.min <= -9999 <= info.max
-                            else int(info.min)
-                        )
+                        nodata = -9999 if info.min <= -9999 <= info.max else int(info.min)
                     else:
                         nodata = float("nan")
                 mask = np.isin(arr, list(unseen))
@@ -4091,12 +4304,8 @@ class QMaxentMainDock(QDockWidget):
                 arr_out = arr.copy()
                 arr_out[mask] = nodata
                 profile.update(nodata=nodata)
-                safe = "".join(
-                    c if c.isalnum() else "_" for c in str(name)
-                )
-                out_path = os.path.join(
-                    tmpdir, f"qmaxent_masked_{safe}.tif"
-                )
+                safe = "".join(c if c.isalnum() else "_" for c in str(name))
+                out_path = os.path.join(tmpdir, f"qmaxent_masked_{safe}.tif")
                 with rasterio.open(out_path, "w", **profile) as dst:
                     dst.write(arr_out, 1)
                 new_paths[i] = out_path
@@ -4104,31 +4313,37 @@ class QMaxentMainDock(QDockWidget):
                     f"QMaxent: masked {int(mask.sum())} pixels in "
                     f"{name} (unseen codes {sorted(unseen)}) "
                     f"→ {out_path}",
-                    "QMaxent", Qgis.Info,
+                    "QMaxent",
+                    Qgis.Info,
                 )
             except Exception as e:
                 QgsMessageLog.logMessage(
-                    f"QMaxent: failed to mask unknown codes in "
-                    f"{name}: {e}", "QMaxent", Qgis.Warning,
+                    f"QMaxent: failed to mask unknown codes in {name}: {e}",
+                    "QMaxent",
+                    Qgis.Warning,
                 )
 
         return new_paths
 
     def _project_model(self):
         if self._model is None:
-            self._proj_status.setText(tr("No model. Run Maxent first.")); return
+            self._proj_status.setText(tr("No model. Run Maxent first."))
+            return
         output_path = self._proj_path.text().strip()
         if not output_path:
-            self._proj_status.setText(tr("Enter output raster path.")); return
+            self._proj_status.setText(tr("Enter output raster path."))
+            return
 
         raster_layers = self._get_raster_layers()
         if raster_layers:
             from ..bridge.raster_bridge import layers_to_paths
+
             raster_paths = layers_to_paths(raster_layers)
         else:
             raster_paths = (self._meta or {}).get("raster_paths", [])
         if not raster_paths:
-            self._proj_status.setText(tr("Set raster layers in ① Data tab.")); return
+            self._proj_status.setText(tr("Set raster layers in ① Data tab."))
+            return
 
         # ── Preflight: training-range comparison ───────────────────────
         # Sample the projection rasters and compare them to the model's
@@ -4140,8 +4355,7 @@ class QMaxentMainDock(QDockWidget):
         # written to the QGIS message log so they survive the dialog
         # and can be cited in academic write-ups.
         feature_names = (self._meta or {}).get("feature_names", [])
-        if self._meta and feature_names and \
-                len(feature_names) == len(raster_paths):
+        if self._meta and feature_names and len(feature_names) == len(raster_paths):
             self._proj_status.setText(tr("Preflight: sampling rasters..."))
             try:
                 extrap_pct, unknown_cats = self._preflight_projection(
@@ -4154,19 +4368,18 @@ class QMaxentMainDock(QDockWidget):
                 # problem the projection itself will surface it.
                 QgsMessageLog.logMessage(
                     f"QMaxent preflight failed (continuing anyway): {e}",
-                    "QMaxent", Qgis.Warning,
+                    "QMaxent",
+                    Qgis.Warning,
                 )
                 extrap_pct, unknown_cats = {}, {}
             if extrap_pct:
                 tbl = ", ".join(
-                    f"{n}={p:.1f}%"
-                    for n, p in sorted(
-                        extrap_pct.items(), key=lambda kv: -kv[1]
-                    )
+                    f"{n}={p:.1f}%" for n, p in sorted(extrap_pct.items(), key=lambda kv: -kv[1])
                 )
                 QgsMessageLog.logMessage(
                     f"QMaxent preflight — extrapolation by variable: {tbl}",
-                    "QMaxent", Qgis.Info,
+                    "QMaxent",
+                    Qgis.Info,
                 )
             if not self._show_preflight_dialog(extrap_pct, unknown_cats):
                 self._proj_status.setText(tr("Projection cancelled."))
@@ -4181,13 +4394,15 @@ class QMaxentMainDock(QDockWidget):
                 )
 
         self._proj_btn.setEnabled(False)
-        self._proj_progress.setValue(0); self._proj_progress.show()
+        self._proj_progress.setValue(0)
+        self._proj_progress.show()
         self._proj_status.setText(tr("Running projection..."))
 
         transform = self._proj_transform.currentText()
         self._model.transform = transform
 
         from ..workers.projection_worker import ProjectionWorker
+
         self._proj_worker = ProjectionWorker(
             model=self._model,
             raster_paths=raster_paths,
@@ -4218,10 +4433,11 @@ class QMaxentMainDock(QDockWidget):
         self._proj_worker = None
 
         output_path = self._proj_path.text().strip()
-        transform   = self._proj_transform.currentText()
+        transform = self._proj_transform.currentText()
 
         if not success:
-            self._proj_status.setText(f"✗ {msg[:200]}"); return
+            self._proj_status.setText(f"✗ {msg[:200]}")
+            return
 
         self._proj_status.setText(tr("Done: {path}").format(path=output_path))
         self._log_append(tr("Done: {path}").format(path=output_path))
@@ -4247,13 +4463,13 @@ class QMaxentMainDock(QDockWidget):
         if self._proj_load_chk.isChecked():
             try:
                 from ..bridge.raster_bridge import load_raster_to_qgis
+
                 name = os.path.splitext(os.path.basename(output_path))[0]
                 load_raster_to_qgis(output_path, name, transform=transform)
                 self._log_append(tr("Layer loaded: {name}").format(name=name))
             except Exception as e:
                 self._proj_status.setText(
-                    self._proj_status.text()
-                    + f"\n{tr('Layer load error: {e}').format(e=e)}"
+                    self._proj_status.text() + f"\n{tr('Layer load error: {e}').format(e=e)}"
                 )
 
     def _export_charts_as_png(self, raster_path: str):
@@ -4275,17 +4491,20 @@ class QMaxentMainDock(QDockWidget):
         The whole step is skipped when the user has unticked the
         "Save analysis charts as PNG" checkbox.
         """
-        if not getattr(self, "_proj_save_charts_chk", None) or \
-                not self._proj_save_charts_chk.isChecked():
+        if (
+            not getattr(self, "_proj_save_charts_chk", None)
+            or not self._proj_save_charts_chk.isChecked()
+        ):
             return
 
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
-        out_dir  = os.path.dirname(raster_path)
-        base     = os.path.splitext(os.path.basename(raster_path))[0]
-        saved    = []
+        out_dir = os.path.dirname(raster_path)
+        base = os.path.splitext(os.path.basename(raster_path))[0]
+        saved = []
 
         # ── Response curves grid ──────────────────────────────────
         try:
@@ -4303,10 +4522,13 @@ class QMaxentMainDock(QDockWidget):
             roc_fpr = (self._results or {}).get("roc_fpr", [])
             roc_tpr = (self._results or {}).get("roc_tpr", [])
             cv_aucs = (self._results or {}).get("cv_aucs", [])
-            fauc    = (self._results or {}).get("full_auc")
+            fauc = (self._results or {}).get("full_auc")
             if roc_fpr or cv_aucs:
                 fig = self._make_roc_only_figure(
-                    roc_fpr, roc_tpr, cv_aucs, fauc,
+                    roc_fpr,
+                    roc_tpr,
+                    cv_aucs,
+                    fauc,
                     cv_roc_fpr_list=(self._results or {}).get("cv_roc_fpr_list", []),
                     cv_roc_tpr_list=(self._results or {}).get("cv_roc_tpr_list", []),
                 )
@@ -4342,12 +4564,8 @@ class QMaxentMainDock(QDockWidget):
             if pi_rows:
                 fig = self._make_permutation_figure(
                     pi_rows,
-                    source=(self._results or {}).get(
-                        "permutation_source", "training set"
-                    ),
-                    n_repeats=(self._results or {}).get(
-                        "permutation_n_repeats", 10
-                    ),
+                    source=(self._results or {}).get("permutation_source", "training set"),
+                    n_repeats=(self._results or {}).get("permutation_n_repeats", 10),
                 )
                 if fig is not None:
                     p = os.path.join(out_dir, f"{base}_permutation.png")
@@ -4378,12 +4596,15 @@ class QMaxentMainDock(QDockWidget):
                 item = layout.takeAt(0)
                 w = item.widget()
                 if w:
-                    w.hide(); w.deleteLater()
+                    w.hide()
+                    w.deleteLater()
 
     def _on_load_model_clicked(self):
         """Entry point for the 'Load existing model (.pkl)...' button."""
         path, _ = QFileDialog.getOpenFileName(
-            self, tr("Load QMaxent model"), "",
+            self,
+            tr("Load QMaxent model"),
+            "",
             tr("Pickle files (*.pkl)"),
         )
         if not path:
@@ -4400,8 +4621,10 @@ class QMaxentMainDock(QDockWidget):
         """
         try:
             from ..core.venv_manager import ensure_venv_packages_available
+
             ensure_venv_packages_available()
             from ..bridge import elapid_bridge as eb
+
             model = eb.load_object(path)
         except Exception as e:
             self._set_status(f"✗ {e}")
@@ -4410,20 +4633,21 @@ class QMaxentMainDock(QDockWidget):
         meta = getattr(model, "_qmaxent_meta", {}) or {}
         feature_names = meta.get("feature_names", [])
         if not feature_names:
-            self._set_status(tr(
-                "Loaded file has no QMaxent metadata "
-                "(was it saved by this plugin?)."
-            ))
+            self._set_status(
+                tr("Loaded file has no QMaxent metadata (was it saved by this plugin?).")
+            )
             return
 
         # Variable-mapping dialog (mandatory)
         from .model_load_dialog import ModelLoadDialog
+
         dlg = ModelLoadDialog(
             self,
             feature_names=feature_names,
             categorical_indices=meta.get("categorical_indices") or [],
         )
         from qgis.PyQt.QtWidgets import QDialog
+
         if dlg.exec_() != QDialog.Accepted:
             self._set_status(tr("Model load cancelled."))
             return
@@ -4447,8 +4671,8 @@ class QMaxentMainDock(QDockWidget):
                 display_text=f"{name}  ←  {lyr.name()}",
             )
 
-        self._model   = model
-        self._meta    = meta
+        self._model = model
+        self._meta = meta
         # Restore academic results (ROC, AUC, CV AUCs, jackknife) from
         # the saved meta so the Results tab populates exactly as it
         # would after fresh training. Models trained before this
@@ -4459,22 +4683,22 @@ class QMaxentMainDock(QDockWidget):
         academic = meta.get("academic_results", {}) or {}
         self._results = {
             "model": model,
-            "meta":  meta,
-            "feature_names":     meta.get("feature_names", []),
-            "roc_fpr":           list(academic.get("roc_fpr", [])),
-            "roc_tpr":           list(academic.get("roc_tpr", [])),
-            "full_auc":          academic.get("full_auc"),
+            "meta": meta,
+            "feature_names": meta.get("feature_names", []),
+            "roc_fpr": list(academic.get("roc_fpr", [])),
+            "roc_tpr": list(academic.get("roc_tpr", [])),
+            "full_auc": academic.get("full_auc"),
             "jk_full_train_auc": academic.get("jk_full_train_auc"),
-            "jk_full_test_auc":  academic.get("jk_full_test_auc"),
-            "cv_aucs":           list(academic.get("cv_aucs", [])),
-            "cv_roc_fpr_list":   list(academic.get("cv_roc_fpr_list", [])),
-            "cv_roc_tpr_list":   list(academic.get("cv_roc_tpr_list", [])),
+            "jk_full_test_auc": academic.get("jk_full_test_auc"),
+            "cv_aucs": list(academic.get("cv_aucs", [])),
+            "cv_roc_fpr_list": list(academic.get("cv_roc_fpr_list", [])),
+            "cv_roc_tpr_list": list(academic.get("cv_roc_tpr_list", [])),
             "jackknife_results": list(academic.get("jackknife_results", [])),
             # Permutation importance restored from .pkl (added v0.1.3).
             # Same defensive list-copy pattern as jackknife to keep the
             # restored result dict self-contained.
-            "permutation_results":   list(academic.get("permutation_results", [])),
-            "permutation_source":    academic.get("permutation_source"),
+            "permutation_results": list(academic.get("permutation_results", [])),
+            "permutation_source": academic.get("permutation_source"),
             "permutation_n_repeats": academic.get("permutation_n_repeats"),
         }
         self._populate_response_combo()
@@ -4497,9 +4721,7 @@ class QMaxentMainDock(QDockWidget):
         # Same activation as fresh training — see _on_run_finished.
         self._priority_btn.setEnabled(True)
         try:
-            self._on_priority_threshold_method_changed(
-                self._priority_thr_method.currentIndex()
-            )
+            self._on_priority_threshold_method_changed(self._priority_thr_method.currentIndex())
         except Exception:
             pass
         # Status bar: show the restored academic metrics alongside the
@@ -4507,26 +4729,27 @@ class QMaxentMainDock(QDockWidget):
         # numbers they had at training time. Falls back to the
         # plain "Loaded: ..." message for old .pkl files that don't
         # carry academic_results.
-        n_p   = meta.get("n_presence")
-        n_b   = meta.get("n_background")
-        fauc  = self._results.get("full_auc")
+        n_p = meta.get("n_presence")
+        n_b = meta.get("n_background")
+        fauc = self._results.get("full_auc")
         cv_aucs = self._results.get("cv_aucs", [])
-        parts = [tr("✓ Model loaded: {name}  ({n} variables)").format(
-            name=os.path.basename(path), n=len(feature_names),
-        )]
+        parts = [
+            tr("✓ Model loaded: {name}  ({n} variables)").format(
+                name=os.path.basename(path),
+                n=len(feature_names),
+            )
+        ]
         if isinstance(n_p, int) and isinstance(n_b, int):
             parts.append(
-                tr("presence={n}").format(n=n_p) + "  "
-                + tr("background={n}").format(n=f"{n_b:,}")
+                tr("presence={n}").format(n=n_p) + "  " + tr("background={n}").format(n=f"{n_b:,}")
             )
         if fauc is not None:
             parts.append(tr("train AUC={v:.4f}").format(v=fauc))
         if cv_aucs:
-            valid = [a for a in cv_aucs if a is not None
-                     and not (isinstance(a, float) and a != a)]  # NaN filter
+            valid = [
+                a for a in cv_aucs if a is not None and not (isinstance(a, float) and a != a)
+            ]  # NaN filter
             if valid:
-                parts.append(
-                    tr("CV AUC={v:.4f}").format(v=float(np.mean(valid)))
-                )
+                parts.append(tr("CV AUC={v:.4f}").format(v=float(np.mean(valid))))
         self._set_status("  |  ".join(parts))
         self.tabs.setCurrentIndex(3)

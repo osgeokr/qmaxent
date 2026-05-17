@@ -21,6 +21,7 @@ ELAPID_TESTED_MAJOR = 1
 # Version compatibility
 # ---------------------------------------------------------------------------
 
+
 def check_elapid_version() -> tuple:
     """Return (ok, version_string, message).
 
@@ -30,6 +31,7 @@ def check_elapid_version() -> tuple:
     """
     try:
         import elapid
+
         version = getattr(elapid, "__version__", "unknown")
     except Exception as exc:
         return False, "not installed", f"elapid not importable: {exc}"
@@ -40,9 +42,13 @@ def check_elapid_version() -> tuple:
         return True, version, f"elapid version {version} (could not parse major)"
 
     if major != ELAPID_TESTED_MAJOR:
-        return False, version, (
-            f"elapid {version} differs from tested major "
-            f"{ELAPID_TESTED_MAJOR}.x — behaviour may differ."
+        return (
+            False,
+            version,
+            (
+                f"elapid {version} differs from tested major "
+                f"{ELAPID_TESTED_MAJOR}.x — behaviour may differ."
+            ),
         )
     return True, version, f"elapid {version} (verified)"
 
@@ -50,6 +56,7 @@ def check_elapid_version() -> tuple:
 # ---------------------------------------------------------------------------
 # Model construction & I/O
 # ---------------------------------------------------------------------------
+
 
 def make_maxent_model(**kwargs):
     """Construct an elapid MaxentModel. Forwards all kwargs verbatim.
@@ -82,18 +89,21 @@ def make_maxent_model(**kwargs):
                               for closer maxnet fidelity.
     """
     from elapid.models import MaxentModel
+
     return MaxentModel(**kwargs)
 
 
 def save_object(obj, path):
     """Persist a Python object via elapid's pickle wrapper."""
     import elapid
+
     return elapid.save_object(obj, path)
 
 
 def load_object(path):
     """Load a Python object via elapid's pickle wrapper."""
     import elapid
+
     return elapid.load_object(path)
 
 
@@ -101,9 +111,11 @@ def load_object(path):
 # Background sampling
 # ---------------------------------------------------------------------------
 
+
 def sample_raster(path, count: int):
     """Random spatial sample from a raster (elapid.sample_raster)."""
     import elapid
+
     return elapid.sample_raster(path, count=count)
 
 
@@ -114,12 +126,14 @@ def sample_bias_file(path, count: int):
     correcting sample selection bias in presence-only models.
     """
     import elapid
+
     return elapid.sample_bias_file(path, count=count)
 
 
 # ---------------------------------------------------------------------------
 # Covariate annotation
 # ---------------------------------------------------------------------------
+
 
 def annotate(points, raster_paths, **kwargs):
     """Extract raster values at point locations (elapid.annotate).
@@ -129,6 +143,7 @@ def annotate(points, raster_paths, **kwargs):
     changes for this function.
     """
     import elapid
+
     return elapid.annotate(points, raster_paths, **kwargs)
 
 
@@ -136,21 +151,25 @@ def annotate(points, raster_paths, **kwargs):
 # Spatial cross-validation strategies
 # ---------------------------------------------------------------------------
 
+
 def make_geographic_kfold(n_splits: int):
     """Spatial block CV via KMeans clusters (Roberts et al. 2017)."""
     from elapid.train_test_split import GeographicKFold
+
     return GeographicKFold(n_splits=n_splits)
 
 
 def checkerboard_split(points, grid_size: float):
     """Single spatial train/test split (Muscarella et al. 2014, ENMeval)."""
     from elapid.train_test_split import checkerboard_split as _cb
+
     return _cb(points, grid_size=grid_size)
 
 
 def make_buffered_loo(distance: float):
     """Buffered leave-one-out CV (Pearson 2007; Ploton et al. 2020)."""
     from elapid.train_test_split import BufferedLeaveOneOut
+
     return BufferedLeaveOneOut(distance=distance)
 
 
@@ -169,6 +188,7 @@ def apply_model_to_rasters(model, raster_paths, output_path, **kwargs):
     workers.projection_worker for the documented exception).
     """
     import elapid
+
     return elapid.apply_model_to_rasters(
         model=model,
         raster_paths=raster_paths,
@@ -181,8 +201,10 @@ def apply_model_to_rasters(model, raster_paths, output_path, **kwargs):
 # Permutation importance (added v0.1.3)
 # ---------------------------------------------------------------------------
 
-def permutation_importance_scores(model, x, y, n_repeats: int = 10,
-                                  n_jobs: int = 1, random_state=None):
+
+def permutation_importance_scores(
+    model, x, y, n_repeats: int = 10, n_jobs: int = 1, random_state=None
+):
     """Compute permutation importance for each feature.
 
     Thin wrapper around elapid.MaxentModel.permutation_importance_scores,
@@ -230,8 +252,11 @@ def permutation_importance_scores(model, x, y, n_repeats: int = 10,
     # sklearn directly so QMaxent runs are reproducible when the user
     # has set a random seed in the ② Parameters tab.
     from sklearn.inspection import permutation_importance
+
     pi = permutation_importance(
-        model, x, y,
+        model,
+        x,
+        y,
         n_repeats=n_repeats,
         n_jobs=n_jobs,
         random_state=random_state,

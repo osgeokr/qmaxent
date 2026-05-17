@@ -47,8 +47,7 @@ def golden(fixtures_dir: Path) -> dict:
 def test_training_auc_default_within_tolerance(golden):
     cfg = golden["configurations"]["default"]
     delta = cfg["delta_training_auc"]
-    abs_delta = abs(cfg["training_auc"]["maxent_jar"]
-                    - cfg["training_auc"]["qmaxent"])
+    abs_delta = abs(cfg["training_auc"]["maxent_jar"] - cfg["training_auc"]["qmaxent"])
     assert abs(abs_delta - delta["value"]) < 1e-6, (
         "Recorded Δ does not match the AUC difference in the same fixture"
     )
@@ -61,8 +60,7 @@ def test_training_auc_default_within_tolerance(golden):
 def test_training_auc_lee_matched_within_tolerance(golden):
     cfg = golden["configurations"]["lee_matched"]
     delta = cfg["delta_training_auc"]
-    abs_delta = abs(cfg["training_auc"]["maxent_jar"]
-                    - cfg["training_auc"]["qmaxent"])
+    abs_delta = abs(cfg["training_auc"]["maxent_jar"] - cfg["training_auc"]["qmaxent"])
     assert abs(abs_delta - delta["value"]) < 1e-6
     assert abs_delta < delta["tolerance"], (
         f"Lee-matched β=4 training-AUC mismatch exceeds tolerance: "
@@ -74,8 +72,7 @@ def test_permutation_importance_rank_agreement_default(golden):
     """At β=1 the manuscript reports Spearman ρ = 0.818 (p = 0.004),
     with the top-four variables (ASPECT, TWI, SPECIES, DBH) identical
     across implementations. Defend ρ within a 0.05 band."""
-    rho = golden["configurations"]["default"][
-        "permutation_importance_spearman_rho"]
+    rho = golden["configurations"]["default"]["permutation_importance_spearman_rho"]
     expected = rho["value"]
     tol = rho["tolerance"]
     # The fixture is a record of an offline run, so the assertion looks
@@ -96,8 +93,7 @@ def test_lee_matched_rho_is_documented_not_asserted(golden):
     statistical-instability artefact of over-regularisation, NOT an
     implementation defect. We don't tolerance-check ρ here; we only
     record that the fixture continues to label it as not-checked."""
-    rho = golden["configurations"]["lee_matched"][
-        "permutation_importance_spearman_rho"]
+    rho = golden["configurations"]["lee_matched"]["permutation_importance_spearman_rho"]
     assert rho.get("tolerance") is None, (
         "Lee-matched ρ is now tolerance-checked — that contradicts the "
         "manuscript's stated interpretation. Update either the manuscript "
@@ -110,9 +106,8 @@ def test_fixture_provenance_matches_release(golden):
     release MUST regenerate the fixture (otherwise we are silently
     comparing against an older implementation)."""
     import re
-    repo_init = (Path(__file__).resolve().parents[2] / "__init__.py").read_text(
-        encoding="utf-8"
-    )
+
+    repo_init = (Path(__file__).resolve().parents[2] / "__init__.py").read_text(encoding="utf-8")
     m = re.search(r'__version__\s*=\s*[\'"]([^\'"]+)[\'"]', repo_init)
     assert m, "__init__.py: __version__ not found"
     cur = m.group(1)

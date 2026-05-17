@@ -25,15 +25,23 @@ import shutil
 import traceback
 import urllib.request
 
-from qgis.PyQt.QtCore import Qt, QThread, pyqtSignal
+from qgis.PyQt.QtCore import QThread, pyqtSignal
 from qgis.PyQt.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QLabel, QRadioButton,
-    QButtonGroup, QLineEdit, QPushButton, QFileDialog, QMessageBox,
-    QProgressBar, QGroupBox,
+    QButtonGroup,
+    QDialog,
+    QFileDialog,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMessageBox,
+    QProgressBar,
+    QPushButton,
+    QRadioButton,
+    QVBoxLayout,
 )
 
-from ..i18n import tr, tooltip
-
+from ..i18n import tooltip, tr
 
 # ─── Dataset registry ────────────────────────────────────────────────────
 #
@@ -49,8 +57,8 @@ from ..i18n import tr, tooltip
 
 DATASET_REGISTRY = {
     "bradypus": {
-        "label":    "Bradypus variegatus (Phillips et al. 2006 standard)",
-        "tooltip":  (
+        "label": "Bradypus variegatus (Phillips et al. 2006 standard)",
+        "tooltip": (
             "Brown-throated three-toed sloth occurrence + 8 bioclimatic "
             "rasters and 1 categorical biome raster covering South "
             "America. The canonical Maxent benchmark dataset, mirrored "
@@ -59,42 +67,47 @@ DATASET_REGISTRY = {
         # Source: cran/dismo GitHub mirror. Stable, public, MIT-style
         # data redistribution (dismo is GPL-3 and ships these as
         # examples).
-        "base_url": (
-            "https://raw.githubusercontent.com/cran/dismo/master/inst/ex"
-        ),
+        "base_url": ("https://raw.githubusercontent.com/cran/dismo/master/inst/ex"),
         "files": [
             "bradypus.csv",
-            "bio1.grd", "bio1.gri",
-            "bio5.grd", "bio5.gri",
-            "bio6.grd", "bio6.gri",
-            "bio7.grd", "bio7.gri",
-            "bio8.grd", "bio8.gri",
-            "bio12.grd", "bio12.gri",
-            "bio16.grd", "bio16.gri",
-            "bio17.grd", "bio17.gri",
-            "biome.grd", "biome.gri",
+            "bio1.grd",
+            "bio1.gri",
+            "bio5.grd",
+            "bio5.gri",
+            "bio6.grd",
+            "bio6.gri",
+            "bio7.grd",
+            "bio7.gri",
+            "bio8.grd",
+            "bio8.gri",
+            "bio12.grd",
+            "bio12.gri",
+            "bio16.grd",
+            "bio16.gri",
+            "bio17.grd",
+            "bio17.gri",
+            "biome.grd",
+            "biome.gri",
         ],
-        "presence_file":     "bradypus.csv",
-        "presence_x_field":  "lon",
-        "presence_y_field":  "lat",
-        "presence_crs":      "EPSG:4326",
+        "presence_file": "bradypus.csv",
+        "presence_x_field": "lon",
+        "presence_y_field": "lat",
+        "presence_crs": "EPSG:4326",
         # Raster file names (without sidecar) that represent categorical
         # variables. QMaxent uses the GDAL "thematic" tag for automatic
         # detection; this list is informational only.
         "categorical_files": ["biome.grd"],
     },
     "ariolimax": {
-        "label":    "Ariolimax (banana slug, elapid default)",
-        "tooltip":  (
+        "label": "Ariolimax (banana slug, elapid default)",
+        "tooltip": (
             "Banana slug occurrence + 6 cloud cover, leaf area index, "
             "and surface temperature rasters covering California. "
             "elapid's built-in example dataset."
         ),
         # Source: elapid's own example data hosting (Christopher Anderson's
         # GitHub Pages site).
-        "base_url": (
-            "https://earth-chris.github.io/images/research"
-        ),
+        "base_url": ("https://earth-chris.github.io/images/research"),
         "files": [
             "ariolimax-ca.gpkg",
             "ca-cloudcover-mean.tif",
@@ -104,10 +117,10 @@ DATASET_REGISTRY = {
             "ca-surfacetemp-mean.tif",
             "ca-surfacetemp-stdv.tif",
         ],
-        "presence_file":     "ariolimax-ca.gpkg",
-        "presence_x_field":  None,    # geometry column, no x/y fields
-        "presence_y_field":  None,
-        "presence_crs":      None,    # embedded in the gpkg
+        "presence_file": "ariolimax-ca.gpkg",
+        "presence_x_field": None,  # geometry column, no x/y fields
+        "presence_y_field": None,
+        "presence_crs": None,  # embedded in the gpkg
         "categorical_files": [],
         # Variants are post-download transformations that demonstrate
         # specific QMaxent workflows. Only Ariolimax exposes them
@@ -120,6 +133,7 @@ DATASET_REGISTRY = {
 
 
 # ─── Background download worker ──────────────────────────────────────────
+
 
 class _DownloadWorker(QThread):
     """Sequentially downloads each file in a dataset spec.
@@ -150,14 +164,19 @@ class _DownloadWorker(QThread):
     progress = pyqtSignal(int, str)
     finished = pyqtSignal(bool, str, list)
 
-    def __init__(self, base_url: str, files: list, dst_dir: str,
-                 unit_groups: list = None,
-                 categorical_files: list = None,
-                 parent=None):
+    def __init__(
+        self,
+        base_url: str,
+        files: list,
+        dst_dir: str,
+        unit_groups: list = None,
+        categorical_files: list = None,
+        parent=None,
+    ):
         super().__init__(parent)
         self._base_url = base_url
-        self._files    = list(files)
-        self._dst_dir  = dst_dir
+        self._files = list(files)
+        self._dst_dir = dst_dir
         # unit_groups: list of (label, [filenames]) describing the
         # progress-bar unit each download belongs to. When None, build
         # a 1:1 mapping so every file is its own unit.
@@ -171,7 +190,7 @@ class _DownloadWorker(QThread):
         # them up automatically — same as if the user supplied a
         # purpose-built categorical GeoTIFF.
         self._categorical_files = set(categorical_files or [])
-        self._cancel   = False
+        self._cancel = False
 
     def cancel(self):
         self._cancel = True
@@ -203,9 +222,7 @@ class _DownloadWorker(QThread):
                     # scheme here so this can never become a local-file
                     # read if an upstream constant changes. Bandit B310.
                     if not url.lower().startswith(("http://", "https://")):
-                        raise ValueError(
-                            f"Refusing to download non-HTTP(S) URL: {url!r}"
-                        )
+                        raise ValueError(f"Refusing to download non-HTTP(S) URL: {url!r}")
                     # Use a User-Agent because some hosts (notably the
                     # raw.githubusercontent.com CDN) reject default
                     # urllib clients.
@@ -234,9 +251,7 @@ class _DownloadWorker(QThread):
             self.progress.emit(100, "Download complete")
             self.finished.emit(True, "Done", final_files)
         except Exception as e:
-            self.finished.emit(
-                False, f"{e}\n{traceback.format_exc()}", []
-            )
+            self.finished.emit(False, f"{e}\n{traceback.format_exc()}", [])
 
     def _maybe_convert_grd_to_tiff(self) -> list:
         """Convert every downloaded .grd raster to a GeoTIFF in place.
@@ -283,8 +298,8 @@ class _DownloadWorker(QThread):
                     profile = src.profile.copy()
                     profile.update(
                         driver="GTiff",
-                        compress="lzw",      # standard SDM convention
-                        tiled=False,         # small example rasters
+                        compress="lzw",  # standard SDM convention
+                        tiled=False,  # small example rasters
                     )
                     data = src.read()
                     src_tags = src.tags()
@@ -364,7 +379,7 @@ def _group_files_into_units(files: list) -> list:
             # (e.g. "dem.tif.aux.xml" → "dem.tif"); we then strip
             # one more extension so it matches whatever the registry
             # called the main file.
-            without_sidecar = f[:-len(sidecar_ext)]
+            without_sidecar = f[: -len(sidecar_ext)]
             stem = os.path.splitext(without_sidecar)[0]
             # Also try the un-stripped name as a fallback (handles
             # cases like .gri where the sidecar ext is the whole
@@ -388,6 +403,7 @@ def _group_files_into_units(files: list) -> list:
 
 
 # ─── Variant transformation ─────────────────────────────────────────────
+
 
 def _apply_mismatch_variant(src_dir: str, files: list, spec: dict):
     """Apply a deterministic raster mismatch pattern to a copy of the
@@ -415,8 +431,7 @@ def _apply_mismatch_variant(src_dir: str, files: list, spec: dict):
     """
     try:
         import rasterio
-        from rasterio.warp import calculate_default_transform, reproject, Resampling
-        from rasterio.windows import Window
+        from rasterio.warp import Resampling, calculate_default_transform, reproject
     except ImportError as e:
         raise RuntimeError(
             "rasterio is required for the Mismatch demo variant. "
@@ -428,10 +443,8 @@ def _apply_mismatch_variant(src_dir: str, files: list, spec: dict):
     os.makedirs(demo_dir, exist_ok=True)
 
     raster_exts = (".tif", ".tiff", ".img", ".asc", ".vrt", ".grd")
-    raster_files = [f for f in files
-                    if os.path.splitext(f)[1].lower() in raster_exts]
-    other_files = [f for f in files
-                   if os.path.splitext(f)[1].lower() not in raster_exts]
+    raster_files = [f for f in files if os.path.splitext(f)[1].lower() in raster_exts]
+    other_files = [f for f in files if os.path.splitext(f)[1].lower() not in raster_exts]
 
     demo_files = []
 
@@ -449,22 +462,30 @@ def _apply_mismatch_variant(src_dir: str, files: list, spec: dict):
         dst_path = os.path.join(demo_dir, raster_files[0])
         with rasterio.open(src_path) as src:
             transform, width, height = calculate_default_transform(
-                src.crs, "EPSG:3857", src.width, src.height, *src.bounds,
+                src.crs,
+                "EPSG:3857",
+                src.width,
+                src.height,
+                *src.bounds,
             )
             profile = src.profile.copy()
-            profile.update({
-                "crs": "EPSG:3857",
-                "transform": transform,
-                "width": width,
-                "height": height,
-            })
+            profile.update(
+                {
+                    "crs": "EPSG:3857",
+                    "transform": transform,
+                    "width": width,
+                    "height": height,
+                }
+            )
             with rasterio.open(dst_path, "w", **profile) as dst:
                 for i in range(1, src.count + 1):
                     reproject(
                         source=rasterio.band(src, i),
                         destination=rasterio.band(dst, i),
-                        src_transform=src.transform, src_crs=src.crs,
-                        dst_transform=transform, dst_crs="EPSG:3857",
+                        src_transform=src.transform,
+                        src_crs=src.crs,
+                        dst_transform=transform,
+                        dst_crs="EPSG:3857",
                         resampling=Resampling.nearest,
                     )
         demo_files.append(raster_files[0])
@@ -474,18 +495,21 @@ def _apply_mismatch_variant(src_dir: str, files: list, spec: dict):
         src_path = os.path.join(src_dir, raster_files[1])
         dst_path = os.path.join(demo_dir, raster_files[1])
         with rasterio.open(src_path) as src:
-            new_w = max(1, src.width  // 2)
+            new_w = max(1, src.width // 2)
             new_h = max(1, src.height // 2)
-            data = src.read(out_shape=(src.count, new_h, new_w),
-                            resampling=Resampling.average)
+            data = src.read(out_shape=(src.count, new_h, new_w), resampling=Resampling.average)
             new_transform = src.transform * src.transform.scale(
-                src.width / new_w, src.height / new_h,
+                src.width / new_w,
+                src.height / new_h,
             )
             profile = src.profile.copy()
-            profile.update({
-                "transform": new_transform,
-                "width": new_w, "height": new_h,
-            })
+            profile.update(
+                {
+                    "transform": new_transform,
+                    "width": new_w,
+                    "height": new_h,
+                }
+            )
             with rasterio.open(dst_path, "w", **profile) as dst:
                 dst.write(data)
         demo_files.append(raster_files[1])
@@ -540,6 +564,7 @@ def _apply_mismatch_variant(src_dir: str, files: list, spec: dict):
 
 # ─── Dialog ──────────────────────────────────────────────────────────────
 
+
 class ExampleDataDialog(QDialog):
     """Modal dialog: pick a dataset, choose a destination, download.
 
@@ -562,13 +587,16 @@ class ExampleDataDialog(QDialog):
     # ── UI ───────────────────────────────────────────────────────────────
     def _build_ui(self):
         v = QVBoxLayout(self)
-        v.setContentsMargins(14, 14, 14, 14); v.setSpacing(10)
+        v.setContentsMargins(14, 14, 14, 14)
+        v.setSpacing(10)
 
-        intro = QLabel(tr(
-            "Downloads a small canonical SDM example dataset directly "
-            "from its archival URL. After download, layers will be "
-            "added to the current QGIS project automatically."
-        ))
+        intro = QLabel(
+            tr(
+                "Downloads a small canonical SDM example dataset directly "
+                "from its archival URL. After download, layers will be "
+                "added to the current QGIS project automatically."
+            )
+        )
         intro.setWordWrap(True)
         v.addWidget(intro)
 
@@ -623,22 +651,30 @@ class ExampleDataDialog(QDialog):
         var_v = QVBoxLayout(self._variant_grp)
         self._variant_group = QButtonGroup(self)
         self._variant_pre = QRadioButton(tr("Pre-harmonized (default)"))
-        self._variant_pre.setToolTip(tooltip(tr(
-            "Load the dataset exactly as delivered by the source. All "
-            "rasters share a common grid, so Check Raster Consistency "
-            "in the ① Data tab will pass with no findings."
-        )))
+        self._variant_pre.setToolTip(
+            tooltip(
+                tr(
+                    "Load the dataset exactly as delivered by the source. All "
+                    "rasters share a common grid, so Check Raster Consistency "
+                    "in the ① Data tab will pass with no findings."
+                )
+            )
+        )
         self._variant_pre.setChecked(True)
         self._variant_mismatch = QRadioButton(tr("Mismatch demo"))
-        self._variant_mismatch.setToolTip(tooltip(tr(
-            "After download, apply a deterministic set of "
-            "transformations to copies of the rasters: reproject one "
-            "to a different CRS, resample one to half resolution, and "
-            "shift the extent of another. The original files are not "
-            "modified. Use this to demonstrate the ① Data → Check "
-            "Raster Consistency and Harmonize to Folder workflow with "
-            "a known, reproducible mismatch pattern."
-        )))
+        self._variant_mismatch.setToolTip(
+            tooltip(
+                tr(
+                    "After download, apply a deterministic set of "
+                    "transformations to copies of the rasters: reproject one "
+                    "to a different CRS, resample one to half resolution, and "
+                    "shift the extent of another. The original files are not "
+                    "modified. Use this to demonstrate the ① Data → Check "
+                    "Raster Consistency and Harmonize to Folder workflow with "
+                    "a known, reproducible mismatch pattern."
+                )
+            )
+        )
         var_v.addWidget(self._variant_pre)
         var_v.addWidget(self._variant_mismatch)
         self._variant_group.addButton(self._variant_pre, 0)
@@ -653,12 +689,11 @@ class ExampleDataDialog(QDialog):
         dst_row.addWidget(QLabel(tr("Save to:")))
         self._dst_edit = QLineEdit()
         # Default: ~/qmaxent_examples
-        default_dir = os.path.join(
-            os.path.expanduser("~"), "qmaxent_examples"
-        )
+        default_dir = os.path.join(os.path.expanduser("~"), "qmaxent_examples")
         self._dst_edit.setText(default_dir)
         dst_row.addWidget(self._dst_edit, stretch=1)
-        browse_btn = QPushButton("…"); browse_btn.setMaximumWidth(34)
+        browse_btn = QPushButton("…")
+        browse_btn.setMaximumWidth(34)
         browse_btn.clicked.connect(self._on_browse)
         dst_row.addWidget(browse_btn)
         v.addLayout(dst_row)
@@ -726,8 +761,7 @@ class ExampleDataDialog(QDialog):
         key = self._selected_key()
         if key is None or key not in DATASET_REGISTRY:
             QMessageBox.warning(
-                self, tr("Download Example Dataset"),
-                tr("Please select a dataset.")
+                self, tr("Download Example Dataset"), tr("Please select a dataset.")
             )
             return
         spec = DATASET_REGISTRY[key]
@@ -735,8 +769,7 @@ class ExampleDataDialog(QDialog):
         dst_root = self._dst_edit.text().strip()
         if not dst_root:
             QMessageBox.warning(
-                self, tr("Download Example Dataset"),
-                tr("Please choose a destination directory.")
+                self, tr("Download Example Dataset"), tr("Please choose a destination directory.")
             )
             return
 
@@ -748,12 +781,14 @@ class ExampleDataDialog(QDialog):
             os.makedirs(dst_dir, exist_ok=True)
         except OSError as e:
             QMessageBox.critical(
-                self, tr("Download Example Dataset"),
-                tr("Could not create destination directory:\n{e}").format(e=e)
+                self,
+                tr("Download Example Dataset"),
+                tr("Could not create destination directory:\n{e}").format(e=e),
             )
             return
 
-        self._progress.setValue(0); self._progress.show()
+        self._progress.setValue(0)
+        self._progress.show()
         self._status.setText(tr("Starting download..."))
         self._download_btn.setEnabled(False)
         # Cancel button stays enabled and is now wired to abort the worker.
@@ -773,9 +808,7 @@ class ExampleDataDialog(QDialog):
         )
         self._worker.progress.connect(self._on_progress)
         self._worker.finished.connect(
-            lambda ok, msg, files: self._on_finished(
-                ok, msg, files, key, dst_dir
-            )
+            lambda ok, msg, files: self._on_finished(ok, msg, files, key, dst_dir)
         )
         self._worker.start()
 
@@ -792,8 +825,7 @@ class ExampleDataDialog(QDialog):
         else:
             self.reject()
 
-    def _on_finished(self, ok: bool, msg: str, final_files: list,
-                     key: str, dst_dir: str):
+    def _on_finished(self, ok: bool, msg: str, final_files: list, key: str, dst_dir: str):
         self._worker = None
         self._download_btn.setEnabled(True)
 
@@ -801,8 +833,7 @@ class ExampleDataDialog(QDialog):
             self._progress.hide()
             self._status.setText(tr("Download failed."))
             QMessageBox.critical(
-                self, tr("Download Example Dataset"),
-                tr("Download failed:\n{msg}").format(msg=msg)
+                self, tr("Download Example Dataset"), tr("Download failed:\n{msg}").format(msg=msg)
             )
             return
 
@@ -819,23 +850,25 @@ class ExampleDataDialog(QDialog):
         dir_for_load = dst_dir
         variant_used = "pre-harmonized"
 
-        if (spec_for_load.get("supports_variants")
-                and self._variant_mismatch.isChecked()):
+        if spec_for_load.get("supports_variants") and self._variant_mismatch.isChecked():
             variant_used = "mismatch-demo"
             try:
                 demo_dir, demo_files = _apply_mismatch_variant(
-                    src_dir=dst_dir, files=final_files, spec=spec_for_load,
+                    src_dir=dst_dir,
+                    files=final_files,
+                    spec=spec_for_load,
                 )
                 # Switch the load target to the transformed copies.
                 dir_for_load = demo_dir
                 files_for_load = demo_files
             except Exception as e:
                 QMessageBox.warning(
-                    self, tr("Download Example Dataset"),
+                    self,
+                    tr("Download Example Dataset"),
                     tr(
                         "Mismatch demo transformation failed; loading "
                         "the originals instead.\n\nReason: {e}"
-                    ).format(e=e)
+                    ).format(e=e),
                 )
                 variant_used = "pre-harmonized (fallback)"
 
@@ -844,12 +877,8 @@ class ExampleDataDialog(QDialog):
         # the worker left the originals in place. We surface this in
         # an info message rather than failing — the data is fully
         # usable through GDAL's RRASTER driver.
-        had_grd_input = any(
-            f.lower().endswith(".grd") for f in DATASET_REGISTRY[key]["files"]
-        )
-        kept_grd = any(
-            f.lower().endswith(".grd") for f in final_files
-        )
+        had_grd_input = any(f.lower().endswith(".grd") for f in DATASET_REGISTRY[key]["files"])
+        kept_grd = any(f.lower().endswith(".grd") for f in final_files)
         conversion_skipped = had_grd_input and kept_grd
 
         # Add layers to the active project ------------------------------
@@ -862,16 +891,18 @@ class ExampleDataDialog(QDialog):
             self._add_layers_to_project(dir_for_load, effective_spec)
         except Exception as e:
             QMessageBox.warning(
-                self, tr("Download Example Dataset"),
+                self,
+                tr("Download Example Dataset"),
                 tr(
                     "Files were downloaded but could not be added to "
                     "the project automatically:\n{e}"
-                ).format(e=e)
+                ).format(e=e),
             )
 
         if conversion_skipped:
             QMessageBox.information(
-                self, tr("Download Example Dataset"),
+                self,
+                tr("Download Example Dataset"),
                 tr(
                     "Example dataset '{ds}' is ready in:\n{path}\n\n"
                     "Note: rasters were left in their original .grd "
@@ -879,15 +910,16 @@ class ExampleDataDialog(QDialog):
                     "Install plugin dependencies (Plugins → QMaxent → "
                     "QMaxent Dependencies) and re-download to get "
                     "GeoTIFF copies. The .grd files work fine for now."
-                ).format(ds=key, path=dst_dir)
+                ).format(ds=key, path=dst_dir),
             )
         else:
             QMessageBox.information(
-                self, tr("Download Example Dataset"),
+                self,
+                tr("Download Example Dataset"),
                 tr(
                     "Example dataset '{ds}' (variant: {variant}) is ready in:\n{path}\n\n"
                     "Open the QMaxent Analysis dock to start training."
-                ).format(ds=key, variant=variant_used, path=dir_for_load)
+                ).format(ds=key, variant=variant_used, path=dir_for_load),
             )
         self.accept()
 
@@ -902,7 +934,10 @@ class ExampleDataDialog(QDialog):
         are loaded transparently by GDAL when the main raster opens.
         """
         from qgis.core import (
-            QgsProject, QgsRasterLayer, QgsVectorLayer, QgsSymbol,
+            QgsProject,
+            QgsRasterLayer,
+            QgsSymbol,
+            QgsVectorLayer,
         )
         from qgis.PyQt.QtGui import QColor
 
@@ -991,9 +1026,9 @@ class ExampleDataDialog(QDialog):
             QgsProject.instance().addMapLayer(lyr)
 
     # ------------------------------------------------------------------
-    def _csv_to_gpkg(self, csv_path: str, gpkg_path: str,
-                     layer_name: str, x_field: str, y_field: str,
-                     crs: str):
+    def _csv_to_gpkg(
+        self, csv_path: str, gpkg_path: str, layer_name: str, x_field: str, y_field: str, crs: str
+    ):
         """Convert a points CSV to a single-layer GeoPackage.
 
         Reads the CSV with the stdlib `csv` module (so we don't depend
@@ -1004,10 +1039,19 @@ class ExampleDataDialog(QDialog):
         columns survive into the GeoPackage.
         """
         import csv as _csv
+
         from qgis.core import (
-            QgsCoordinateReferenceSystem, QgsField, QgsFields,
-            QgsFeature, QgsGeometry, QgsPointXY,
-            QgsProject as _QP, QgsVectorFileWriter, QgsWkbTypes,
+            QgsCoordinateReferenceSystem,
+            QgsFeature,
+            QgsField,
+            QgsFields,
+            QgsGeometry,
+            QgsPointXY,
+            QgsVectorFileWriter,
+            QgsWkbTypes,
+        )
+        from qgis.core import (
+            QgsProject as _QP,
         )
         from qgis.PyQt.QtCore import QVariant
 

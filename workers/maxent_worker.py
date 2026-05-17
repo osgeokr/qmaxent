@@ -79,12 +79,12 @@ from ..i18n import tr
 
 class MaxentWorker(QThread):
     progress = pyqtSignal(int, str)
-    log      = pyqtSignal(str)
+    log = pyqtSignal(str)
     finished = pyqtSignal(bool, str, dict)
 
     def __init__(self, config: dict, parent=None):
         super().__init__(parent)
-        self._cfg       = config
+        self._cfg = config
         self._cancelled = False
 
     def cancel(self):
@@ -105,6 +105,7 @@ class MaxentWorker(QThread):
             # process, and we want that to never happen.
             try:
                 import tqdm as _tqdm
+
                 _tqdm.tqdm.monitor_interval = 0
                 try:
                     mon = getattr(_tqdm.tqdm, "monitor", None)
@@ -139,13 +140,14 @@ class MaxentWorker(QThread):
 
     def _execute(self) -> dict:
         import pandas as pd
-        from sklearn.metrics import roc_curve as _roc_curve, roc_auc_score
+        from sklearn.metrics import roc_auc_score
+        from sklearn.metrics import roc_curve as _roc_curve
 
         from ..bridge import elapid_bridge as eb
 
-        cfg           = self._cfg
-        presence_gdf  = cfg["presence_gdf"]
-        raster_paths  = cfg["raster_paths"]
+        cfg = self._cfg
+        presence_gdf = cfg["presence_gdf"]
+        raster_paths = cfg["raster_paths"]
         feature_names = cfg["feature_names"]
         # 0-based indices of variables flagged categorical by the user in
         # the ① Data tab. Following the dismo / SDMtune / ENMeval / maxent.jar
@@ -165,7 +167,7 @@ class MaxentWorker(QThread):
         # (also used by maxent.jar and ENMeval). Smaller values may be
         # appropriate for very small study areas; larger values rarely add
         # information once the environmental space is well sampled.
-        n_background  = cfg.get("n_background", 10000)
+        n_background = cfg.get("n_background", 10000)
 
         # Auto-create parent directories for any configured save paths
         # so the user can type a fresh output path (e.g. a new
@@ -204,8 +206,10 @@ class MaxentWorker(QThread):
         # with a clear, actionable error rather than producing a model
         # whose validation does not match its training configuration.
         from ..bridge.raster_bridge import (
-            get_raster_crs, check_raster_consistency,
+            check_raster_consistency,
+            get_raster_crs,
         )
+
         consistency = check_raster_consistency(raster_paths)
         if not consistency.get("is_consistent", False):
             mismatches = []
@@ -215,16 +219,16 @@ class MaxentWorker(QThread):
                 mismatches.append("extent")
             if not consistency["resolution_uniform"]:
                 mismatches.append("resolution")
-            raise RuntimeError(tr(
-                "Environmental rasters do not share a common grid "
-                "({mismatches} differ). Run \"Check Raster Consistency\" "
-                "and \"Harmonize to Folder…\" in the ① Data tab to "
-                "align them before training."
-            ).format(mismatches=", ".join(mismatches)))
-        else:
-            self.log.emit(
-                "  Rasters share grid (CRS, extent, resolution). ✓"
+            raise RuntimeError(
+                tr(
+                    "Environmental rasters do not share a common grid "
+                    '({mismatches} differ). Run "Check Raster Consistency" '
+                    'and "Harmonize to Folder…" in the ① Data tab to '
+                    "align them before training."
+                ).format(mismatches=", ".join(mismatches))
             )
+        else:
+            self.log.emit("  Rasters share grid (CRS, extent, resolution). ✓")
 
         # ── 0. CRS reconciliation ────────────────────────────────────────
         # Spatial CV strategies (Geographic K-Fold, Buffered LOO) operate
@@ -251,9 +255,7 @@ class MaxentWorker(QThread):
         elif raster_crs is None:
             self.log.emit("  ⚠ Could not read raster CRS; skipping CRS check.")
         elif presence_gdf.crs is None:
-            self.log.emit(
-                "  ⚠ Presence layer has no CRS; assuming it matches raster."
-            )
+            self.log.emit("  ⚠ Presence layer has no CRS; assuming it matches raster.")
 
         # ── 1. Background sampling ────────────────────────────────────────
         # When a bias raster is supplied we sample background points with
@@ -270,21 +272,15 @@ class MaxentWorker(QThread):
 
         # ── 2. Annotation ────────────────────────────────────────────────
         self._check(12, "Extracting raster covariates for presence points...")
-        presence_ann = eb.annotate(
-            presence_gdf, raster_paths, labels=feature_names, quiet=True
-        )
+        presence_ann = eb.annotate(presence_gdf, raster_paths, labels=feature_names, quiet=True)
         self._check(20, "Extracting raster covariates for background points...")
-        background_ann = eb.annotate(
-            bg_gs, raster_paths, labels=feature_names, quiet=True
-        )
+        background_ann = eb.annotate(bg_gs, raster_paths, labels=feature_names, quiet=True)
 
-        presence_clean   = presence_ann.dropna(subset=feature_names).reset_index(drop=True)
+        presence_clean = presence_ann.dropna(subset=feature_names).reset_index(drop=True)
         background_clean = background_ann.dropna(subset=feature_names).reset_index(drop=True)
         n_presence = len(presence_clean)
         n_background = len(background_clean)
-        self.log.emit(
-            f"  → Presence: {n_presence}, Background: {n_background:,}"
-        )
+        self.log.emit(f"  → Presence: {n_presence}, Background: {n_background:,}")
 
         # Minimum-sample-size guards. After dropna it is possible to be
         # left with too few records to fit any meaningful model — for
@@ -296,33 +292,37 @@ class MaxentWorker(QThread):
         # presences a presence-only model is not informative; below
         # n=100 background points the maxent likelihood is unstable.
         if n_presence == 0:
-            raise ValueError(tr(
-                "No valid presence points after removing rows with NoData "
-                "in the environmental rasters. Check that your presence "
-                "layer overlaps the raster extents and that the rasters "
-                "have valid values at the presence locations."
-            ))
+            raise ValueError(
+                tr(
+                    "No valid presence points after removing rows with NoData "
+                    "in the environmental rasters. Check that your presence "
+                    "layer overlaps the raster extents and that the rasters "
+                    "have valid values at the presence locations."
+                )
+            )
         if n_presence < 5:
-            raise ValueError(tr(
-                "Too few presence points after removing NoData "
-                "(n={n} < 5). Maxent is not reliable below 5 records; "
-                "please collect more presences or expand the study area."
-            ).format(n=n_presence))
+            raise ValueError(
+                tr(
+                    "Too few presence points after removing NoData "
+                    "(n={n} < 5). Maxent is not reliable below 5 records; "
+                    "please collect more presences or expand the study area."
+                ).format(n=n_presence)
+            )
         if n_background < 100:
-            raise ValueError(tr(
-                "Too few background points after removing NoData "
-                "(n={n} < 100). Increase the background sample count or "
-                "check the raster coverage of the study area."
-            ).format(n=n_background))
+            raise ValueError(
+                tr(
+                    "Too few background points after removing NoData "
+                    "(n={n} < 100). Increase the background sample count or "
+                    "check the raster coverage of the study area."
+                ).format(n=n_background)
+            )
 
         if cfg.get("add_to_bg", True):
             # `addsamplestobackground=True` is the canonical Maxent default
             # (Phillips et al. 2006; 2017): presence points are also
             # included in the background sample so that the fitted density
             # is consistent over the full study area.
-            background_clean = pd.concat(
-                [background_clean, presence_clean], ignore_index=True
-            )
+            background_clean = pd.concat([background_clean, presence_clean], ignore_index=True)
 
         # Feature types
         if cfg.get("feature_types_auto", True):
@@ -331,21 +331,20 @@ class MaxentWorker(QThread):
             # Fallback (only used when cfg lacks "feature_types"): full
             # LQPHT — same default the UI seeds in Manual selection
             # (Phillips et al. 2017's standard Maxent feature set).
-            feature_types = cfg.get("feature_types", [
-                "linear", "quadratic", "hinge", "product", "threshold"
-            ])
+            feature_types = cfg.get(
+                "feature_types", ["linear", "quadratic", "hinge", "product", "threshold"]
+            )
         ft_origin = "auto-rule" if cfg.get("feature_types_auto", True) else "manual"
-        self.log.emit(
-            f"  → Feature types: {feature_types}  "
-            f"(n_presence={n_presence}, {ft_origin})"
-        )
+        self.log.emit(f"  → Feature types: {feature_types}  (n_presence={n_presence}, {ft_origin})")
 
         # Merge (presence FIRST — index order relied on by CV logic)
-        presence_clean   = presence_clean.assign(**{"class": 1})
+        presence_clean = presence_clean.assign(**{"class": 1})
         background_clean = background_clean.assign(**{"class": 0})
         merged = pd.concat(
-            [presence_clean[feature_names + ["class"]],
-             background_clean[feature_names + ["class"]]],
+            [
+                presence_clean[feature_names + ["class"]],
+                background_clean[feature_names + ["class"]],
+            ],
             ignore_index=True,
         )
         x = merged[feature_names].values.astype(np.float32)
@@ -363,13 +362,12 @@ class MaxentWorker(QThread):
         if cfg.get("distance_weights", False):
             try:
                 import elapid as _elapid
+
                 pres_geom = presence_clean.geometry
                 w_pres = _elapid.distance_weights(pres_geom)
                 # background points keep weight 1.0
                 w_bg = np.ones(len(background_clean), dtype=np.float32)
-                sample_weight = np.concatenate(
-                    [np.asarray(w_pres, dtype=np.float32), w_bg]
-                )
+                sample_weight = np.concatenate([np.asarray(w_pres, dtype=np.float32), w_bg])
                 self.log.emit(
                     f"  → Sample bias correction: distance-based weights "
                     f"applied to {len(pres_geom)} presences "
@@ -378,8 +376,9 @@ class MaxentWorker(QThread):
             except Exception as e:
                 # Fallback: warn and proceed without weights rather than
                 # silently silently dropping the user's explicit opt-in.
-                self.log.emit(f"  ⚠ distance_weights failed ({e}); "
-                              f"proceeding without sample weights")
+                self.log.emit(
+                    f"  ⚠ distance_weights failed ({e}); proceeding without sample weights"
+                )
                 sample_weight = None
 
         # ── 3. Train ──────────────────────────────────────────────────────
@@ -404,9 +403,9 @@ class MaxentWorker(QThread):
         self.log.emit("  Training MaxentModel on full data...")
         model = eb.make_maxent_model(
             feature_types=feature_types,
-            beta_multiplier=cfg.get("beta_mult",     1.0),
-            transform=cfg.get("transform",           "cloglog"),
-            n_hinge_features=cfg.get("n_hinge",      50),
+            beta_multiplier=cfg.get("beta_mult", 1.0),
+            transform=cfg.get("transform", "cloglog"),
+            n_hinge_features=cfg.get("n_hinge", 50),
             n_threshold_features=cfg.get("n_threshold", 50),
             use_lambdas="last",
             n_lambdas=200,
@@ -414,7 +413,8 @@ class MaxentWorker(QThread):
             use_sklearn=True,
         )
         model.fit(
-            x, y,
+            x,
+            y,
             sample_weight=sample_weight,
             categorical=categorical_indices or None,
             labels=feature_names,
@@ -423,7 +423,7 @@ class MaxentWorker(QThread):
         # emit below is itself the completion signal.)
 
         # Attach metadata (response curves / projection)
-        x_presence  = x[y == 1]
+        x_presence = x[y == 1]
 
         # Build per-feature hold-out values used in response-curve plots.
         # Continuous variables: arithmetic mean of the presence sample —
@@ -462,9 +462,9 @@ class MaxentWorker(QThread):
         # interpretation in the original references.
         try:
             train_pres_pred = model.predict(x[y == 1])
-            train_bg_pred   = model.predict(x[y == 0])
+            train_bg_pred = model.predict(x[y == 0])
             train_pres_pred = np.asarray(train_pres_pred, dtype=float).ravel()
-            train_bg_pred   = np.asarray(train_bg_pred,   dtype=float).ravel()
+            train_bg_pred = np.asarray(train_bg_pred, dtype=float).ravel()
             thresholds = {
                 "MTP": float(train_pres_pred.min()),
                 "T10": float(np.percentile(train_pres_pred, 10)),
@@ -475,7 +475,7 @@ class MaxentWorker(QThread):
             best_t, best_score = float(train_pres_pred.min()), -np.inf
             for t in cands:
                 sens = float((train_pres_pred >= t).mean())
-                spec = float((train_bg_pred   <  t).mean())
+                spec = float((train_bg_pred < t).mean())
                 if sens + spec > best_score:
                     best_score = sens + spec
                     best_t = float(t)
@@ -497,7 +497,7 @@ class MaxentWorker(QThread):
         # from presences, since some codes may appear only in the
         # background sample but still be part of the trained encoder.
         categorical_levels = {}
-        for j in (categorical_indices or []):
+        for j in categorical_indices or []:
             nm = feature_names[j]
             col = x[:, j]
             if len(col):
@@ -505,19 +505,19 @@ class MaxentWorker(QThread):
                 categorical_levels[nm] = codes
 
         model._qmaxent_meta = {
-            "feature_names":   feature_names,
-            "feature_types":   feature_types,
+            "feature_names": feature_names,
+            "feature_types": feature_types,
             "categorical_indices": list(categorical_indices),
-            "samplemeans":     samplemeans,
-            "transform":       cfg.get("transform", "cloglog"),
-            "n_presence":      int(y.sum()),
-            "n_background":    int((y == 0).sum()),
+            "samplemeans": samplemeans,
+            "transform": cfg.get("transform", "cloglog"),
+            "n_presence": int(y.sum()),
+            "n_background": int((y == 0).sum()),
             "beta_multiplier": cfg.get("beta_mult", 1.0),
             "distance_weights": bool(cfg.get("distance_weights", False)),
             "varmin": {nm: float(x[:, i].min()) for i, nm in enumerate(feature_names)},
             "varmax": {nm: float(x[:, i].max()) for i, nm in enumerate(feature_names)},
             "categorical_levels": categorical_levels,
-            "thresholds":      thresholds,
+            "thresholds": thresholds,
             # Always record the *original* user-supplied raster paths,
             # not the temporary harmonized copies. The harmonized
             # directory is wiped when the worker finishes; a saved .pkl
@@ -527,7 +527,7 @@ class MaxentWorker(QThread):
             # removing the auto-harmonize codepath these are simply the
             # paths the user supplied — there is no longer a distinction
             # between "user-supplied" and "internally harmonized".
-            "raster_paths":    raster_paths,
+            "raster_paths": raster_paths,
         }
 
         # ── 4. ROC curve (training data) ──────────────────────────────────
@@ -540,11 +540,11 @@ class MaxentWorker(QThread):
         self._check(40, "Computing ROC curve...")
         roc_fpr, roc_tpr, train_auc = [], [], None
         try:
-            preds          = model.predict(x)
-            fpr, tpr, _    = _roc_curve(y, preds)
-            train_auc      = float(roc_auc_score(y, preds))
-            roc_fpr        = fpr.tolist()
-            roc_tpr        = tpr.tolist()
+            preds = model.predict(x)
+            fpr, tpr, _ = _roc_curve(y, preds)
+            train_auc = float(roc_auc_score(y, preds))
+            roc_fpr = fpr.tolist()
+            roc_tpr = tpr.tolist()
             self.log.emit(f"  → Training AUC = {train_auc:.4f}")
         except Exception as e:
             self.log.emit(f"  → ROC computation skipped: {e}")
@@ -557,19 +557,20 @@ class MaxentWorker(QThread):
 
         # Start building result dict — ROC data goes in right away
         result = {
-            "model":          model,
-            "meta":           model._qmaxent_meta,
-            "x": x, "y": y,
+            "model": model,
+            "meta": model._qmaxent_meta,
+            "x": x,
+            "y": y,
             "presence_clean": presence_clean,
-            "feature_names":  feature_names,
-            "roc_fpr":        roc_fpr,
-            "roc_tpr":        roc_tpr,
-            "full_auc":       train_auc,
+            "feature_names": feature_names,
+            "roc_fpr": roc_fpr,
+            "roc_tpr": roc_tpr,
+            "full_auc": train_auc,
         }
 
         # ── 5. Cross-validation (generalization check) ────────────────────
-        cv_method  = cfg.get("cv_method", 0)
-        first_fold = None      # (train_mask, test_mask) for jackknife reuse
+        cv_method = cfg.get("cv_method", 0)
+        first_fold = None  # (train_mask, test_mask) for jackknife reuse
         if cv_method > 0:
             # ─── 3. Cross-validation ──────────────────────────────────
             # Header text adapts per-method: K-Fold methods report
@@ -577,8 +578,7 @@ class MaxentWorker(QThread):
             # reports the buffer distance (its splits are determined
             # by buffer + n_presence, not a fold count).
             seed_cfg = cfg.get("random_seed")
-            seed_str = (f", seed={int(seed_cfg)}"
-                        if seed_cfg is not None else ", seed=random")
+            seed_str = f", seed={int(seed_cfg)}" if seed_cfg is not None else ", seed=random"
             if cv_method in (1, 2):
                 cv_name_map = {1: "Geographic K-Fold", 2: "Random K-Fold"}
                 cv_name = cv_name_map[cv_method]
@@ -596,18 +596,20 @@ class MaxentWorker(QThread):
                 cv_name = f"method {cv_method}"
                 header_detail = ""
             self.log.emit("")
-            self.log.emit(
-                f"─── 3. Cross-validation ({cv_name}, "
-                f"{header_detail}) ───"
-            )
+            self.log.emit(f"─── 3. Cross-validation ({cv_name}, {header_detail}) ───")
             self._check(50, "Running cross-validation...")
-            (cv_aucs, first_fold,
-             cv_roc_fpr, cv_roc_tpr) = self._cross_validate(
-                x, y, presence_clean, feature_names, feature_types, cfg, cv_method,
+            (cv_aucs, first_fold, cv_roc_fpr, cv_roc_tpr) = self._cross_validate(
+                x,
+                y,
+                presence_clean,
+                feature_names,
+                feature_types,
+                cfg,
+                cv_method,
                 categorical_indices=categorical_indices,
                 sample_weight=sample_weight,
             )
-            result["cv_aucs"]        = cv_aucs
+            result["cv_aucs"] = cv_aucs
             result["cv_roc_fpr_list"] = cv_roc_fpr
             result["cv_roc_tpr_list"] = cv_roc_tpr
             if cv_aucs:
@@ -618,10 +620,7 @@ class MaxentWorker(QThread):
                     # (std is trivially 0 for one value). Report just
                     # the AUC in that case.
                     if cv_method in (3, 4) or len(valid) == 1:
-                        self.log.emit(
-                            f"  → CV AUC (held-out) = "
-                            f"{np.mean(valid):.4f}"
-                        )
+                        self.log.emit(f"  → CV AUC (held-out) = {np.mean(valid):.4f}")
                     else:
                         self.log.emit(
                             f"  → CV AUC (held-out, mean ± std) = "
@@ -670,23 +669,18 @@ class MaxentWorker(QThread):
             # a random 25% hold-out.
             self.log.emit("")
             if cv_method in (1, 2) and cv_aucs_for_jk:
-                n_folds_for_jk = len([a for a in cv_aucs_for_jk
-                                      if not np.isnan(a)])
+                n_folds_for_jk = len([a for a in cv_aucs_for_jk if not np.isnan(a)])
                 self.log.emit(
                     f"─── 4. Jackknife variable importance "
                     f"(across the same {n_folds_for_jk} folds) ───"
                 )
             elif cv_method == 3 and cv_aucs_for_jk:
                 self.log.emit(
-                    "─── 4. Jackknife variable importance "
-                    "(on the same checkerboard split) ───"
+                    "─── 4. Jackknife variable importance (on the same checkerboard split) ───"
                 )
             else:
                 # cv_method == 0 (None) or 4 (BLOO).
-                self.log.emit(
-                    "─── 4. Jackknife variable importance "
-                    "(25% hold-out) ───"
-                )
+                self.log.emit("─── 4. Jackknife variable importance (25% hold-out) ───")
             self._check(75, "Running jackknife variable importance...")
             # Inject presence_clean into cfg so the per-fold loop can
             # use Geographic K-Fold (which needs coordinates) without
@@ -694,7 +688,13 @@ class MaxentWorker(QThread):
             # leading-underscore key to keep it clearly internal.
             cfg["_presence_clean"] = presence_clean
             jk_results, jk_full_train, jk_full_test = self._jackknife(
-                model, x, y, feature_names, feature_types, cfg, first_fold,
+                model,
+                x,
+                y,
+                feature_names,
+                feature_types,
+                cfg,
+                first_fold,
                 categorical_indices=categorical_indices,
                 sample_weight=sample_weight,
                 cv_aucs=cv_aucs_for_jk,
@@ -705,7 +705,7 @@ class MaxentWorker(QThread):
             # importance chart can plot "Full model" with the exact
             # value, not a round-trip-error reconstruction.
             result["jk_full_train_auc"] = jk_full_train
-            result["jk_full_test_auc"]  = jk_full_test
+            result["jk_full_test_auc"] = jk_full_test
         else:
             # Without jackknife the loop above never runs, so we need an
             # intermediate checkpoint to keep the progress bar moving
@@ -752,16 +752,18 @@ class MaxentWorker(QThread):
                     f"(sklearn, n_repeats={n_repeats}, "
                     f"evaluated on {pi_source}) ───"
                 )
-                pi_seed   = cfg.get("random_seed")
+                pi_seed = cfg.get("random_seed")
                 importances = eb.permutation_importance_scores(
-                    model, x_pi, y_pi,
+                    model,
+                    x_pi,
+                    y_pi,
                     n_repeats=n_repeats,
                     n_jobs=1,
                     random_state=pi_seed,
                 )
                 # importances shape: (n_features, n_repeats)
                 pi_mean = importances.mean(axis=1)
-                pi_std  = importances.std(axis=1)
+                pi_std = importances.std(axis=1)
 
                 # Normalize as percentage of total (matches maxent.jar's
                 # permutation importance convention). Guard against
@@ -774,20 +776,20 @@ class MaxentWorker(QThread):
 
                 permutation_results = []
                 for i, nm in enumerate(feature_names):
-                    permutation_results.append({
-                        "variable":         nm,
-                        "importance_mean":  float(pi_mean[i]),
-                        "importance_std":   float(pi_std[i]),
-                        "importance_pct":   float(pi_pct[i]),
-                    })
+                    permutation_results.append(
+                        {
+                            "variable": nm,
+                            "importance_mean": float(pi_mean[i]),
+                            "importance_std": float(pi_std[i]),
+                            "importance_pct": float(pi_pct[i]),
+                        }
+                    )
                 # Sort by importance_mean descending so the chart and
                 # XLSX both show the most important variable on top.
-                permutation_results.sort(
-                    key=lambda r: -r["importance_mean"]
-                )
-                result["permutation_results"]    = permutation_results
-                result["permutation_source"]     = pi_source
-                result["permutation_n_repeats"]  = n_repeats
+                permutation_results.sort(key=lambda r: -r["importance_mean"])
+                result["permutation_results"] = permutation_results
+                result["permutation_source"] = pi_source
+                result["permutation_n_repeats"] = n_repeats
                 self.log.emit(
                     f"  → Computed for {len(feature_names)} variables "
                     "(see Results > Permutation Importance tab)"
@@ -797,9 +799,7 @@ class MaxentWorker(QThread):
                 # degenerate (e.g. all-presence). Log and continue
                 # rather than aborting the whole run — jackknife
                 # already provides a variable-importance signal.
-                self.log.emit(
-                    f"  → Permutation importance skipped: {e}"
-                )
+                self.log.emit(f"  → Permutation importance skipped: {e}")
                 result["permutation_results"] = []
 
         # Persist academic results into the model meta so they survive
@@ -809,41 +809,39 @@ class MaxentWorker(QThread):
         # ``academic_results`` to keep the top-level meta dict clean.
         try:
             model._qmaxent_meta["academic_results"] = {
-                "roc_fpr":            list(result.get("roc_fpr", [])),
-                "roc_tpr":            list(result.get("roc_tpr", [])),
-                "full_auc":           result.get("full_auc"),
+                "roc_fpr": list(result.get("roc_fpr", [])),
+                "roc_tpr": list(result.get("roc_tpr", [])),
+                "full_auc": result.get("full_auc"),
                 # The jackknife's full-model AUCs (computed on the
                 # first CV fold's train/test split). Used by the
                 # importance chart so "Full model" shows the exact
                 # AUC instead of an error-accumulating reconstruction
                 # of without + drop.
-                "jk_full_train_auc":  result.get("jk_full_train_auc"),
-                "jk_full_test_auc":   result.get("jk_full_test_auc"),
-                "cv_aucs":            list(result.get("cv_aucs", [])),
+                "jk_full_train_auc": result.get("jk_full_train_auc"),
+                "jk_full_test_auc": result.get("jk_full_test_auc"),
+                "cv_aucs": list(result.get("cv_aucs", [])),
                 # Per-fold ROC traces so the load-model UX can replot
                 # the academic-style ROC panel (each fold + mean +
                 # std band) instead of just training ROC + a CV-AUC
                 # number. Each entry is a list of floats.
-                "cv_roc_fpr_list":    [list(f) for f in result.get("cv_roc_fpr_list", [])],
-                "cv_roc_tpr_list":    [list(t) for t in result.get("cv_roc_tpr_list", [])],
+                "cv_roc_fpr_list": [list(f) for f in result.get("cv_roc_fpr_list", [])],
+                "cv_roc_tpr_list": [list(t) for t in result.get("cv_roc_tpr_list", [])],
                 # Jackknife rows are dicts of plain Python types (str
                 # for variable name, float for AUC). Copy defensively
                 # so we don't pickle live numpy scalars.
-                "jackknife_results":  [
-                    {k: (float(v) if isinstance(v, (int, float)) else v)
-                     for k, v in row.items()}
+                "jackknife_results": [
+                    {k: (float(v) if isinstance(v, (int, float)) else v) for k, v in row.items()}
                     for row in result.get("jackknife_results", [])
                 ],
                 # Permutation importance rows (added v0.1.3). Same
                 # defensive-copy pattern as jackknife — keeps the
                 # .pkl portable across machines and free of numpy
                 # scalar references.
-                "permutation_results":  [
-                    {k: (float(v) if isinstance(v, (int, float)) else v)
-                     for k, v in row.items()}
+                "permutation_results": [
+                    {k: (float(v) if isinstance(v, (int, float)) else v) for k, v in row.items()}
                     for row in result.get("permutation_results", [])
                 ],
-                "permutation_source":   result.get("permutation_source"),
+                "permutation_source": result.get("permutation_source"),
                 "permutation_n_repeats": result.get("permutation_n_repeats"),
             }
             # Re-save the .pkl now that academic_results is populated.
@@ -872,9 +870,7 @@ class MaxentWorker(QThread):
 
         # Save XLSX (multi-sheet styled report — see _save_xlsx).
         if cfg.get("output_xlsx") and (
-            "jackknife_results" in result
-            or "cv_aucs" in result
-            or "permutation_results" in result
+            "jackknife_results" in result or "cv_aucs" in result or "permutation_results" in result
         ):
             # ─── 6. Save results ──────────────────────────────────────
             self.log.emit("")
@@ -892,9 +888,18 @@ class MaxentWorker(QThread):
     # Cross-validation
     # -----------------------------------------------------------------------
 
-    def _cross_validate(self, x, y, presence_clean, feature_names,
-                        feature_types, cfg, cv_method,
-                        categorical_indices=None, sample_weight=None):
+    def _cross_validate(
+        self,
+        x,
+        y,
+        presence_clean,
+        feature_names,
+        feature_types,
+        cfg,
+        cv_method,
+        categorical_indices=None,
+        sample_weight=None,
+    ):
         """Run cross-validation and return (per-fold AUC list, first-fold split).
 
         Four cross-validation strategies are supported, each with its own
@@ -948,11 +953,12 @@ class MaxentWorker(QThread):
                     BLOO which produces a pooled ROC, not per-fold).
                 cv_roc_tpr: list of tpr arrays, paired with cv_roc_fpr.
         """
-        from sklearn.metrics import roc_auc_score, roc_curve as _roc_curve
+        from sklearn.metrics import roc_auc_score
+        from sklearn.metrics import roc_curve as _roc_curve
 
         from ..bridge import elapid_bridge as eb
 
-        all_p  = np.where(y == 1)[0]
+        all_p = np.where(y == 1)[0]
         all_bg = np.where(y == 0)[0]
 
         def _build():
@@ -960,10 +966,12 @@ class MaxentWorker(QThread):
                 feature_types=feature_types,
                 beta_multiplier=cfg.get("beta_mult", 1.0),
                 transform=cfg.get("transform", "cloglog"),
-                n_hinge_features=cfg.get("n_hinge",    50),
+                n_hinge_features=cfg.get("n_hinge", 50),
                 n_threshold_features=cfg.get("n_threshold", 50),
-                use_lambdas="last", n_lambdas=200,
-                class_weights=100, use_sklearn=True,
+                use_lambdas="last",
+                n_lambdas=200,
+                class_weights=100,
+                use_sklearn=True,
             )
 
         def _auc(m, xt, yt):
@@ -979,9 +987,11 @@ class MaxentWorker(QThread):
 
         def _masks(tr_p, te_p):
             tr = np.zeros(len(y), dtype=bool)
-            tr[all_p[tr_p]] = True; tr[all_bg] = True
+            tr[all_p[tr_p]] = True
+            tr[all_bg] = True
             te = np.zeros(len(y), dtype=bool)
-            te[all_p[te_p]] = True; te[all_bg] = True
+            te[all_p[te_p]] = True
+            te[all_bg] = True
             return tr, te
 
         def _to_metric_gdf(gdf):
@@ -1017,7 +1027,7 @@ class MaxentWorker(QThread):
                 # than a hard failure mid-run.
                 return gdf
 
-        aucs       = []
+        aucs = []
         first_fold = None
         # Per-fold ROC traces. We collect (fpr, tpr) for every fold so the
         # Results-tab ROC panel can render the academic-standard plot
@@ -1027,32 +1037,39 @@ class MaxentWorker(QThread):
         cv_roc_fpr = []
         cv_roc_tpr = []
 
-        if cv_method == 1:   # Geographic K-Fold
+        if cv_method == 1:  # Geographic K-Fold
             gkf = eb.make_geographic_kfold(n_splits=cfg.get("n_folds", 5))
             pts = presence_clean.reset_index(drop=True)
             for fi, (tr_p, te_p) in enumerate(gkf.split(pts)):
-                if self._cancelled: break
-                if len(te_p) == 0:  continue
+                if self._cancelled:
+                    break
+                if len(te_p) == 0:
+                    continue
                 tr, te = _masks(tr_p, te_p)
                 if first_fold is None:
                     first_fold = (tr, te)
                 sw_tr = sample_weight[tr] if sample_weight is not None else None
-                m = _build(); m.fit(x[tr], y[tr], sample_weight=sw_tr, categorical=categorical_indices or None, labels=feature_names)
+                m = _build()
+                m.fit(
+                    x[tr],
+                    y[tr],
+                    sample_weight=sw_tr,
+                    categorical=categorical_indices or None,
+                    labels=feature_names,
+                )
                 # Compute predictions once and derive both AUC and the
                 # ROC trace from them — saves a second pass through
                 # the model.
                 try:
                     preds = m.predict(x[te])
-                    auc   = float(roc_auc_score(y[te], preds))
+                    auc = float(roc_auc_score(y[te], preds))
                     fpr_k, tpr_k, _ = _roc_curve(y[te], preds)
                     cv_roc_fpr.append(fpr_k.tolist())
                     cv_roc_tpr.append(tpr_k.tolist())
                 except Exception:
                     auc = float("nan")
                 aucs.append(auc)
-                self.log.emit(
-                    f"  Fold {fi+1}: {len(te_p):>3d} test presences, AUC = {auc:.4f}"
-                )
+                self.log.emit(f"  Fold {fi + 1}: {len(te_p):>3d} test presences, AUC = {auc:.4f}")
 
         elif cv_method == 2:  # Random K-Fold (Phillips 2006)
             # Non-spatial k-fold partition. Included for direct
@@ -1066,6 +1083,7 @@ class MaxentWorker(QThread):
             # spatial methods when presences are autocorrelated, hence
             # the warning in the UI tooltip.
             from sklearn.model_selection import KFold
+
             n_splits = int(cfg.get("n_folds", 5))
             # cfg["random_seed"] is None when the user unchecked
             # "Fix random seed". sklearn's random_state=None falls
@@ -1076,25 +1094,32 @@ class MaxentWorker(QThread):
             kf = KFold(n_splits=n_splits, shuffle=True, random_state=seed)
             pts = presence_clean.reset_index(drop=True)
             for fi, (tr_p, te_p) in enumerate(kf.split(pts)):
-                if self._cancelled: break
-                if len(te_p) == 0:  continue
+                if self._cancelled:
+                    break
+                if len(te_p) == 0:
+                    continue
                 tr, te = _masks(tr_p, te_p)
                 if first_fold is None:
                     first_fold = (tr, te)
                 sw_tr = sample_weight[tr] if sample_weight is not None else None
-                m = _build(); m.fit(x[tr], y[tr], sample_weight=sw_tr, categorical=categorical_indices or None, labels=feature_names)
+                m = _build()
+                m.fit(
+                    x[tr],
+                    y[tr],
+                    sample_weight=sw_tr,
+                    categorical=categorical_indices or None,
+                    labels=feature_names,
+                )
                 try:
                     preds = m.predict(x[te])
-                    auc   = float(roc_auc_score(y[te], preds))
+                    auc = float(roc_auc_score(y[te], preds))
                     fpr_k, tpr_k, _ = _roc_curve(y[te], preds)
                     cv_roc_fpr.append(fpr_k.tolist())
                     cv_roc_tpr.append(tpr_k.tolist())
                 except Exception:
                     auc = float("nan")
                 aucs.append(auc)
-                self.log.emit(
-                    f"  Fold {fi+1}: {len(te_p):>3d} test presences, AUC = {auc:.4f}"
-                )
+                self.log.emit(f"  Fold {fi + 1}: {len(te_p):>3d} test presences, AUC = {auc:.4f}")
 
         elif cv_method == 3:  # Checkerboard (single train/test split)
             # v0.1.7: reproject to EPSG:6933 (metres) so the user's
@@ -1104,26 +1129,29 @@ class MaxentWorker(QThread):
             # checkerboard scale for continent-wide SDMs.
             pts = _to_metric_gdf(presence_clean.copy())
             pts["_oi"] = np.arange(len(presence_clean))
-            tr_pts, te_pts = eb.checkerboard_split(
-                pts, grid_size=cfg.get("grid_size", 50000.0)
-            )
+            tr_pts, te_pts = eb.checkerboard_split(pts, grid_size=cfg.get("grid_size", 50000.0))
             if len(te_pts) > 0:
                 tr, te = _masks(tr_pts["_oi"].values, te_pts["_oi"].values)
                 first_fold = (tr, te)
                 sw_tr = sample_weight[tr] if sample_weight is not None else None
-                m = _build(); m.fit(x[tr], y[tr], sample_weight=sw_tr, categorical=categorical_indices or None, labels=feature_names)
+                m = _build()
+                m.fit(
+                    x[tr],
+                    y[tr],
+                    sample_weight=sw_tr,
+                    categorical=categorical_indices or None,
+                    labels=feature_names,
+                )
                 try:
                     preds = m.predict(x[te])
-                    auc   = float(roc_auc_score(y[te], preds))
+                    auc = float(roc_auc_score(y[te], preds))
                     fpr_k, tpr_k, _ = _roc_curve(y[te], preds)
                     cv_roc_fpr.append(fpr_k.tolist())
                     cv_roc_tpr.append(tpr_k.tolist())
                 except Exception:
                     auc = float("nan")
                 aucs.append(auc)
-                self.log.emit(
-                    f"  Split: {len(te_pts):>3d} test presences, AUC = {auc:.4f}"
-                )
+                self.log.emit(f"  Split: {len(te_pts):>3d} test presences, AUC = {auc:.4f}")
 
         elif cv_method == 4:  # Buffered LOO
             # Pearson 2007 / Ploton 2020 standard: pool predictions across
@@ -1142,11 +1170,11 @@ class MaxentWorker(QThread):
             # autocorrelation length of the covariates (Roberts et
             # al. 2017; Ploton et al. 2020).
             bloo = eb.make_buffered_loo(distance=cfg.get("buffer_dist", 50000))
-            pts  = _to_metric_gdf(presence_clean.reset_index(drop=True).copy())
-            pts["_y"] = 1   # for class_label
+            pts = _to_metric_gdf(presence_clean.reset_index(drop=True).copy())
+            pts["_y"] = 1  # for class_label
 
-            test_pres_pred = []   # predictions for held-out presences
-            n_folds_run    = 0
+            test_pres_pred = []  # predictions for held-out presences
+            n_folds_run = 0
             # Skip BLOO folds whose training set has fewer than this many
             # presences. With n_train < 5 the fitted model is unstable and
             # tends to produce extreme predictions that distort the pooled
@@ -1164,14 +1192,12 @@ class MaxentWorker(QThread):
             # take minutes on a 100+ presence species (one retrain
             # per held-out point).
             n_total_folds = max(1, len(presence_clean))
-            self.log.emit(
-                f"  BLOO: {n_total_folds} folds total "
-                f"(one retrain per presence point)"
-            )
+            self.log.emit(f"  BLOO: {n_total_folds} folds total (one retrain per presence point)")
 
             fold_idx = 0
             for tr_p, te_p in bloo.split(pts, class_label="_y"):
-                if self._cancelled: break
+                if self._cancelled:
+                    break
                 fold_idx += 1
                 # Progress: BLOO occupies the 50–75% range. Steps go
                 # 50 → 75 across the folds. We update on every fold
@@ -1187,9 +1213,13 @@ class MaxentWorker(QThread):
                 try:
                     sw_tr = sample_weight[tr] if sample_weight is not None else None
                     m = _build()
-                    m.fit(x[tr], y[tr], sample_weight=sw_tr,
-                          categorical=categorical_indices or None,
-                          labels=feature_names)
+                    m.fit(
+                        x[tr],
+                        y[tr],
+                        sample_weight=sw_tr,
+                        categorical=categorical_indices or None,
+                        labels=feature_names,
+                    )
                     # Held-out presence prediction(s); single value per fold
                     test_pres_pred.append(m.predict(x[all_p[te_p]]))
                     n_folds_run += 1
@@ -1215,9 +1245,7 @@ class MaxentWorker(QThread):
                 # folds drop only 1 point.
                 bg_pred = m.predict(x[all_bg])
                 pooled_pres = np.concatenate(test_pres_pred)
-                pooled_y    = np.concatenate(
-                    [np.ones(len(pooled_pres)), np.zeros(len(bg_pred))]
-                )
+                pooled_y = np.concatenate([np.ones(len(pooled_pres)), np.zeros(len(bg_pred))])
                 pooled_pred = np.concatenate([pooled_pres, bg_pred])
                 try:
                     pooled_auc = float(roc_auc_score(pooled_y, pooled_pred))
@@ -1227,10 +1255,7 @@ class MaxentWorker(QThread):
                     # Buffered Leave-One-Out CV.
                     pooled_auc = float("nan")
                 aucs.append(pooled_auc)
-                self.log.emit(
-                    f"  Pooled AUC = {pooled_auc:.4f} "
-                    f"({n_folds_run} folds run)"
-                )
+                self.log.emit(f"  Pooled AUC = {pooled_auc:.4f} ({n_folds_run} folds run)")
             # first_fold stays None for BLOO -> jackknife falls back to
             # random hold-out per decision #3-a-i.
 
@@ -1241,10 +1266,19 @@ class MaxentWorker(QThread):
     # Jackknife
     # -----------------------------------------------------------------------
 
-    def _jackknife(self, full_model, x, y, feature_names,
-                   feature_types, cfg, first_fold,
-                   categorical_indices=None, sample_weight=None,
-                   cv_aucs=None):
+    def _jackknife(
+        self,
+        full_model,
+        x,
+        y,
+        feature_names,
+        feature_types,
+        cfg,
+        first_fold,
+        categorical_indices=None,
+        sample_weight=None,
+        cv_aucs=None,
+    ):
         """Jackknife variable importance with train+test AUC reporting.
 
         Returns:
@@ -1331,10 +1365,12 @@ class MaxentWorker(QThread):
                 feature_types=feature_types,
                 beta_multiplier=cfg.get("beta_mult", 1.0),
                 transform=cfg.get("transform", "cloglog"),
-                n_hinge_features=cfg.get("n_hinge",    50),
+                n_hinge_features=cfg.get("n_hinge", 50),
                 n_threshold_features=cfg.get("n_threshold", 50),
-                use_lambdas="last", n_lambdas=200,
-                class_weights=100, use_sklearn=True,
+                use_lambdas="last",
+                n_lambdas=200,
+                class_weights=100,
+                use_sklearn=True,
             )
 
         # ── Build the list of folds we'll average across ─────────────────
@@ -1343,18 +1379,18 @@ class MaxentWorker(QThread):
         # BLOO and no-CV we fall back to a single 25% hold-out — averaging
         # across one fold is just that fold's value, but the code path
         # remains uniform.
-        n_presence  = int(y.sum())
+        n_presence = int(y.sum())
         report_test = n_presence >= 10
-        cv_method   = int(cfg.get("cv_method", 0))
+        cv_method = int(cfg.get("cv_method", 0))
         n_folds_cfg = int(cfg.get("n_folds", 5))
         # None when the user unchecked "Fix random seed" — passes
         # through to sklearn / train_test_split as random_state=None
         # which means "draw from OS entropy", the behavior the
         # unchecked state promises.
         seed_cfg = cfg.get("random_seed")
-        seed     = int(seed_cfg) if seed_cfg is not None else None
+        seed = int(seed_cfg) if seed_cfg is not None else None
 
-        all_p  = np.where(y == 1)[0]
+        all_p = np.where(y == 1)[0]
         all_bg = np.where(y == 0)[0]
 
         fold_masks = []
@@ -1362,10 +1398,7 @@ class MaxentWorker(QThread):
             tr = np.ones(len(y), dtype=bool)
             te = np.zeros(len(y), dtype=bool)
             fold_masks.append((tr, te))
-            self.log.emit(
-                f"  Jackknife: n_presence={n_presence} < 10 — "
-                "reporting train AUC only."
-            )
+            self.log.emit(f"  Jackknife: n_presence={n_presence} < 10 — reporting train AUC only.")
         elif cv_method in (1, 2):
             # 1 = Geographic K-Fold, 2 = Random K-Fold
             try:
@@ -1375,20 +1408,20 @@ class MaxentWorker(QThread):
                         splitter = eb.make_geographic_kfold(n_splits=n_folds_cfg)
                         src = presence_clean.reset_index(drop=True)
                     else:
-                        splitter = KFold(n_splits=n_folds_cfg, shuffle=True,
-                                         random_state=seed)
+                        splitter = KFold(n_splits=n_folds_cfg, shuffle=True, random_state=seed)
                         src = np.arange(len(all_p))
                 else:
-                    splitter = KFold(n_splits=n_folds_cfg, shuffle=True,
-                                     random_state=seed)
+                    splitter = KFold(n_splits=n_folds_cfg, shuffle=True, random_state=seed)
                     src = np.arange(len(all_p))
                 for tr_p, te_p in splitter.split(src):
                     if len(te_p) == 0:
                         continue
                     tr = np.zeros(len(y), dtype=bool)
-                    tr[all_p[tr_p]] = True; tr[all_bg] = True
+                    tr[all_p[tr_p]] = True
+                    tr[all_bg] = True
                     te = np.zeros(len(y), dtype=bool)
-                    te[all_p[te_p]] = True; te[all_bg] = True
+                    te[all_p[te_p]] = True
+                    te[all_bg] = True
                     fold_masks.append((tr, te))
             except Exception as e:
                 # Fall back to a single hold-out if the splitter blows
@@ -1415,16 +1448,15 @@ class MaxentWorker(QThread):
                     np.arange(len(all_p)), test_size=0.25, random_state=seed
                 )
                 tr = np.zeros(len(y), dtype=bool)
-                tr[all_p[tr_p]] = True; tr[all_bg] = True
+                tr[all_p[tr_p]] = True
+                tr[all_bg] = True
                 te = np.zeros(len(y), dtype=bool)
-                te[all_p[te_p]] = True;  te[all_bg]  = True
+                te[all_p[te_p]] = True
+                te[all_bg] = True
                 fold_masks.append((tr, te))
-                self.log.emit(
-                    f"  Jackknife: random 25% hold-out "
-                    f"({len(te_p)} test presences)."
-                )
+                self.log.emit(f"  Jackknife: random 25% hold-out ({len(te_p)} test presences).")
 
-        n_folds_actual = len(fold_masks)
+        len(fold_masks)
 
         # ── Full-model reference AUCs ────────────────────────────────────
         # Train AUC is computed once on the whole dataset (matches the
@@ -1440,8 +1472,7 @@ class MaxentWorker(QThread):
         full_train_auc = _auc(full_model, x, y)
         if cv_aucs is not None:
             valid_cv = [a for a in cv_aucs if not np.isnan(a)]
-            full_test_auc = (float(np.mean(valid_cv))
-                             if valid_cv else float("nan"))
+            full_test_auc = float(np.mean(valid_cv)) if valid_cv else float("nan")
         else:
             full_test_aucs = []
             for tr, te in fold_masks:
@@ -1450,18 +1481,20 @@ class MaxentWorker(QThread):
                 sw_tr = sample_weight[tr] if sample_weight is not None else None
                 try:
                     m = _build()
-                    m.fit(x[tr], y[tr], sample_weight=sw_tr,
-                          categorical=categorical_indices or None,
-                          labels=feature_names)
+                    m.fit(
+                        x[tr],
+                        y[tr],
+                        sample_weight=sw_tr,
+                        categorical=categorical_indices or None,
+                        labels=feature_names,
+                    )
                     full_test_aucs.append(_auc(m, x[te], y[te]))
                 except Exception:
                     full_test_aucs.append(float("nan"))
-            full_test_auc = (float(np.nanmean(full_test_aucs))
-                             if full_test_aucs else float("nan"))
+            full_test_auc = float(np.nanmean(full_test_aucs)) if full_test_aucs else float("nan")
         self.log.emit(
             f"  Reference: full model — train AUC = {full_train_auc:.4f}"
-            + (f", mean held-out test AUC = {full_test_auc:.4f}"
-               if report_test else "")
+            + (f", mean held-out test AUC = {full_test_auc:.4f}" if report_test else "")
         )
 
         # ── Per-variable jackknife loop ──────────────────────────────────
@@ -1472,35 +1505,31 @@ class MaxentWorker(QThread):
         # folds, Checkerboard runs use the single train/test split,
         # BLOO / None use a 25% hold-out — so "evaluated on the test
         # split(s)" covers all four without misleading the reader.
-        self.log.emit(
-            "  Per-variable AUCs "
-            "(tr = train AUC, te = held-out test AUC):"
-        )
+        self.log.emit("  Per-variable AUCs (tr = train AUC, te = held-out test AUC):")
         results = []
-        n       = len(feature_names)
+        n = len(feature_names)
         cat_set = set(categorical_indices or [])
 
         for i, name in enumerate(feature_names):
-            if self._cancelled: break
+            if self._cancelled:
+                break
             pct = 75 + int(((i + 1) / n) * 20)
-            self.progress.emit(pct, f"Jackknife [{i+1}/{n}]: {name}")
+            self.progress.emit(pct, f"Jackknife [{i + 1}/{n}]: {name}")
 
             x_only = x[:, [i]]
-            cols   = [j for j in range(n) if j != i]
-            x_wo   = x[:, cols]
+            cols = [j for j in range(n) if j != i]
+            x_wo = x[:, cols]
             names_w = [feature_names[j] for j in cols]
 
             cat_only = [0] if i in cat_set else None
-            cat_wo = [
-                cols.index(j) for j in categorical_indices or [] if j != i
-            ] or None
+            cat_wo = [cols.index(j) for j in categorical_indices or [] if j != i] or None
 
             # Per-fold metric arrays --------------------------------------
             only_tr_aucs = []
             only_te_aucs = []
-            wo_tr_aucs   = []
-            wo_te_aucs   = []
-            only_skip_reason    = None
+            wo_tr_aucs = []
+            wo_te_aucs = []
+            only_skip_reason = None
             without_skip_reason = None
 
             for tr, te in fold_masks:
@@ -1511,18 +1540,23 @@ class MaxentWorker(QThread):
                     # Categorical-only: dummy-column workaround for
                     # elapid 1.x (LinearTransformer needs ≥1 column).
                     n_rows = x_only.shape[0]
-                    dummy  = np.zeros((n_rows, 1), dtype=x_only.dtype)
-                    x_aug  = np.hstack([x_only, dummy])
-                    cat_aug    = [0]
+                    dummy = np.zeros((n_rows, 1), dtype=x_only.dtype)
+                    x_aug = np.hstack([x_only, dummy])
+                    cat_aug = [0]
                     labels_aug = [name, "_dummy_zero_"]
                     try:
                         m = _build()
-                        m.fit(x_aug[tr], y[tr], sample_weight=sw_tr,
-                              categorical=cat_aug, labels=labels_aug)
+                        m.fit(
+                            x_aug[tr],
+                            y[tr],
+                            sample_weight=sw_tr,
+                            categorical=cat_aug,
+                            labels=labels_aug,
+                        )
                         tr_auc = _auc(m, x_aug[tr], y[tr])
-                        te_auc = (_auc(m, x_aug[te], y[te])
-                                  if report_test and te.any()
-                                  else float("nan"))
+                        te_auc = (
+                            _auc(m, x_aug[te], y[te]) if report_test and te.any() else float("nan")
+                        )
                         if abs(tr_auc - 0.5) < 0.05:
                             if only_skip_reason is None:
                                 only_skip_reason = (
@@ -1540,62 +1574,60 @@ class MaxentWorker(QThread):
                         only_te_aucs.append(te_auc)
                     except Exception as e:
                         if only_skip_reason is None:
-                            only_skip_reason = (
-                                f"only-* failed: {type(e).__name__}: "
-                                f"{str(e)[:200]}"
-                            )
+                            only_skip_reason = f"only-* failed: {type(e).__name__}: {str(e)[:200]}"
                 else:
                     try:
                         m = _build()
-                        m.fit(x_only[tr], y[tr], sample_weight=sw_tr,
-                              categorical=cat_only, labels=[name])
+                        m.fit(
+                            x_only[tr],
+                            y[tr],
+                            sample_weight=sw_tr,
+                            categorical=cat_only,
+                            labels=[name],
+                        )
                         only_tr_aucs.append(_auc(m, x_only[tr], y[tr]))
                         if report_test and te.any():
                             only_te_aucs.append(_auc(m, x_only[te], y[te]))
                     except Exception as e:
                         if only_skip_reason is None:
-                            only_skip_reason = (
-                                f"only-* failed: {type(e).__name__}: "
-                                f"{str(e)[:200]}"
-                            )
+                            only_skip_reason = f"only-* failed: {type(e).__name__}: {str(e)[:200]}"
 
                 # Without this variable --------------------------------
                 try:
                     m = _build()
-                    m.fit(x_wo[tr], y[tr], sample_weight=sw_tr,
-                          categorical=cat_wo, labels=names_w)
+                    m.fit(x_wo[tr], y[tr], sample_weight=sw_tr, categorical=cat_wo, labels=names_w)
                     wo_tr_aucs.append(_auc(m, x_wo[tr], y[tr]))
                     if report_test and te.any():
                         wo_te_aucs.append(_auc(m, x_wo[te], y[te]))
                 except Exception as e:
                     if without_skip_reason is None:
                         without_skip_reason = (
-                            f"without-* failed: {type(e).__name__}: "
-                            f"{str(e)[:200]}"
+                            f"without-* failed: {type(e).__name__}: {str(e)[:200]}"
                         )
 
             def _mean(arr):
                 valid = [v for v in arr if not np.isnan(v)]
                 return float(np.mean(valid)) if valid else float("nan")
 
-            only_train_auc    = _mean(only_tr_aucs)
-            only_test_auc     = _mean(only_te_aucs)
+            only_train_auc = _mean(only_tr_aucs)
+            only_test_auc = _mean(only_te_aucs)
             without_train_auc = _mean(wo_tr_aucs)
-            without_test_auc  = _mean(wo_te_aucs)
+            without_test_auc = _mean(wo_te_aucs)
 
             train_drop = full_train_auc - without_train_auc
-            test_drop  = (full_test_auc - without_test_auc
-                          if report_test else float("nan"))
+            test_drop = full_test_auc - without_test_auc if report_test else float("nan")
 
-            results.append({
-                "variable":           name,
-                "only_train_auc":     round(only_train_auc,     4),
-                "only_test_auc":      round(only_test_auc,      4),
-                "without_train_auc":  round(without_train_auc,  4),
-                "without_test_auc":   round(without_test_auc,   4),
-                "train_drop_without": round(train_drop,         4),
-                "test_drop_without":  round(test_drop,          4),
-            })
+            results.append(
+                {
+                    "variable": name,
+                    "only_train_auc": round(only_train_auc, 4),
+                    "only_test_auc": round(only_test_auc, 4),
+                    "without_train_auc": round(without_train_auc, 4),
+                    "without_test_auc": round(without_test_auc, 4),
+                    "train_drop_without": round(train_drop, 4),
+                    "test_drop_without": round(test_drop, 4),
+                }
+            )
             # Compute the variable-name column width once per call
             # so all per-variable lines line up. We pad to the longest
             # feature name in the current run.
@@ -1637,14 +1669,16 @@ class MaxentWorker(QThread):
         try:
             from openpyxl import Workbook
             from openpyxl.styles import (
-                Font, Alignment, Border, Side, PatternFill,
+                Alignment,
+                Border,
+                Font,
+                Side,
             )
         except Exception as e:
             # openpyxl is in REQUIRED_PACKAGES so this should never
             # trigger in production, but degrade gracefully if it does.
             self.log.emit(
-                f"  ⚠ XLSX export skipped — openpyxl unavailable "
-                f"({type(e).__name__}: {e})"
+                f"  ⚠ XLSX export skipped — openpyxl unavailable ({type(e).__name__}: {e})"
             )
             return
 
@@ -1657,24 +1691,21 @@ class MaxentWorker(QThread):
         #   • Top + bottom rules thick (1.5pt), header bottom thin (0.5pt)
         #   • No vertical borders
         #   • Section title row: bold, slightly larger
-        FONT_BODY   = Font(name="Times New Roman", size=11)
-        FONT_BOLD   = Font(name="Times New Roman", size=11, bold=True)
+        FONT_BODY = Font(name="Times New Roman", size=11)
+        FONT_BOLD = Font(name="Times New Roman", size=11, bold=True)
         FONT_ITALIC = Font(name="Times New Roman", size=10, italic=True)
-        FONT_TITLE  = Font(name="Times New Roman", size=12, bold=True)
+        FONT_TITLE = Font(name="Times New Roman", size=12, bold=True)
 
-        ALIGN_LEFT   = Alignment(horizontal="left",   vertical="center",
-                                  wrap_text=True)
-        ALIGN_CENTER = Alignment(horizontal="center", vertical="center",
-                                  wrap_text=True)
-        ALIGN_RIGHT  = Alignment(horizontal="right",  vertical="center",
-                                  wrap_text=True)
+        ALIGN_LEFT = Alignment(horizontal="left", vertical="center", wrap_text=True)
+        ALIGN_CENTER = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        ALIGN_RIGHT = Alignment(horizontal="right", vertical="center", wrap_text=True)
 
         SIDE_THICK = Side(border_style="medium", color="000000")
-        SIDE_THIN  = Side(border_style="thin",   color="000000")
+        SIDE_THIN = Side(border_style="thin", color="000000")
 
-        BORDER_TOP_THICK = Border(top=SIDE_THICK)
-        BORDER_HEADER    = Border(bottom=SIDE_THIN)
-        BORDER_BOT_THICK = Border(bottom=SIDE_THICK)
+        Border(top=SIDE_THICK)
+        Border(bottom=SIDE_THIN)
+        Border(bottom=SIDE_THICK)
 
         ROW_HEIGHT = 24  # ≈ 1.6× line spacing at 11pt Times New Roman
 
@@ -1683,8 +1714,7 @@ class MaxentWorker(QThread):
             """Write a 'Table N. Description' row above the table."""
             ws.cell(row=row, column=1, value=text).font = FONT_TITLE
             ws.cell(row=row, column=1).alignment = ALIGN_LEFT
-            ws.merge_cells(start_row=row, end_row=row,
-                           start_column=1, end_column=n_cols)
+            ws.merge_cells(start_row=row, end_row=row, start_column=1, end_column=n_cols)
             ws.row_dimensions[row].height = 24
 
         def _write_header(ws, row, headers):
@@ -1699,8 +1729,7 @@ class MaxentWorker(QThread):
                 cell.border = Border(top=SIDE_THICK, bottom=SIDE_THIN)
             ws.row_dimensions[row].height = ROW_HEIGHT
 
-        def _write_data(ws, row, values, alignments=None,
-                         bold_cols=(), is_last=False):
+        def _write_data(ws, row, values, alignments=None, bold_cols=(), is_last=False):
             """Write one body row. `alignments` is a list of
             'left'/'center'/'right' per column; `bold_cols` indicates
             columns that should render in bold (e.g. category cells in
@@ -1718,9 +1747,13 @@ class MaxentWorker(QThread):
                 if alignments:
                     a = alignments[col_idx - 1]
                     cell.alignment = (
-                        ALIGN_LEFT   if a == "left"   else
-                        ALIGN_CENTER if a == "center" else
-                        ALIGN_RIGHT  if a == "right"  else ALIGN_LEFT
+                        ALIGN_LEFT
+                        if a == "left"
+                        else ALIGN_CENTER
+                        if a == "center"
+                        else ALIGN_RIGHT
+                        if a == "right"
+                        else ALIGN_LEFT
                     )
                 else:
                     cell.alignment = ALIGN_LEFT
@@ -1743,10 +1776,11 @@ class MaxentWorker(QThread):
             """
             ws.cell(row=row, column=1, value=text).font = FONT_ITALIC
             ws.cell(row=row, column=1).alignment = Alignment(
-                horizontal="left", vertical="top", wrap_text=True,
+                horizontal="left",
+                vertical="top",
+                wrap_text=True,
             )
-            ws.merge_cells(start_row=row, end_row=row,
-                           start_column=1, end_column=n_cols)
+            ws.merge_cells(start_row=row, end_row=row, start_column=1, end_column=n_cols)
             # Estimate visual line count from total merged width.
             # Excel "column width" units ≈ characters of the default
             # font at 11pt. The footnote is 10pt italic Times New Roman
@@ -1757,39 +1791,36 @@ class MaxentWorker(QThread):
             # 1.05 over-estimated chars-per-line and produced footnote
             # rows that visually clipped on the ~190-260 char footnotes
             # (Overview, Variables, Jackknife).
-            total_width = (sum(col_widths)
-                           if col_widths else max(60, n_cols * 18))
+            total_width = sum(col_widths) if col_widths else max(60, n_cols * 18)
             chars_per_line = max(40, int(total_width * 0.9))
-            n_lines = max(1, (len(text) + chars_per_line - 1)
-                              // chars_per_line)
+            n_lines = max(1, (len(text) + chars_per_line - 1) // chars_per_line)
             # Each line at 10pt italic needs ~15pt of row height
             # (10pt glyphs + leading + descender slack); add 6pt of
             # top/bottom padding so adjacent footnotes don't touch
             # each other.
-            ws.row_dimensions[row].height = max(ROW_HEIGHT,
-                                                 15 * n_lines + 6)
+            ws.row_dimensions[row].height = max(ROW_HEIGHT, 15 * n_lines + 6)
 
         def _autosize(ws, widths):
             from openpyxl.utils import get_column_letter
+
             for i, w in enumerate(widths, start=1):
                 ws.column_dimensions[get_column_letter(i)].width = w
             # Fit-to-width on print/PDF: keeps the academic table on
             # one horizontal page when researchers paste the rendered
             # output into a manuscript Supplementary section. height=0
             # means "as many vertical pages as needed".
-            ws.page_setup.fitToWidth  = 1
+            ws.page_setup.fitToWidth = 1
             ws.page_setup.fitToHeight = 0
             ws.sheet_properties.pageSetUpPr.fitToPage = True
-            ws.page_margins.left   = 0.5
-            ws.page_margins.right  = 0.5
-            ws.page_margins.top    = 0.6
+            ws.page_margins.left = 0.5
+            ws.page_margins.right = 0.5
+            ws.page_margins.top = 0.6
             ws.page_margins.bottom = 0.6
 
         # ── Gather context ───────────────────────────────────────────────
-        meta  = result.get("meta", {}) or {}
-        cv_labels = ["None", "Geographic K-Fold", "Random K-Fold",
-                     "Checkerboard", "Buffered LOO"]
-        cv_label  = cv_labels[cfg.get("cv_method", 0)]
+        meta = result.get("meta", {}) or {}
+        cv_labels = ["None", "Geographic K-Fold", "Random K-Fold", "Checkerboard", "Buffered LOO"]
+        cv_label = cv_labels[cfg.get("cv_method", 0)]
         try:
             from .. import __version__ as _qmx_version
         except Exception:
@@ -1808,7 +1839,8 @@ class MaxentWorker(QThread):
         # related rows visually without sortable repetition).
         ws = wb.create_sheet("Overview")
         _write_section_title(
-            ws, 1,
+            ws,
+            1,
             "Table 1. Experimental setup, training data, and run-level metrics.",
             n_cols=3,
         )
@@ -1817,62 +1849,75 @@ class MaxentWorker(QThread):
         n_p = meta.get("n_presence", "")
         n_b = meta.get("n_background", "")
         full_train = result.get("full_auc")
-        cv_aucs    = result.get("cv_aucs", []) or []
-        cv_valid   = [a for a in cv_aucs if a is not None and not (
-            isinstance(a, float) and np.isnan(a)
-        )]
-        cv_mean = (round(float(np.mean(cv_valid)), 4)
-                   if cv_valid else "")
-        cv_std  = (round(float(np.std(cv_valid)),  4)
-                   if cv_valid else "")
+        cv_aucs = result.get("cv_aucs", []) or []
+        cv_valid = [
+            a for a in cv_aucs if a is not None and not (isinstance(a, float) and np.isnan(a))
+        ]
+        cv_mean = round(float(np.mean(cv_valid)), 4) if cv_valid else ""
+        cv_std = round(float(np.std(cv_valid)), 4) if cv_valid else ""
         full_test_jk = result.get("jk_full_test_auc")
 
         # None ⇒ user unchecked "Fix random seed"; record this
         # explicitly so the run is recoverable from the xlsx alone.
         seed_cfg = cfg.get("random_seed")
-        seed_disp = (seed_cfg if seed_cfg is not None
-                     else "random (not fixed)")
+        seed_disp = seed_cfg if seed_cfg is not None else "random (not fixed)"
 
         groups = [
-            ("Run", [
-                ("Generated",        _dt.datetime.now()
-                                       .strftime("%Y-%m-%d %H:%M:%S")),
-                ("QMaxent version",  _qmx_version),
-                ("Random seed",      seed_disp),
-            ]),
-            ("Training data", [
-                ("Presence points",   n_p),
-                ("Background points", n_b),
-                ("Categorical variables",
-                 ", ".join(meta.get("feature_names", [])[i]
-                           for i in (meta.get("categorical_indices", []) or [])
-                           if i < len(meta.get("feature_names", []) or []))
-                 or "—"),
-            ]),
-            ("Model", [
-                ("Output transform",  meta.get("transform", "")),
-                ("Beta multiplier",   meta.get("beta_multiplier", "")),
-                ("Feature types",
-                 ", ".join(meta.get("feature_types", []) or [])
-                 or "—"),
-                ("Distance weights",
-                 "yes" if meta.get("distance_weights") else "no"),
-            ]),
-            ("Cross-validation", [
-                ("Method",                     cv_label),
-                ("Folds requested",            cfg.get("n_folds", "")),
-                ("Folds completed",            len(cv_valid)
-                                                 if cv_valid else "—"),
-            ]),
-            ("Performance", [
-                ("Training AUC (full data)",
-                 f"{float(full_train):.4f}" if full_train else "—"),
-                ("CV AUC (mean ± std)",
-                 (f"{float(cv_mean):.4f} ± {float(cv_std):.4f}"
-                  if cv_valid else "—")),
-                ("Jackknife full-model test AUC",
-                 f"{float(full_test_jk):.4f}" if full_test_jk else "—"),
-            ]),
+            (
+                "Run",
+                [
+                    ("Generated", _dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+                    ("QMaxent version", _qmx_version),
+                    ("Random seed", seed_disp),
+                ],
+            ),
+            (
+                "Training data",
+                [
+                    ("Presence points", n_p),
+                    ("Background points", n_b),
+                    (
+                        "Categorical variables",
+                        ", ".join(
+                            meta.get("feature_names", [])[i]
+                            for i in (meta.get("categorical_indices", []) or [])
+                            if i < len(meta.get("feature_names", []) or [])
+                        )
+                        or "—",
+                    ),
+                ],
+            ),
+            (
+                "Model",
+                [
+                    ("Output transform", meta.get("transform", "")),
+                    ("Beta multiplier", meta.get("beta_multiplier", "")),
+                    ("Feature types", ", ".join(meta.get("feature_types", []) or []) or "—"),
+                    ("Distance weights", "yes" if meta.get("distance_weights") else "no"),
+                ],
+            ),
+            (
+                "Cross-validation",
+                [
+                    ("Method", cv_label),
+                    ("Folds requested", cfg.get("n_folds", "")),
+                    ("Folds completed", len(cv_valid) if cv_valid else "—"),
+                ],
+            ),
+            (
+                "Performance",
+                [
+                    ("Training AUC (full data)", f"{float(full_train):.4f}" if full_train else "—"),
+                    (
+                        "CV AUC (mean ± std)",
+                        (f"{float(cv_mean):.4f} ± {float(cv_std):.4f}" if cv_valid else "—"),
+                    ),
+                    (
+                        "Jackknife full-model test AUC",
+                        f"{float(full_test_jk):.4f}" if full_test_jk else "—",
+                    ),
+                ],
+            ),
         ]
 
         _write_header(ws, 2, ["Category", "Item", "Value"])
@@ -1883,9 +1928,10 @@ class MaxentWorker(QThread):
             first_in_group = True
             for item, value in items:
                 seen += 1
-                is_last = (seen == total_rows)
+                is_last = seen == total_rows
                 _write_data(
-                    ws, cur,
+                    ws,
+                    cur,
                     [cat if first_in_group else "", item, value],
                     alignments=["left", "left", "left"],
                     bold_cols=(1,),
@@ -1895,12 +1941,14 @@ class MaxentWorker(QThread):
                 cur += 1
         ov_widths = [22, 36, 60]
         _write_footnote(
-            ws, cur,
+            ws,
+            cur,
             "Generated by QMaxent. CV AUC ± std is across CV folds; "
             "the jackknife full-model test AUC is averaged across the "
             "same folds and serves as the reference for the per-variable "
             "Jackknife sheet.",
-            n_cols=3, col_widths=ov_widths,
+            n_cols=3,
+            col_widths=ov_widths,
         )
         _autosize(ws, ov_widths)
 
@@ -1909,13 +1957,14 @@ class MaxentWorker(QThread):
         # ════════════════════════════════════════════════════════════════
         ws = wb.create_sheet("Variables")
         _write_section_title(
-            ws, 1,
+            ws,
+            1,
             "Table 2. Predictor variables, types, and training-data range.",
             n_cols=4,
         )
-        cat_set    = set(meta.get("categorical_indices", []) or [])
-        varmin     = meta.get("varmin", {}) or {}
-        varmax     = meta.get("varmax", {}) or {}
+        cat_set = set(meta.get("categorical_indices", []) or [])
+        varmin = meta.get("varmin", {}) or {}
+        varmax = meta.get("varmax", {}) or {}
         cat_levels = meta.get("categorical_levels", {}) or {}
         feature_names = meta.get("feature_names", []) or []
 
@@ -1927,20 +1976,17 @@ class MaxentWorker(QThread):
             if v_type == "continuous":
                 if name in varmin and name in varmax:
                     range_str = (
-                        f"[{round(float(varmin[name]), 4)}, "
-                        f"{round(float(varmax[name]), 4)}]"
+                        f"[{round(float(varmin[name]), 4)}, {round(float(varmax[name]), 4)}]"
                     )
                 else:
                     range_str = "—"
             else:
                 lvls = cat_levels.get(name, [])
-                range_str = (
-                    ", ".join(str(x) for x in lvls)
-                    if lvls else "(levels not recorded)"
-                )
-            is_last = (i == n_vars - 1)
+                range_str = ", ".join(str(x) for x in lvls) if lvls else "(levels not recorded)"
+            is_last = i == n_vars - 1
             _write_data(
-                ws, cur,
+                ws,
+                cur,
                 [i + 1, name, v_type, range_str],
                 alignments=["center", "left", "center", "left"],
                 is_last=is_last,
@@ -1948,12 +1994,14 @@ class MaxentWorker(QThread):
             cur += 1
         var_widths = [6, 30, 14, 60]
         _write_footnote(
-            ws, cur,
+            ws,
+            cur,
             "Range gives the [min, max] observed at training time for "
             "continuous variables; for categorical variables, the levels "
             "encountered are listed. Use this range to identify "
             "extrapolation regions when projecting the model.",
-            n_cols=4, col_widths=var_widths,
+            n_cols=4,
+            col_widths=var_widths,
         )
         _autosize(ws, var_widths)
 
@@ -1963,21 +2011,21 @@ class MaxentWorker(QThread):
         if cv_valid or cv_aucs:
             ws = wb.create_sheet("Cross-validation")
             _write_section_title(
-                ws, 1,
+                ws,
+                1,
                 f"Table 3. Cross-validation results ({cv_label}).",
                 n_cols=2,
             )
             _write_header(ws, 2, ["Fold", "AUC"])
             cur = 3
             for i, auc in enumerate(cv_aucs, start=1):
-                if auc is None or (
-                    isinstance(auc, float) and np.isnan(auc)
-                ):
+                if auc is None or (isinstance(auc, float) and np.isnan(auc)):
                     val = "NaN"
                 else:
                     val = f"{float(auc):.4f}"
                 _write_data(
-                    ws, cur,
+                    ws,
+                    cur,
                     [f"Fold {i}", val],
                     alignments=["center", "center"],
                     is_last=False,
@@ -1986,11 +2034,11 @@ class MaxentWorker(QThread):
             # Mean ± std summary row.
             if cv_valid:
                 cv_mean_s = f"{float(cv_mean):.4f}"
-                cv_std_s  = f"{float(cv_std):.4f}"
+                cv_std_s = f"{float(cv_std):.4f}"
                 _write_data(
-                    ws, cur,
-                    ["Mean ± std",
-                     f"{cv_mean_s} ± {cv_std_s}"],
+                    ws,
+                    cur,
+                    ["Mean ± std", f"{cv_mean_s} ± {cv_std_s}"],
                     alignments=["center", "center"],
                     bold_cols=(1, 2),
                     is_last=True,
@@ -1998,12 +2046,14 @@ class MaxentWorker(QThread):
                 cur += 1
             cv_widths = [22, 30]
             _write_footnote(
-                ws, cur,
+                ws,
+                cur,
                 f"AUC computed on each fold's held-out presences "
                 f"({cv_label}). Folds with degenerate test sets (e.g. "
                 f"all-positive after spatial partitioning) are reported "
                 f"as NaN and excluded from the mean.",
-                n_cols=2, col_widths=cv_widths,
+                n_cols=2,
+                col_widths=cv_widths,
             )
             _autosize(ws, cv_widths)
 
@@ -2014,11 +2064,13 @@ class MaxentWorker(QThread):
         if jk:
             ws = wb.create_sheet("Jackknife")
             _write_section_title(
-                ws, 1,
+                ws,
+                1,
                 "Table 4. Jackknife variable importance — AUC for "
                 "models with only / without each variable.",
                 n_cols=7,
             )
+
             # Sort by descending test-AUC drop (most important first)
             # so the table reads top-down by importance, matching the
             # academic convention.
@@ -2027,76 +2079,90 @@ class MaxentWorker(QThread):
                 if d is None or (isinstance(d, float) and np.isnan(d)):
                     d = r.get("train_drop_without", float("-inf"))
                 return -float(d) if d is not None else 0.0
+
             jk_sorted = sorted(jk, key=_key)
 
-            _write_header(ws, 2, [
-                "Variable",
-                "Only — train AUC", "Only — test AUC",
-                "Without — train AUC", "Without — test AUC",
-                "Train AUC drop", "Test AUC drop",
-            ])
+            _write_header(
+                ws,
+                2,
+                [
+                    "Variable",
+                    "Only — train AUC",
+                    "Only — test AUC",
+                    "Without — train AUC",
+                    "Without — test AUC",
+                    "Train AUC drop",
+                    "Test AUC drop",
+                ],
+            )
             cur = 3
             n = len(jk_sorted)
             for i, r in enumerate(jk_sorted):
-                def _v(key):
+
+                def _v(key, r=r):  # default arg captures loop variable (ruff B023)
                     val = r.get(key)
-                    if val is None or (
-                        isinstance(val, float) and np.isnan(val)
-                    ):
+                    if val is None or (isinstance(val, float) and np.isnan(val)):
                         return "NaN"
                     # 4-decimal fixed-point string keeps the column
                     # visually aligned (0.89 → "0.8900"), matching the
                     # academic table convention. We return a string so
                     # Excel doesn't strip trailing zeros on display.
                     return f"{float(val):.4f}"
-                is_last = (i == n - 1)
+
+                is_last = i == n - 1
                 _write_data(
-                    ws, cur,
+                    ws,
+                    cur,
                     [
                         r.get("variable", ""),
-                        _v("only_train_auc"),  _v("only_test_auc"),
-                        _v("without_train_auc"), _v("without_test_auc"),
-                        _v("train_drop_without"), _v("test_drop_without"),
+                        _v("only_train_auc"),
+                        _v("only_test_auc"),
+                        _v("without_train_auc"),
+                        _v("without_test_auc"),
+                        _v("train_drop_without"),
+                        _v("test_drop_without"),
                     ],
-                    alignments=["left",
-                                 "center", "center",
-                                 "center", "center",
-                                 "center", "center"],
+                    alignments=["left", "center", "center", "center", "center", "center", "center"],
                     is_last=is_last,
                 )
                 cur += 1
 
             # Optional skip-reason footnotes (only-* skipped diagnostics).
             jk_widths = [22, 16, 16, 18, 18, 14, 14]
-            skipped = [r for r in jk_sorted
-                       if r.get("only_skip_reason") or
-                          r.get("without_skip_reason")]
+            skipped = [
+                r for r in jk_sorted if r.get("only_skip_reason") or r.get("without_skip_reason")
+            ]
             if skipped:
                 _write_footnote(
-                    ws, cur,
-                    "Skipped diagnostics (NaN cells):", n_cols=7,
+                    ws,
+                    cur,
+                    "Skipped diagnostics (NaN cells):",
+                    n_cols=7,
                     col_widths=jk_widths,
                 )
                 cur += 1
                 for r in skipped:
                     if r.get("only_skip_reason"):
                         _write_footnote(
-                            ws, cur,
-                            f"  • {r['variable']}: "
-                            f"{r['only_skip_reason']}",
-                            n_cols=7, col_widths=jk_widths,
+                            ws,
+                            cur,
+                            f"  • {r['variable']}: {r['only_skip_reason']}",
+                            n_cols=7,
+                            col_widths=jk_widths,
                         )
                         cur += 1
                     if r.get("without_skip_reason"):
                         _write_footnote(
-                            ws, cur,
-                            f"  • {r['variable']}: "
-                            f"{r['without_skip_reason']}",
-                            n_cols=7, col_widths=jk_widths,
+                            ws,
+                            cur,
+                            f"  • {r['variable']}: {r['without_skip_reason']}",
+                            n_cols=7,
+                            col_widths=jk_widths,
                         )
                         cur += 1
             _write_footnote(
-                ws, cur,
+                ws,
+                cur,
                 "Only — model fit using a single variable. "
                 "Without — model fit using all other variables. "
                 "Drop = full-model AUC − without-variable AUC; "
@@ -2104,7 +2170,8 @@ class MaxentWorker(QThread):
                 "contribution is harder to recover from the others. "
                 "Each AUC is the mean across CV folds. Variables are "
                 "sorted by descending test-AUC drop.",
-                n_cols=7, col_widths=jk_widths,
+                n_cols=7,
+                col_widths=jk_widths,
             )
             _autosize(ws, jk_widths)
 
@@ -2122,23 +2189,29 @@ class MaxentWorker(QThread):
             n_repeats = result.get("permutation_n_repeats", "?")
             pi_source = result.get("permutation_source", "training set")
             _write_section_title(
-                ws, 1,
+                ws,
+                1,
                 f"Table 5. Permutation importance — AUC drop when each "
                 f"variable's values are randomly shuffled "
                 f"(n_repeats={n_repeats}, evaluated on {pi_source}).",
                 n_cols=4,
             )
-            _write_header(ws, 2, [
-                "Variable",
-                "Mean importance",
-                f"Std (n={n_repeats})",
-                "Normalized (%)",
-            ])
+            _write_header(
+                ws,
+                2,
+                [
+                    "Variable",
+                    "Mean importance",
+                    f"Std (n={n_repeats})",
+                    "Normalized (%)",
+                ],
+            )
             cur = 3
             n_pi = len(pi_rows)
             for i, r in enumerate(pi_rows):
                 _write_data(
-                    ws, cur,
+                    ws,
+                    cur,
                     [
                         r.get("variable", ""),
                         f"{r.get('importance_mean', 0.0):.4f}",
@@ -2151,7 +2224,8 @@ class MaxentWorker(QThread):
                 cur += 1
             pi_widths = [22, 18, 18, 16]
             _write_footnote(
-                ws, cur,
+                ws,
+                cur,
                 "Permutation importance = AUC drop after shuffling each "
                 "variable's values, computed via sklearn's "
                 "permutation_importance (n_repeats independent shuffles). "
@@ -2162,7 +2236,8 @@ class MaxentWorker(QThread):
                 "correlated with other features in the model; interpret "
                 "alongside the jackknife sheet rather than alone. "
                 "Variables sorted by descending mean importance.",
-                n_cols=4, col_widths=pi_widths,
+                n_cols=4,
+                col_widths=pi_widths,
             )
             _autosize(ws, pi_widths)
 
@@ -2174,9 +2249,9 @@ class MaxentWorker(QThread):
         if ps:
             ws = wb.create_sheet("Priority Sites")
             _write_section_title(
-                ws, 1,
-                "Table 6. Priority Sites threshold values from the "
-                "training data.",
+                ws,
+                1,
+                "Table 6. Priority Sites threshold values from the training data.",
                 n_cols=2,
             )
             _write_header(ws, 2, ["Threshold method", "Value"])
@@ -2189,7 +2264,8 @@ class MaxentWorker(QThread):
                 except Exception:
                     v_disp = v
                 _write_data(
-                    ws, cur,
+                    ws,
+                    cur,
                     [k, v_disp],
                     alignments=["left", "center"],
                     is_last=(i == n_it - 1),
@@ -2197,17 +2273,18 @@ class MaxentWorker(QThread):
                 cur += 1
             ps_widths = [28, 22]
             _write_footnote(
-                ws, cur,
+                ws,
+                cur,
                 "Thresholds derived from the model's predictions on the "
                 "training presences: MTP — minimum training presence; "
                 "T10 — 10th-percentile training presence; "
                 "MaxSSS — value maximizing sensitivity + specificity. "
                 "Used to define the lower bound of the high-suitability "
                 "band in Validation-mode priority site selection.",
-                n_cols=2, col_widths=ps_widths,
+                n_cols=2,
+                col_widths=ps_widths,
             )
             _autosize(ws, ps_widths)
 
         wb.save(cfg["output_xlsx"])
         self.log.emit(f"  → Results XLSX saved: {cfg['output_xlsx']}")
-

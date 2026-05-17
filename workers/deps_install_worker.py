@@ -26,6 +26,7 @@ class DepsInstallWorker(QThread):
     def run(self):
         try:
             from ..core.venv_manager import create_venv_and_install
+
             success, message = create_venv_and_install(
                 progress_callback=lambda p, m: self.progress.emit(p, m),
                 cancel_check=lambda: self._cancelled,

@@ -56,6 +56,30 @@ extend-exclude = ["i18n/lang_ko.py"]  # auto-generated translations
 # Conservative ruleset — we want signal, not noise.
 select = ["E", "F", "W", "I", "B", "UP", "SIM"]
 ignore = [
-    "E501",  # line length handled by formatter
-    "B008",  # `Default(arg=Func())` is the Qt slot idiom
+    # Formatter handles wrapping; we don't enforce line length here.
+    "E501",
+    # `Default(arg=Func())` is the Qt slot idiom — frequent in dialogs / workers.
+    "B008",
+    # One-line statements / semicolon joins. Existing v0.1.7 code uses these in
+    # a few places for brevity; they don't affect correctness or readability
+    # in those spots and the formatter already handles wrapping decisions.
+    "E701",
+    "E702",
+    # Single-letter variable names like `l` (layer), `I` (intensity), `O` (origin)
+    # appear in numerical / geospatial code as conventional names matching the
+    # math notation the surrounding comments cite. We treat them as part of the
+    # domain vocabulary rather than ambiguous identifiers.
+    "E741",
+    # `zip(a, b)` without `strict=` — `strict=` is Python 3.10+. QGIS 3.44 ships
+    # Python 3.9 in some distribution channels, and we don't want lint to gate
+    # that compatibility decision.
+    "B905",
+    # pyupgrade modernization (PEP 604/585 type hints, `dict`/`list` lowercase,
+    # etc.) — stylistic-only; flipping these would create a noisy diff across
+    # the entire codebase without behavioural benefit, and some changes would
+    # require a `from __future__ import annotations` audit we haven't done.
+    "UP",
+    # Code-simplification suggestions (ternary expressions, contextlib.suppress,
+    # dict.get default omissions, etc.) — stylistic.
+    "SIM",
 ]

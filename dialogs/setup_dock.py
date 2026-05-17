@@ -1,11 +1,17 @@
 """QMaxent Setup Dock — dependency installation panel."""
 
 from qgis.PyQt.QtCore import Qt
-from qgis.PyQt.QtWidgets import (
-    QDockWidget, QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QProgressBar, QPushButton, QGroupBox,
-)
 from qgis.PyQt.QtGui import QFont
+from qgis.PyQt.QtWidgets import (
+    QDockWidget,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QProgressBar,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 
 from ..i18n import tr
 
@@ -49,20 +55,22 @@ class SetupDockWidget(QDockWidget):
         # users can find the public docs without first clicking through
         # GitHub.
         version_str = self._read_plugin_version() or "?"
-        plugin_info = QLabel(tr(
-            "<b>QMaxent</b> {version}<br>"
-            "Author: Byeong-Hyeok Yu &lt;bhyu@knps.or.kr&gt;<br>"
-            "License: MIT — Copyright © 2026 Byeong-Hyeok Yu<br>"
-            "Homepage: "
-            "<a href=\"https://osgeokr.github.io/qmaxent/\">"
-            "osgeokr.github.io/qmaxent</a><br>"
-            "Manual: "
-            "<a href=\"https://osgeokr.github.io/qmaxent/manual/\">"
-            "osgeokr.github.io/qmaxent/manual</a><br>"
-            "Repository: "
-            "<a href=\"https://github.com/osgeokr/qmaxent\">"
-            "github.com/osgeokr/qmaxent</a>"
-        ).format(version=version_str))
+        plugin_info = QLabel(
+            tr(
+                "<b>QMaxent</b> {version}<br>"
+                "Author: Byeong-Hyeok Yu &lt;bhyu@knps.or.kr&gt;<br>"
+                "License: MIT — Copyright © 2026 Byeong-Hyeok Yu<br>"
+                "Homepage: "
+                '<a href="https://osgeokr.github.io/qmaxent/">'
+                "osgeokr.github.io/qmaxent</a><br>"
+                "Manual: "
+                '<a href="https://osgeokr.github.io/qmaxent/manual/">'
+                "osgeokr.github.io/qmaxent/manual</a><br>"
+                "Repository: "
+                '<a href="https://github.com/osgeokr/qmaxent">'
+                "github.com/osgeokr/qmaxent</a>"
+            ).format(version=version_str)
+        )
         plugin_info.setWordWrap(True)
         plugin_info.setOpenExternalLinks(True)
         plugin_info.setTextInteractionFlags(Qt.TextBrowserInteraction)
@@ -74,28 +82,30 @@ class SetupDockWidget(QDockWidget):
         # it, and the project website renders it dynamically).
 
         # (2) Dependencies
-        info_text = QLabel(tr(
-            "<b>Dependencies:</b><br>"
-            "QMaxent installs its dependencies into an isolated virtual "
-            "environment so they do not affect QGIS.<br><br>"
-            "One-time setup installs:<br>"
-            "&nbsp;&nbsp;• elapid (Maxent engine)<br>"
-            "&nbsp;&nbsp;• rasterio, geopandas (spatial I/O)<br>"
-            "&nbsp;&nbsp;• scikit-learn, scipy, numpy<br>"
-            "&nbsp;&nbsp;• matplotlib (result plots)<br><br>"
-            "Approximate size: ~590 MB"
-        ))
+        info_text = QLabel(
+            tr(
+                "<b>Dependencies:</b><br>"
+                "QMaxent installs its dependencies into an isolated virtual "
+                "environment so they do not affect QGIS.<br><br>"
+                "One-time setup installs:<br>"
+                "&nbsp;&nbsp;• elapid (Maxent engine)<br>"
+                "&nbsp;&nbsp;• rasterio, geopandas (spatial I/O)<br>"
+                "&nbsp;&nbsp;• scikit-learn, scipy, numpy<br>"
+                "&nbsp;&nbsp;• matplotlib (result plots)<br><br>"
+                "Approximate size: ~590 MB"
+            )
+        )
         info_text.setWordWrap(True)
         info_text.setStyleSheet("padding-top: 6px;")
         ag.addWidget(info_text)
 
-        from ..core.venv_manager import CACHE_DIR
         import os
+
+        from ..core.venv_manager import CACHE_DIR
+
         home = os.path.expanduser("~")
-        display = ("~" + CACHE_DIR[len(home):]) if CACHE_DIR.startswith(home) else CACHE_DIR
-        loc_label = QLabel(
-            f"<small>{tr('Install location: ')}<code>{display}</code></small>"
-        )
+        display = ("~" + CACHE_DIR[len(home) :]) if CACHE_DIR.startswith(home) else CACHE_DIR
+        loc_label = QLabel(f"<small>{tr('Install location: ')}<code>{display}</code></small>")
         loc_label.setWordWrap(True)
         ag.addWidget(loc_label)
         layout.addWidget(about_group)
@@ -104,7 +114,8 @@ class SetupDockWidget(QDockWidget):
         btn_row = QHBoxLayout()
         self.install_btn = QPushButton(tr("Install / Update Dependencies"))
         self.install_btn.setMinimumHeight(34)
-        bold = QFont(); bold.setBold(True)
+        bold = QFont()
+        bold.setBold(True)
         self.install_btn.setFont(bold)
         self.install_btn.clicked.connect(self._start_install)
         btn_row.addWidget(self.install_btn)
@@ -146,6 +157,7 @@ class SetupDockWidget(QDockWidget):
         second string buried in setup_dock.py.
         """
         import os
+
         meta_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
             "metadata.txt",
@@ -161,6 +173,7 @@ class SetupDockWidget(QDockWidget):
 
     def _refresh_status(self):
         from ..core.venv_manager import get_venv_status
+
         ready, msg = get_venv_status()
         if ready:
             self.status_label.setText(f"✓ {msg}")
@@ -171,6 +184,7 @@ class SetupDockWidget(QDockWidget):
 
     def _start_install(self):
         from ..workers.deps_install_worker import DepsInstallWorker
+
         self.install_btn.hide()
         self.remove_btn.hide()
         self.cancel_btn.show()
@@ -200,6 +214,7 @@ class SetupDockWidget(QDockWidget):
         self.progress_label.hide()
         if success:
             from ..core.venv_manager import ensure_venv_packages_available
+
             ensure_venv_packages_available()
             self.status_label.setText(f"✓ {message}")
             self.status_label.setStyleSheet("color: green; font-weight: bold;")
@@ -210,8 +225,10 @@ class SetupDockWidget(QDockWidget):
 
     def _remove_venv(self):
         from qgis.PyQt.QtWidgets import QMessageBox
+
         reply = QMessageBox.question(
-            self, tr("Remove Environment"),
+            self,
+            tr("Remove Environment"),
             tr(
                 "Remove the QMaxent virtual environment?\n"
                 "You will need to reinstall dependencies before using QMaxent again."
@@ -221,7 +238,8 @@ class SetupDockWidget(QDockWidget):
         )
         if reply != QMessageBox.Yes:
             return
-        from ..core.venv_manager import remove_venv, VENV_DIR
+        from ..core.venv_manager import VENV_DIR, remove_venv
+
         ok, msg = remove_venv()
         # Always surface the outcome. The previous version dropped
         # this on the floor, so partial-removal cases (locked .pyd
@@ -235,11 +253,15 @@ class SetupDockWidget(QDockWidget):
             # is the one users actually need to see, so show it as info.
             if msg and msg != "Venv removed" and msg != "Venv does not exist":
                 self._show_outcome_dialog(
-                    QMessageBox.Information, msg, VENV_DIR,
+                    QMessageBox.Information,
+                    msg,
+                    VENV_DIR,
                 )
         else:
             self._show_outcome_dialog(
-                QMessageBox.Warning, msg, VENV_DIR,
+                QMessageBox.Warning,
+                msg,
+                VENV_DIR,
             )
         self._refresh_status()
 
@@ -252,8 +274,9 @@ class SetupDockWidget(QDockWidget):
         copying the path out of the message and pasting into Explorer.
         """
         import os
-        import sys
         import subprocess
+        import sys
+
         from qgis.PyQt.QtWidgets import QMessageBox
 
         mbox = QMessageBox(self)
@@ -264,9 +287,10 @@ class SetupDockWidget(QDockWidget):
         # Only offer the open-folder button when the folder actually
         # exists on disk — otherwise the button would launch a window
         # at a non-existent path on some platforms.
-        target = venv_dir if os.path.isdir(venv_dir) else (
-            os.path.dirname(venv_dir)
-            if os.path.isdir(os.path.dirname(venv_dir)) else None
+        target = (
+            venv_dir
+            if os.path.isdir(venv_dir)
+            else (os.path.dirname(venv_dir) if os.path.isdir(os.path.dirname(venv_dir)) else None)
         )
         open_btn = None
         if target:
@@ -290,8 +314,10 @@ class SetupDockWidget(QDockWidget):
                 # File manager launch failure is not fatal — the user
                 # still has the path in the message above. Log it for
                 # diagnostics and move on silently.
-                from qgis.core import QgsMessageLog, Qgis
+                from qgis.core import Qgis, QgsMessageLog
+
                 QgsMessageLog.logMessage(
                     f"Could not open file manager for {target}: {e}",
-                    "QMaxent", Qgis.Warning,
+                    "QMaxent",
+                    Qgis.Warning,
                 )

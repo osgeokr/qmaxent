@@ -23,10 +23,7 @@ from typing import Callable, List, Optional, Tuple
 from qgis.core import Qgis, QgsMessageLog, QgsSettings
 
 PYTHON_VERSION = f"py{sys.version_info.major}.{sys.version_info.minor}"
-CACHE_DIR = (
-    os.environ.get("QMAXENT_CACHE_DIR")
-    or os.path.expanduser("~/.qgis_qmaxent")
-)
+CACHE_DIR = os.environ.get("QMAXENT_CACHE_DIR") or os.path.expanduser("~/.qgis_qmaxent")
 VENV_DIR = os.path.join(CACHE_DIR, f"venv_{PYTHON_VERSION}")
 DEPS_HASH_FILE = os.path.join(VENV_DIR, "deps_hash.txt")
 
@@ -47,33 +44,34 @@ _INSTALL_LOGIC_VERSION = "2"
 # A "verified lock" mode for paper-reproducibility may be added later
 # as an opt-in, once the test suite confirms a known-good combination.
 REQUIRED_PACKAGES: List[Tuple[str, str]] = [
-    ("numpy",        ">=2.0,<3"),
-    ("pandas",       ">=2.0,<3"),
-    ("pyproj",       ">=3.6,<4"),
-    ("scipy",        ">=1.13,<2"),
+    ("numpy", ">=2.0,<3"),
+    ("pandas", ">=2.0,<3"),
+    ("pyproj", ">=3.6,<4"),
+    ("scipy", ">=1.13,<2"),
     ("scikit-learn", ">=1.5,<1.6"),
-    ("matplotlib",   ">=3.7,<4"),
+    ("matplotlib", ">=3.7,<4"),
     # rasterio 1.4 is the first release line that ships NumPy-2-ABI
     # wheels for Python 3.12 on Windows/macOS/Linux. Older 1.3.x wheels
     # are NumPy-1-ABI only, which produces an "init rasterio._base"
     # ImportError on pip cache reuse against numpy 2.x. Pin >=1.4 so
     # pip never resolves a NumPy-1-ABI wheel into a NumPy-2 venv.
-    ("rasterio",     ">=1.4,<2"),
-    ("rtree",        ">=1.0,<2"),
-    ("geopandas",    ">=1.0,<2"),
-    ("tqdm",         ">=4.60,<5"),
+    ("rasterio", ">=1.4,<2"),
+    ("rtree", ">=1.0,<2"),
+    ("geopandas", ">=1.0,<2"),
+    ("tqdm", ">=4.60,<5"),
     # openpyxl ships the styled XLSX results writer (multi-sheet
     # academic-paper-style tables). >=3.1 picks up the Border/Side
     # API used in _save_xlsx; the major version has been stable since
     # 2.x so a <4 ceiling is conservative.
-    ("openpyxl",     ">=3.1,<4"),
-    ("elapid",       ">=1.0.3,<2.0"),
+    ("openpyxl", ">=3.1,<4"),
+    ("elapid", ">=1.0.3,<2.0"),
 ]
 
 
 # ---------------------------------------------------------------------------
 # Logging
 # ---------------------------------------------------------------------------
+
 
 def _log(message: str, level=Qgis.Info):
     QgsMessageLog.logMessage(str(message), "QMaxent", level=level)
@@ -82,6 +80,7 @@ def _log(message: str, level=Qgis.Info):
 # ---------------------------------------------------------------------------
 # Dependency hash
 # ---------------------------------------------------------------------------
+
 
 def _compute_deps_hash() -> str:
     data = repr(REQUIRED_PACKAGES).encode("utf-8")
@@ -110,17 +109,19 @@ def _write_deps_hash():
 # Subprocess helpers
 # ---------------------------------------------------------------------------
 
+
 def _get_qgis_proxy_settings() -> Optional[str]:
     try:
         from urllib.parse import quote as url_quote
+
         settings = QgsSettings()
         if not settings.value("proxy/proxyEnabled", False, type=bool):
             return None
         host = settings.value("proxy/proxyHost", "", type=str)
         if not host:
             return None
-        port     = settings.value("proxy/proxyPort",     "", type=str)
-        user     = settings.value("proxy/proxyUser",     "", type=str)
+        port = settings.value("proxy/proxyPort", "", type=str)
+        user = settings.value("proxy/proxyUser", "", type=str)
         password = settings.value("proxy/proxyPassword", "", type=str)
         url = "http://"
         if user:
@@ -159,9 +160,15 @@ def _get_clean_env_for_pip() -> dict:
     """
     env = os.environ.copy()
     for var in (
-        "PYTHONPATH", "PYTHONHOME", "VIRTUAL_ENV",
-        "QGIS_PREFIX_PATH", "QGIS_PLUGINPATH",
-        "PROJ_DATA", "PROJ_LIB", "GDAL_DATA", "GDAL_DRIVER_PATH",
+        "PYTHONPATH",
+        "PYTHONHOME",
+        "VIRTUAL_ENV",
+        "QGIS_PREFIX_PATH",
+        "QGIS_PLUGINPATH",
+        "PROJ_DATA",
+        "PROJ_LIB",
+        "GDAL_DATA",
+        "GDAL_DRIVER_PATH",
     ):
         env.pop(var, None)
     env["PYTHONIOENCODING"] = "utf-8"
@@ -186,18 +193,18 @@ def _get_env_for_verify(site_packages: str) -> dict:
     """
     env = _get_clean_env_for_pip()
     proj_candidates = [
-        os.path.join(site_packages, "pyproj",   "proj_dir", "share", "proj"),
+        os.path.join(site_packages, "pyproj", "proj_dir", "share", "proj"),
         os.path.join(site_packages, "rasterio", "proj_data"),
-        os.path.join(site_packages, "pyogrio",  "proj_data"),
+        os.path.join(site_packages, "pyogrio", "proj_data"),
     ]
     for c in proj_candidates:
         if os.path.isfile(os.path.join(c, "proj.db")):
             env["PROJ_DATA"] = c
-            env["PROJ_LIB"]  = c
+            env["PROJ_LIB"] = c
             break
     gdal_candidates = [
         os.path.join(site_packages, "rasterio", "gdal_data"),
-        os.path.join(site_packages, "pyogrio",  "gdal_data"),
+        os.path.join(site_packages, "pyogrio", "gdal_data"),
     ]
     for c in gdal_candidates:
         if os.path.isdir(c):
@@ -210,6 +217,7 @@ def _get_env_for_verify(site_packages: str) -> dict:
 # Python executable resolution
 # ---------------------------------------------------------------------------
 
+
 def _verify_python(path: str) -> Optional[str]:
     """Quick sanity-check: run python --version and return path if OK."""
     try:
@@ -217,8 +225,11 @@ def _verify_python(path: str) -> Optional[str]:
         env["PYTHONIOENCODING"] = "utf-8"
         r = subprocess.run(
             [path, "-c", "import sys; print(sys.version)"],
-            capture_output=True, text=True, timeout=15,
-            env=env, **_get_subprocess_kwargs(),
+            capture_output=True,
+            text=True,
+            timeout=15,
+            env=env,
+            **_get_subprocess_kwargs(),
         )
         if r.returncode == 0:
             _log(f"Python OK ({path}): {r.stdout.strip()[:60]}", Qgis.Info)
@@ -284,6 +295,7 @@ def _get_linux_system_python() -> Optional[str]:
             candidates.append(real)
 
     import shutil as _shutil
+
     for name in ("python3", "python"):
         p = _shutil.which(name)
         if p and p not in candidates:
@@ -292,23 +304,25 @@ def _get_linux_system_python() -> Optional[str]:
     for candidate in candidates:
         try:
             r = subprocess.run(
-                [candidate, "-c",
-                 "import sys, venv; "
-                 "print(sys.version_info.major, sys.version_info.minor)"],
-                capture_output=True, text=True, timeout=10,
+                [
+                    candidate,
+                    "-c",
+                    "import sys, venv; print(sys.version_info.major, sys.version_info.minor)",
+                ],
+                capture_output=True,
+                text=True,
+                timeout=10,
             )
             if r.returncode == 0:
                 parts = r.stdout.strip().split()
                 if len(parts) == 2:
                     major, minor = int(parts[0]), int(parts[1])
                     if (major, minor) >= (3, 9):
-                        _log(f"System Python: {candidate} "
-                             f"({major}.{minor})", Qgis.Info)
+                        _log(f"System Python: {candidate} ({major}.{minor})", Qgis.Info)
                         return candidate
             elif "No module named" in r.stderr and "venv" in r.stderr:
                 _log(
-                    f"{candidate} lacks venv module. "
-                    "Fix: sudo apt install python3-venv",
+                    f"{candidate} lacks venv module. Fix: sudo apt install python3-venv",
                     Qgis.Warning,
                 )
         except Exception as e:
@@ -338,23 +352,21 @@ def _get_python_for_venv() -> str:
         py = _verify_python(sys.executable)
         if py:
             return py
-        raise RuntimeError(
-            f"sys.executable is not a working Python on macOS: {sys.executable}"
-        )
+        raise RuntimeError(f"sys.executable is not a working Python on macOS: {sys.executable}")
 
     # Linux
     py = _get_linux_system_python()
     if py:
         return py
     raise RuntimeError(
-        "No suitable Python3 found on Linux.\n"
-        "Install python3-venv: sudo apt install python3-venv"
+        "No suitable Python3 found on Linux.\nInstall python3-venv: sudo apt install python3-venv"
     )
 
 
 # ---------------------------------------------------------------------------
 # Venv path helpers
 # ---------------------------------------------------------------------------
+
 
 def get_venv_python_path(venv_dir: str = None) -> str:
     venv_dir = venv_dir or VENV_DIR
@@ -393,6 +405,7 @@ def venv_exists(venv_dir: str = None) -> bool:
 # PROJ / GDAL path fix (critical for rasterio + QGIS coexistence)
 # ---------------------------------------------------------------------------
 
+
 def _fix_proj_data(site_packages: str) -> None:
     proj_candidates = [
         os.path.join(site_packages, "pyproj", "proj_dir", "share", "proj"),
@@ -403,13 +416,13 @@ def _fix_proj_data(site_packages: str) -> None:
         if os.path.isfile(os.path.join(candidate, "proj.db")):
             try:
                 import pyproj.datadir
+
                 pyproj.datadir.set_data_dir(candidate)
                 _log(f"Set pyproj.datadir={candidate}", Qgis.Info)
             except Exception as exc:
                 os.environ["PROJ_DATA"] = candidate
                 os.environ["PROJ_LIB"] = candidate
-                _log(f"Set PROJ_DATA={candidate} (API unavailable: {exc})",
-                     Qgis.Info)
+                _log(f"Set PROJ_DATA={candidate} (API unavailable: {exc})", Qgis.Info)
             break
     for candidate in [
         os.path.join(site_packages, "rasterio", "gdal_data"),
@@ -424,6 +437,7 @@ def _fix_proj_data(site_packages: str) -> None:
 # ---------------------------------------------------------------------------
 # sys.path injection
 # ---------------------------------------------------------------------------
+
 
 def ensure_venv_packages_available() -> bool:
     if not venv_exists():
@@ -443,6 +457,7 @@ def ensure_venv_packages_available() -> bool:
 # ---------------------------------------------------------------------------
 # Venv creation
 # ---------------------------------------------------------------------------
+
 
 def create_venv(
     progress_callback: Optional[Callable[[int, str], None]] = None,
@@ -476,8 +491,11 @@ def create_venv(
     try:
         result = subprocess.run(
             [system_python, "-m", "venv", VENV_DIR],
-            capture_output=True, text=True, timeout=120,
-            env=env, **kwargs,
+            capture_output=True,
+            text=True,
+            timeout=120,
+            env=env,
+            **kwargs,
         )
         if result.returncode != 0:
             err = result.stderr or result.stdout or f"exit {result.returncode}"
@@ -491,8 +509,11 @@ def create_venv(
             _log("pip not in venv, bootstrapping via ensurepip...", Qgis.Info)
             r2 = subprocess.run(
                 [get_venv_python_path(), "-m", "ensurepip", "--upgrade"],
-                capture_output=True, text=True, timeout=60,
-                env=env, **kwargs,
+                capture_output=True,
+                text=True,
+                timeout=60,
+                env=env,
+                **kwargs,
             )
             if r2.returncode != 0:
                 err = r2.stderr or r2.stdout
@@ -517,13 +538,21 @@ def create_venv(
 # ---------------------------------------------------------------------------
 
 _SSL_PATTERNS = [
-    "ssl", "certificate verify failed", "SSLError",
-    "CERTIFICATE_VERIFY_FAILED", "tlsv1 alert",
+    "ssl",
+    "certificate verify failed",
+    "SSLError",
+    "CERTIFICATE_VERIFY_FAILED",
+    "tlsv1 alert",
 ]
 _NET_PATTERNS = [
-    "connectionreseterror", "connection aborted", "remotedisconnected",
-    "newconnectionerror", "network is unreachable",
-    "name or service not known", "readtimeouterror", "connecttimeouterror",
+    "connectionreseterror",
+    "connection aborted",
+    "remotedisconnected",
+    "newconnectionerror",
+    "network is unreachable",
+    "name or service not known",
+    "readtimeouterror",
+    "connecttimeouterror",
 ]
 
 
@@ -539,9 +568,12 @@ def _is_network_error(s: str) -> bool:
 
 def _pip_ssl_flags() -> List[str]:
     return [
-        "--trusted-host", "pypi.org",
-        "--trusted-host", "pypi.python.org",
-        "--trusted-host", "files.pythonhosted.org",
+        "--trusted-host",
+        "pypi.org",
+        "--trusted-host",
+        "pypi.python.org",
+        "--trusted-host",
+        "files.pythonhosted.org",
     ]
 
 
@@ -553,6 +585,7 @@ def _pip_proxy_flags() -> List[str]:
 # ---------------------------------------------------------------------------
 # Package installation
 # ---------------------------------------------------------------------------
+
 
 def install_dependencies(
     progress_callback: Optional[Callable[[int, str], None]] = None,
@@ -567,18 +600,25 @@ def install_dependencies(
         return False, "Venv does not exist"
 
     python = get_venv_python_path()
-    env    = _get_clean_env_for_pip()
+    env = _get_clean_env_for_pip()
     kwargs = _get_subprocess_kwargs()
-    specs  = [f"{name}{ver}" for name, ver in REQUIRED_PACKAGES]
+    specs = [f"{name}{ver}" for name, ver in REQUIRED_PACKAGES]
 
     _log(f"Installing {len(specs)} packages", Qgis.Info)
     if progress_callback:
         progress_callback(15, "Installing dependencies (this may take several minutes)...")
 
     cmd = (
-        [python, "-m", "pip", "install",
-         "--upgrade", "--no-warn-script-location",
-         "--disable-pip-version-check", "--prefer-binary"]
+        [
+            python,
+            "-m",
+            "pip",
+            "install",
+            "--upgrade",
+            "--no-warn-script-location",
+            "--disable-pip-version-check",
+            "--prefer-binary",
+        ]
         + _pip_ssl_flags()
         + _pip_proxy_flags()
         + specs
@@ -598,7 +638,7 @@ def install_dependencies(
                 **kwargs,
             )
 
-        start    = time.monotonic()
+        start = time.monotonic()
         last_pos = 0
         # Phase milestones used to map pip log lines to progress bar values.
         # pip's installation has roughly four observable phases:
@@ -624,8 +664,7 @@ def install_dependencies(
             elapsed = int(time.monotonic() - start)
 
             try:
-                with open(out_path, "r",
-                          encoding="utf-8", errors="replace") as f:
+                with open(out_path, "r", encoding="utf-8", errors="replace") as f:
                     f.seek(last_pos)
                     chunk = f.read(4096)
                     last_pos = f.tell()
@@ -647,7 +686,7 @@ def install_dependencies(
                     # micro-progress so the bar isn't completely static.
                     time_floor = min(15 + int(elapsed * 0.4), 88)
                     pct = max(phase_pct, time_floor)
-                    pct = min(pct, 90)   # leave 90+ for post-pip steps
+                    pct = min(pct, 90)  # leave 90+ for post-pip steps
                     progress_callback(pct, last_line[:100])
             except Exception:
                 pass
@@ -655,8 +694,7 @@ def install_dependencies(
         proc.wait(timeout=30)
 
         try:
-            with open(out_path, "r",
-                      encoding="utf-8", errors="replace") as f:
+            with open(out_path, "r", encoding="utf-8", errors="replace") as f:
                 output = f.read()
         except Exception:
             output = ""
@@ -667,9 +705,7 @@ def install_dependencies(
                 return False, "Installation failed: SSL certificate error"
             if _is_network_error(output):
                 return False, "Installation failed: network error"
-            return False, (
-                f"pip failed (exit {proc.returncode}): {output[-400:]}"
-            )
+            return False, (f"pip failed (exit {proc.returncode}): {output[-400:]}")
 
         _log("All packages installed", Qgis.Success)
         if progress_callback:
@@ -692,17 +728,17 @@ def install_dependencies(
 # ---------------------------------------------------------------------------
 
 _VERIFY_CODE = {
-    "numpy":        "import numpy; print(numpy.__version__)",
-    "pandas":       "import pandas; print(pandas.__version__)",
-    "pyproj":       "import pyproj; print(pyproj.__version__)",
-    "scipy":        "import scipy; print(scipy.__version__)",
+    "numpy": "import numpy; print(numpy.__version__)",
+    "pandas": "import pandas; print(pandas.__version__)",
+    "pyproj": "import pyproj; print(pyproj.__version__)",
+    "scipy": "import scipy; print(scipy.__version__)",
     "scikit-learn": "import sklearn; print(sklearn.__version__)",
-    "matplotlib":   "import matplotlib; print(matplotlib.__version__)",
-    "rasterio":     "import rasterio; print(rasterio.__version__)",
-    "rtree":        "import rtree; print(rtree.__version__)",
-    "geopandas":    "import geopandas; print(geopandas.__version__)",
-    "tqdm":         "import tqdm; print(tqdm.__version__)",
-    "elapid":       "import elapid; print(elapid.__version__)",
+    "matplotlib": "import matplotlib; print(matplotlib.__version__)",
+    "rasterio": "import rasterio; print(rasterio.__version__)",
+    "rtree": "import rtree; print(rtree.__version__)",
+    "geopandas": "import geopandas; print(geopandas.__version__)",
+    "tqdm": "import tqdm; print(tqdm.__version__)",
+    "elapid": "import elapid; print(elapid.__version__)",
 }
 
 
@@ -717,22 +753,25 @@ def verify_venv(
     # Use the verify-specific environment so native modules (rasterio,
     # pyproj, pyogrio) can locate their bundled PROJ / GDAL data even
     # though the parent QGIS process strips PROJ_DATA via clean_env.
-    env    = _get_env_for_verify(site_packages)
+    env = _get_env_for_verify(site_packages)
     kwargs = _get_subprocess_kwargs()
-    total  = len(REQUIRED_PACKAGES)
+    total = len(REQUIRED_PACKAGES)
 
     for i, (name, _) in enumerate(REQUIRED_PACKAGES):
         if progress_callback:
             progress_callback(
                 92 + int(i / total * 7),
-                f"Verifying {name}... ({i+1}/{total})",
+                f"Verifying {name}... ({i + 1}/{total})",
             )
-        code = _VERIFY_CODE.get(name, f"import {name.replace('-','_')}")
+        code = _VERIFY_CODE.get(name, f"import {name.replace('-', '_')}")
         try:
             r = subprocess.run(
                 [python, "-c", code],
-                capture_output=True, text=True, timeout=60,
-                env=env, **kwargs,
+                capture_output=True,
+                text=True,
+                timeout=60,
+                env=env,
+                **kwargs,
             )
             if r.returncode != 0:
                 # Show enough of the traceback to actually diagnose the
@@ -759,6 +798,7 @@ def verify_venv(
 # Quick status check (no subprocess — safe for main thread)
 # ---------------------------------------------------------------------------
 
+
 def _quick_check() -> Tuple[bool, str]:
     site_packages = get_venv_site_packages()
     if not os.path.exists(site_packages):
@@ -775,20 +815,19 @@ def get_venv_status() -> Tuple[bool, str]:
     ok, msg = _quick_check()
     if not ok:
         return False, f"Incomplete installation: {msg}"
-    stored  = _read_deps_hash()
+    stored = _read_deps_hash()
     current = _compute_deps_hash()
     if stored and stored != current:
         return False, "Dependencies need updating"
     if not stored:
         _write_deps_hash()
-    return True, (
-        f"Ready (Python {sys.version_info.major}.{sys.version_info.minor})"
-    )
+    return True, (f"Ready (Python {sys.version_info.major}.{sys.version_info.minor})")
 
 
 # ---------------------------------------------------------------------------
 # Full orchestration
 # ---------------------------------------------------------------------------
+
 
 def create_venv_and_install(
     progress_callback: Optional[Callable[[int, str], None]] = None,
@@ -904,8 +943,7 @@ def remove_venv() -> Tuple[bool, str]:
         return True, "Venv removed"
     except Exception as primary_err:
         _log(
-            f"Clean rmtree failed ({primary_err}); falling back to "
-            f"sideline-by-rename strategy",
+            f"Clean rmtree failed ({primary_err}); falling back to sideline-by-rename strategy",
             Qgis.Warning,
         )
 
@@ -943,7 +981,7 @@ def remove_venv() -> Tuple[bool, str]:
             f"  1. Close QGIS completely.\n"
             f"  2. Delete the folder manually.\n"
             f"  3. Restart QGIS and click "
-            f"\"Install / Update Dependencies\"."
+            f'"Install / Update Dependencies".'
         )
 
     # Step 3: best-effort cleanup. Anything still locked stays under

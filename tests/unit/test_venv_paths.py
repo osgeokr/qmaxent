@@ -14,8 +14,6 @@ from __future__ import annotations
 import os
 import sys
 
-import pytest
-
 from core import venv_manager as vm
 
 
@@ -71,9 +69,7 @@ def test_required_packages_metadata_shape():
         assert isinstance(name, str) and name
         assert isinstance(spec, str)
         if spec:
-            assert spec[0] in "><=~!", (
-                f"Package {name!r} has unusual version spec {spec!r}"
-            )
+            assert spec[0] in "><=~!", f"Package {name!r} has unusual version spec {spec!r}"
 
 
 def test_required_packages_include_runtime_critical():

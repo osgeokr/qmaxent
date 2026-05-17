@@ -31,15 +31,15 @@ from core.maxent_rules import auto_feature_types
 @pytest.mark.parametrize(
     "n,expected",
     [
-        (1,    ["linear"]),
-        (9,    ["linear"]),
-        (10,   ["linear", "quadratic"]),
-        (14,   ["linear", "quadratic"]),
-        (15,   ["linear", "quadratic", "hinge"]),
-        (47,   ["linear", "quadratic", "hinge"]),         # § 3.3 Pitta nympha
-        (79,   ["linear", "quadratic", "hinge"]),
-        (80,   ["linear", "quadratic", "product", "hinge", "threshold"]),
-        (116,  ["linear", "quadratic", "product", "hinge", "threshold"]),  # Bradypus
+        (1, ["linear"]),
+        (9, ["linear"]),
+        (10, ["linear", "quadratic"]),
+        (14, ["linear", "quadratic"]),
+        (15, ["linear", "quadratic", "hinge"]),
+        (47, ["linear", "quadratic", "hinge"]),  # § 3.3 Pitta nympha
+        (79, ["linear", "quadratic", "hinge"]),
+        (80, ["linear", "quadratic", "product", "hinge", "threshold"]),
+        (116, ["linear", "quadratic", "product", "hinge", "threshold"]),  # Bradypus
         (5000, ["linear", "quadratic", "product", "hinge", "threshold"]),
     ],
 )

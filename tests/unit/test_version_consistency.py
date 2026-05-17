@@ -41,15 +41,15 @@ def versions(repo_root: Path) -> dict:
     assert m_init, "__init__.py: __version__ string not found"
 
     md_text = _read_text(repo_root / "metadata.txt")
-    m_md = re.search(r'(?m)^version\s*=\s*(\S+)\s*$', md_text)
+    m_md = re.search(r"(?m)^version\s*=\s*(\S+)\s*$", md_text)
     assert m_md, "metadata.txt: version= line not found"
 
     cff_text = _read_text(repo_root / "CITATION.cff")
-    m_cff = re.search(r'(?m)^version:\s*([0-9][\w.\-+]*)\s*$', cff_text)
+    m_cff = re.search(r"(?m)^version:\s*([0-9][\w.\-+]*)\s*$", cff_text)
     assert m_cff, "CITATION.cff: version field not found"
 
     return {
-        "__init__.py":  m_init.group(1),
+        "__init__.py": m_init.group(1),
         "metadata.txt": m_md.group(1),
         "CITATION.cff": m_cff.group(1),
     }
@@ -57,9 +57,8 @@ def versions(repo_root: Path) -> dict:
 
 def test_versions_match(versions):
     distinct = set(versions.values())
-    assert len(distinct) == 1, (
-        "Version strings disagree across files:\n  "
-        + "\n  ".join(f"{src}: {v!r}" for src, v in versions.items())
+    assert len(distinct) == 1, "Version strings disagree across files:\n  " + "\n  ".join(
+        f"{src}: {v!r}" for src, v in versions.items()
     )
 
 
@@ -69,6 +68,4 @@ def test_version_is_pep440_like(versions):
     # so the QGIS plugin repository's lexicographic version compare
     # behaves intuitively.
     v = next(iter(versions.values()))
-    assert re.fullmatch(r"\d+\.\d+\.\d+", v), (
-        f"Version {v!r} doesn't match expected X.Y.Z shape"
-    )
+    assert re.fullmatch(r"\d+\.\d+\.\d+", v), f"Version {v!r} doesn't match expected X.Y.Z shape"

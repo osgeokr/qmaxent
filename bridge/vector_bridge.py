@@ -4,9 +4,9 @@ import os
 import tempfile
 
 from qgis.core import (
-    QgsVectorLayer,
-    QgsVectorFileWriter,
     QgsCoordinateTransformContext,
+    QgsVectorFileWriter,
+    QgsVectorLayer,
 )
 
 
@@ -65,7 +65,6 @@ def presence_layer_to_geodataframe(layer: QgsVectorLayer):
     Returns:
         GeoDataFrame with Point geometry column.
     """
-    import geopandas as gpd
 
     gdf = layer_to_geodataframe(layer)
     # Keep only geometry — attribute columns are not used for presence points

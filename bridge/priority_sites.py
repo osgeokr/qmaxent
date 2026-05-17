@@ -36,29 +36,28 @@ from __future__ import annotations
 
 import json
 import math
-import os
-import time
 import urllib.parse
 import urllib.request
-from typing import Iterable, Optional
-
+from typing import Optional
 
 # ─── Threshold computation ───────────────────────────────────────────────
 
 # Standard SDM threshold methods. Each returns a single numeric cut-off
 # applied to the prediction raster to define "suitable" cells.
 THRESHOLD_METHODS = (
-    "MTP",      # Minimum Training Presence (Pearson et al. 2007)
-    "T10",      # 10th percentile training presence (Pearson et al. 2007)
-    "MaxSSS",   # Maximum Sum of Sensitivity + Specificity (Liu 2013)
-    "Custom",   # User-supplied numeric value
+    "MTP",  # Minimum Training Presence (Pearson et al. 2007)
+    "T10",  # 10th percentile training presence (Pearson et al. 2007)
+    "MaxSSS",  # Maximum Sum of Sensitivity + Specificity (Liu 2013)
+    "Custom",  # User-supplied numeric value
 )
 
 
-def compute_threshold(method: str,
-                      training_predictions: list,
-                      background_predictions: Optional[list] = None,
-                      custom_value: Optional[float] = None) -> float:
+def compute_threshold(
+    method: str,
+    training_predictions: list,
+    background_predictions: Optional[list] = None,
+    custom_value: Optional[float] = None,
+) -> float:
     """Return a suitability cut-off given a method and training values.
 
     ``training_predictions`` are the model's output values *at the
@@ -71,6 +70,7 @@ def compute_threshold(method: str,
     (e.g. MaxSSS without background predictions, Custom without a value).
     """
     import numpy as np
+
     tp = np.asarray(training_predictions, dtype=float)
     if tp.size == 0:
         raise ValueError("No training predictions to compute threshold from.")
@@ -95,8 +95,7 @@ def compute_threshold(method: str,
         # background values, which is the most informative grid.
         if background_predictions is None or len(background_predictions) == 0:
             raise ValueError(
-                "MaxSSS requires background predictions; pass "
-                "background_predictions=..."
+                "MaxSSS requires background predictions; pass background_predictions=..."
             )
         bg = np.asarray(background_predictions, dtype=float)
         candidates = np.unique(np.concatenate([tp, bg]))
@@ -105,7 +104,7 @@ def compute_threshold(method: str,
         best_t, best_score = float(tp.min()), -np.inf
         for t in candidates:
             sens = float((tp >= t).mean())
-            spec = float((bg <  t).mean())
+            spec = float((bg < t).mean())
             score = sens + spec
             if score > best_score:
                 best_score = score
@@ -122,15 +121,18 @@ def compute_threshold(method: str,
 
 # ─── Sampling priority sites from a prediction raster ────────────────────
 
-def extract_priority_sites(prediction_path: str,
-                           presence_xy: list,
-                           threshold: float,
-                           n_sites: int,
-                           min_distance_from_presence_m: float = 1000.0,
-                           min_distance_between_sites_m: float = 500.0,
-                           stratify_by_quartile: bool = True,
-                           sampling_order: str = "topn",
-                           random_seed=42) -> list:
+
+def extract_priority_sites(
+    prediction_path: str,
+    presence_xy: list,
+    threshold: float,
+    n_sites: int,
+    min_distance_from_presence_m: float = 1000.0,
+    min_distance_between_sites_m: float = 500.0,
+    stratify_by_quartile: bool = True,
+    sampling_order: str = "topn",
+    random_seed=42,
+) -> list:
     """Sample ``n_sites`` priority sites from a Maxent prediction raster.
 
     Returns a list of dicts, each with keys::
@@ -172,8 +174,11 @@ def extract_priority_sites(prediction_path: str,
         nodata = src.nodata
 
     # Mask: keep only cells that are (a) not nodata and (b) ≥ threshold.
-    data = np.asarray(arr.filled(np.nan), dtype=float) \
-        if hasattr(arr, "filled") else np.asarray(arr, dtype=float)
+    data = (
+        np.asarray(arr.filled(np.nan), dtype=float)
+        if hasattr(arr, "filled")
+        else np.asarray(arr, dtype=float)
+    )
     if nodata is not None:
         data = np.where(data == nodata, np.nan, data)
     suitable_mask = np.isfinite(data) & (data >= threshold)
@@ -198,7 +203,8 @@ def extract_priority_sites(prediction_path: str,
     # Convert pixel centres to lat/lon. We need *projected* metres for
     # the distance filter, so we'll transform on the fly.
     xs, ys = rasterio.transform.xy(transform, rows.tolist(), cols.tolist())
-    xs = np.asarray(xs); ys = np.asarray(ys)
+    xs = np.asarray(xs)
+    ys = np.asarray(ys)
 
     # Build forward transformer to a metric CRS for distance checks.
     # Use an Equal-Area projection to get reasonable distances regardless
@@ -220,9 +226,7 @@ def extract_priority_sites(prediction_path: str,
     else:
         xm, ym = xs, ys
         # Presence_xy is documented as (lon, lat); convert to source CRS.
-        transformer_to_src = Transformer.from_crs(
-            "EPSG:4326", crs, always_xy=True
-        )
+        transformer_to_src = Transformer.from_crs("EPSG:4326", crs, always_xy=True)
         plons = np.asarray([p[0] for p in presence_xy])
         plats = np.asarray([p[1] for p in presence_xy])
         pxm, pym = transformer_to_src.transform(plons, plats)
@@ -234,7 +238,7 @@ def extract_priority_sites(prediction_path: str,
         # Compute pairwise distances in chunks to avoid a giant matrix.
         keep_idx = []
         chunk = 5000
-        d_thresh_sq = min_distance_from_presence_m ** 2
+        d_thresh_sq = min_distance_from_presence_m**2
         for i in range(0, len(xm), chunk):
             sl = slice(i, i + chunk)
             dx = xm[sl, None] - pxm[None, :]
@@ -257,9 +261,7 @@ def extract_priority_sites(prediction_path: str,
     # every accepted site below.
     transformer_to_geo = None
     if not is_geographic:
-        transformer_to_geo = Transformer.from_crs(
-            crs, "EPSG:4326", always_xy=True
-        )
+        transformer_to_geo = Transformer.from_crs(crs, "EPSG:4326", always_xy=True)
 
     # Now sample N sites with an iterative greedy spacing algorithm.
     # We pre-sort by suitability (descending) within each bin, then
@@ -267,7 +269,7 @@ def extract_priority_sites(prediction_path: str,
     # candidate is accepted only if it's far enough from every
     # already-accepted site.
     n_bins = int(bin_id.max()) + 1 if len(bin_id) else 1
-    target_per_bin = math.ceil(n_sites / n_bins)
+    math.ceil(n_sites / n_bins)
     # For each bin, order the candidates. Two modes:
     #   • "topn"   — descending suitability (Validation rounds-robin
     #                across quartiles in this order; Discovery picks
@@ -298,7 +300,7 @@ def extract_priority_sites(prediction_path: str,
     # mode (Discovery mode users get quartile=0 for every site since
     # stratify_by_quartile is False there).
     accepted = []
-    d_between_sq = min_distance_between_sites_m ** 2
+    d_between_sq = min_distance_between_sites_m**2
     cursor = [0] * n_bins
     while len(accepted) < n_sites:
         progressed = False
@@ -322,15 +324,17 @@ def extract_priority_sites(prediction_path: str,
                     lat = float(ys[idx])
                     lon = float(xs[idx])
                 else:
-                    lon, lat = transformer_to_geo.transform(
-                        float(xs[idx]), float(ys[idx])
+                    lon, lat = transformer_to_geo.transform(float(xs[idx]), float(ys[idx]))
+                accepted.append(
+                    (
+                        float(cand_x),
+                        float(cand_y),
+                        float(suit_values[idx]),
+                        lat,
+                        lon,
+                        int(bin_id[idx]),
                     )
-                accepted.append((
-                    float(cand_x), float(cand_y),
-                    float(suit_values[idx]),
-                    lat, lon,
-                    int(bin_id[idx]),
-                ))
+                )
                 progressed = True
                 break
         if not progressed:
@@ -346,14 +350,12 @@ def extract_priority_sites(prediction_path: str,
 
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/reverse"
 NOMINATIM_MIN_INTERVAL_SEC = 1.05  # OSM policy: ≤ 1 req/sec; we add slack
-NOMINATIM_USER_AGENT = (
-    "qmaxent/0.1.0 (https://github.com/osgeokr/qmaxent)"
-)
+NOMINATIM_USER_AGENT = "qmaxent/0.1.0 (https://github.com/osgeokr/qmaxent)"
 
 
-def reverse_geocode_one(lat: float, lon: float,
-                        language: str = "ko,en",
-                        timeout: float = 15.0) -> dict:
+def reverse_geocode_one(
+    lat: float, lon: float, language: str = "ko,en", timeout: float = 15.0
+) -> dict:
     """Look up a single coordinate via Nominatim.
 
     Returns a dict with administrative levels extracted from the OSM
@@ -365,13 +367,15 @@ def reverse_geocode_one(lat: float, lon: float,
     The caller is responsible for the 1-req/sec rate limit; this
     function does not sleep.
     """
-    qs = urllib.parse.urlencode({
-        "lat": f"{lat:.6f}",
-        "lon": f"{lon:.6f}",
-        "format": "json",
-        "accept-language": language,
-        "zoom": "14",         # ~ city / town level
-    })
+    qs = urllib.parse.urlencode(
+        {
+            "lat": f"{lat:.6f}",
+            "lon": f"{lon:.6f}",
+            "format": "json",
+            "accept-language": language,
+            "zoom": "14",  # ~ city / town level
+        }
+    )
     url = f"{NOMINATIM_URL}?{qs}"
     # Defence in depth: urllib.request.urlopen accepts file:// and other
     # local schemes by default. NOMINATIM_URL is a hardcoded https URL,
@@ -379,26 +383,27 @@ def reverse_geocode_one(lat: float, lon: float,
     # any unexpected substitution) cannot turn this into a local-file
     # read. Bandit B310.
     if not url.lower().startswith(("http://", "https://")):
-        raise ValueError(
-            f"Refusing to fetch non-HTTP(S) URL: {url!r}"
-        )
-    req = urllib.request.Request(
-        url, headers={"User-Agent": NOMINATIM_USER_AGENT}
-    )
+        raise ValueError(f"Refusing to fetch non-HTTP(S) URL: {url!r}")
+    req = urllib.request.Request(url, headers={"User-Agent": NOMINATIM_USER_AGENT})
     try:
         # Bandit B310: scheme is validated immediately above to be
         # http(s) only, so file:// / ftp:// abuse is impossible here.
         with urllib.request.urlopen(req, timeout=timeout) as r:  # nosec B310
             data = json.loads(r.read().decode("utf-8"))
     except Exception:
-        return {"country": "", "province": "", "city_county": "",
-                "district": "", "display_name": ""}
+        return {
+            "country": "",
+            "province": "",
+            "city_county": "",
+            "district": "",
+            "display_name": "",
+        }
 
     addr = data.get("address", {}) or {}
     return {
-        "country":     str(addr.get("country", "")),
+        "country": str(addr.get("country", "")),
         # Korean 도 ≈ "state"/"province"; OSM uses "state" most of the time
-        "province":    str(addr.get("state", "") or addr.get("province", "")),
+        "province": str(addr.get("state", "") or addr.get("province", "")),
         # Korean 시/군/구 ≈ city / county / borough
         "city_county": str(
             addr.get("city", "")
@@ -407,7 +412,7 @@ def reverse_geocode_one(lat: float, lon: float,
             or addr.get("borough", "")
         ),
         # Korean 읍/면/동 ≈ suburb / village / city_district
-        "district":    str(
+        "district": str(
             addr.get("suburb", "")
             or addr.get("village", "")
             or addr.get("city_district", "")

@@ -1,26 +1,28 @@
 """QMaxent QGIS Plugin — main entry point."""
 
-from qgis.core import QgsMessageLog, Qgis
-from qgis.PyQt.QtWidgets import QAction
+from qgis.core import Qgis, QgsMessageLog
 from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtWidgets import QAction
 
 
 class QMaxentPlugin:
     """QGIS plugin class."""
 
     def __init__(self, iface):
-        self.iface    = iface
-        self._main_dock  = None
+        self.iface = iface
+        self._main_dock = None
         self._setup_dock = None
-        self._actions    = []
+        self._actions = []
 
     def initGui(self):
         # ── Dependency check ──────────────────────────────────────────────
-        from .i18n import tr
         from .core.venv_manager import (
-            get_venv_status, ensure_venv_packages_available,
             cleanup_sidelined_venvs,
+            ensure_venv_packages_available,
+            get_venv_status,
         )
+        from .i18n import tr
+
         # First, sweep up any venv folders that were renamed-aside in a
         # previous QGIS session because their .pyd files were locked at
         # remove time. The locks are gone now, so rmtree usually
@@ -29,8 +31,9 @@ class QMaxentPlugin:
         n_swept = cleanup_sidelined_venvs()
         if n_swept:
             QgsMessageLog.logMessage(
-                f"QMaxent: cleaned up {n_swept} orphaned venv folder(s) "
-                f"from previous session", "QMaxent", Qgis.Info,
+                f"QMaxent: cleaned up {n_swept} orphaned venv folder(s) from previous session",
+                "QMaxent",
+                Qgis.Info,
             )
         ready, msg = get_venv_status()
         if ready:
@@ -56,9 +59,7 @@ class QMaxentPlugin:
         # so first-time users have working data without external setup.
         # Mirrors the convention of dismo, SDMtune, ENMeval, biomod2 —
         # all of which ship example data with their R packages.
-        example_action = QAction(
-            tr("Download Example Dataset..."), self.iface.mainWindow()
-        )
+        example_action = QAction(tr("Download Example Dataset..."), self.iface.mainWindow())
         example_action.triggered.connect(self._show_example_dialog)
         self.iface.addPluginToMenu("QMaxent", example_action)
         self._actions.append(example_action)
@@ -67,7 +68,7 @@ class QMaxentPlugin:
         if not ready:
             # Dependency missing: show setup dock FIRST and prominently
             self._show_setup_dock()
-            self._show_main_dock()   # main dock behind setup
+            self._show_main_dock()  # main dock behind setup
         else:
             self._show_main_dock()
 
@@ -84,6 +85,7 @@ class QMaxentPlugin:
     def _show_main_dock(self):
         if self._main_dock is None:
             from .dialogs.main_dock import QMaxentMainDock
+
             self._main_dock = QMaxentMainDock(self.iface, self.iface.mainWindow())
             self.iface.addDockWidget(Qt.RightDockWidgetArea, self._main_dock)
         self._main_dock.show()
@@ -92,6 +94,7 @@ class QMaxentPlugin:
     def _show_setup_dock(self):
         if self._setup_dock is None:
             from .dialogs.setup_dock import SetupDockWidget
+
             self._setup_dock = SetupDockWidget(self.iface.mainWindow())
             self.iface.addDockWidget(Qt.RightDockWidgetArea, self._setup_dock)
         self._setup_dock.show()
@@ -100,6 +103,7 @@ class QMaxentPlugin:
     def _show_example_dialog(self):
         """Open the example-data download dialog."""
         from .dialogs.example_data_dialog import ExampleDataDialog
+
         dlg = ExampleDataDialog(self.iface, self.iface.mainWindow())
         dlg.exec_()
 

@@ -5,6 +5,6 @@ Usage anywhere in the plugin:
     label = tr("Presence Points")
 """
 
-from .translator import tr, tooltip, set_locale, current_locale
+from .translator import current_locale, set_locale, tooltip, tr
 
 __all__ = ["tr", "tooltip", "set_locale", "current_locale"]
