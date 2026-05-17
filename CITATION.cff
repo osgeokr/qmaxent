@@ -25,8 +25,8 @@ keywords:
 identifiers:
   # Concept DOI (all versions). Issued by Zenodo on the first GitHub
   # release; the value below is a PLACEHOLDER and will be replaced with
-  # the actual DOI just before SoftwareX acceptance (see
-  # docs/zenodo-release.md).
+  # the actual DOI just before publication of the accompanying
+  # manuscript (see docs/zenodo-release.md).
   - type: doi
     value: 10.5281/zenodo.XXXXXXX
     description: "Concept DOI (all versions) — Zenodo archive of the QMaxent source code."
@@ -46,32 +46,10 @@ abstract: >
   site selection for post-prediction field surveys — all in one GIS
   session. Dependencies are isolated in a plugin-private virtual
   environment that does not affect the host QGIS Python installation.
-preferred-citation:
-  # The companion SoftwareX manuscript that introduces and validates
-  # QMaxent. DOI is a PLACEHOLDER pending acceptance; the rest of the
-  # block matches the manuscript as submitted (v1.6, May 2026).
-  type: article
-  title: "QMaxent: A QGIS plugin for Maxent species distribution modeling"
-  authors:
-    - family-names: Yu
-      given-names: Byeong-Hyeok
-      email: bhyu@knps.or.kr
-      affiliation: Korea National Park Service
-    - family-names: Lee
-      given-names: Soo-Dong
-      affiliation: Gyeongsang National University
-    - family-names: Oh
-      given-names: Chung-Hyeon
-      affiliation: Gyeongsang National University
-    - family-names: Lee
-      given-names: Jeong-Ho
-      affiliation: Korea Aerospace Research Institute
-    - family-names: Lee
-      given-names: Sun-Gu
-      affiliation: Korea Aerospace Research Institute
-  journal: "SoftwareX"
-  year: 2026
-  doi: 10.1016/j.softx.2026.XXXXXX  # PLACEHOLDER — replace on acceptance
+# Note: a `preferred-citation:` block pointing at the accompanying
+# manuscript will be added here once that manuscript is accepted for
+# publication. Until then this file cites the software only, which is
+# the canonical record for users who need to cite QMaxent right now.
 references:
   - type: article
     authors:

@@ -4,7 +4,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![QGIS plugin](https://img.shields.io/badge/QGIS-3.44%2B-green.svg)](https://plugins.qgis.org/plugins/qmaxent/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
-[![Manuscript](https://img.shields.io/badge/manuscript-SoftwareX%20(under%20review)-blue.svg)](https://github.com/osgeokr/qmaxent)
 
 **Species Distribution Modeling with Maxent in QGIS.**
 
@@ -16,10 +15,10 @@ variable importance via jackknife and permutation, project the model to a
 habitat suitability map, and design field surveys with the integrated
 priority-sites tool — all without leaving QGIS.
 
-> The Zenodo DOI and SoftwareX DOI shown in the badges above are
-> placeholders during peer review. The CITATION.cff file is the
-> canonical source for citation metadata and will be updated with the
-> issued DOIs just before publication; see
+> The Zenodo DOI badge above is a placeholder until the first GitHub
+> release is archived. The CITATION.cff file is the canonical source
+> for citation metadata and will be updated with the issued DOI when
+> the release is published; see
 > [`docs/zenodo-release.md`](docs/zenodo-release.md) for the release
 > workflow.
 
@@ -116,27 +115,18 @@ covariate ordering at projection time.
 
 - Official website (EN / KO): https://osgeokr.github.io/qmaxent/
 - User manual (EN / KO): https://osgeokr.github.io/qmaxent/manual/
-- Companion manuscript (SoftwareX, under review):
-  *QMaxent: A QGIS plugin for Maxent species distribution modeling.*
 
 ## Citation
 
-If you use QMaxent in your research, please cite **both** the software
-and the companion manuscript (once published). The DOIs below will be
-replaced with the issued values when the SoftwareX manuscript is
-accepted and the corresponding GitHub tag is archived by Zenodo.
+If you use QMaxent in your research, please cite the software using
+the metadata below. The DOI placeholder will be replaced with the
+issued value when the corresponding GitHub tag is archived by Zenodo.
 
 **Software (CITATION.cff is the canonical source)**
 
 > Yu, B.-H. (2026). *QMaxent: A QGIS plugin for Maxent species
 > distribution modeling* (Version 0.1.7) [Computer software].
 > Zenodo. https://doi.org/10.5281/zenodo.XXXXXXX
-
-**Companion manuscript (preferred citation when published)**
-
-> Yu, B.-H., Lee, S.-D., Oh, C.-H., Lee, J.-H., & Lee, S.-G. (2026).
-> QMaxent: A QGIS plugin for Maxent species distribution modeling.
-> *SoftwareX.* https://doi.org/10.1016/j.softx.2026.XXXXXX
 
 **BibTeX**
 
@@ -194,8 +184,8 @@ code (see `workers/maxent_worker.py` and `bridge/elapid_bridge.py`).
 Development of QMaxent was supported by the **Satellite Information
 Application** programme of the **Korea Aerospace Research Institute
 (KARI)**, which also funded the Lee et al. (2025) field dataset used
-for the maxent.jar numerical-compatibility benchmark in § 3.3 of the
-companion manuscript.
+for the maxent.jar numerical-compatibility benchmark in the
+accompanying manuscript.
 
 ## Issues and contributions
 
@@ -219,5 +209,3 @@ Third-party library licenses bundled at runtime are listed in
 ## Author
 
 **Byeong-Hyeok Yu** — bhyu@knps.or.kr (Korea National Park Service).
-Co-authors of the companion manuscript: Soo-Dong Lee, Chung-Hyeon Oh,
-Jeong-Ho Lee, Sun-Gu Lee.

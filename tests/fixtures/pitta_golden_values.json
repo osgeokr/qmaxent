@@ -1,5 +1,5 @@
 {
-  "_about": "Golden values for the maxent.jar v3.4.4 ↔ QMaxent v0.1.7 numerical comparison reported in § 3.3 (Table 3, Fig. 4) of the SoftwareX manuscript. These values were produced once, offline, by running both implementations on the Pitta nympha dataset of Lee et al. (2025, GECCO 60:e03939) with random_seed=42. The regression suite checks current QMaxent runs against these values with the documented tolerances.",
+  "_about": "Golden values for the maxent.jar v3.4.4 ↔ QMaxent v0.1.7 numerical comparison reported in § 3.3 (Table 3, Fig. 4) of the accompanying manuscript. These values were produced once, offline, by running both implementations on the Pitta nympha dataset of Lee et al. (2025, GECCO 60:e03939) with random_seed=42. The regression suite checks current QMaxent runs against these values with the documented tolerances.",
   "dataset": {
     "species": "Pitta nympha",
     "study_area": "Geoje-si, South Korea",

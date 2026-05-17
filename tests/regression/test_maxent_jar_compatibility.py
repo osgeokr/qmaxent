@@ -1,6 +1,6 @@
 """Regression test: maxent.jar v3.4.4 ↔ QMaxent v0.1.7 numerical match.
 
-Defends the quantitative claim made in § 3.3 of the SoftwareX
+Defends the quantitative claim made in § 3.3 of the accompanying
 manuscript — namely that on the Pitta nympha dataset of Lee et al.
 (2025, GECCO 60:e03939):
 
@@ -26,8 +26,8 @@ restrictive licence applied to the Lee et al. covariate rasters).
 The CI matrix therefore verifies the *cross-implementation contract*
 encoded in the JSON file; the fit itself is regenerated locally
 before each release and recorded in the same JSON. This pattern is
-common in software-paper repos (e.g. JOSS / SoftwareX submissions
-that depend on third-party data they can't redistribute).
+common in software-paper repos that depend on third-party data they
+can't redistribute.
 """
 
 from __future__ import annotations

@@ -1178,8 +1178,9 @@ class QMaxentMainDock(QDockWidget):
     # Results are reverse-geocoded via OpenStreetMap Nominatim and
     # added to QGIS as a styled vector layer.
     #
-    # All academic decisions exposed here are referenced in the SoftwareX
-    # paper's "Software description" section, sub-section 2.3.
+    # All academic decisions exposed here are referenced in the
+    # accompanying manuscript's "Software description" section,
+    # sub-section 2.3.
 
     def _build_priority_tab(self) -> QWidget:
         w = QWidget(); v = QVBoxLayout(w)

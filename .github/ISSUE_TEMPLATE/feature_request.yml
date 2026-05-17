@@ -44,10 +44,9 @@ body:
     id: roadmap
     attributes:
       label: Future-work alignment
-      description: The companion SoftwareX manuscript lists planned
-        future work in § 5 (ensemble modelling, Protected Planet /
-        GBIF / Microsoft Planetary Computer integrations). Tick if
-        applicable.
+      description: The accompanying manuscript lists planned future
+        work (ensemble modelling, Protected Planet / GBIF / Microsoft
+        Planetary Computer integrations). Tick if applicable.
       options:
         - label: This idea fits the manuscript's future-work plan.
         - label: This idea is outside the manuscript's future-work plan

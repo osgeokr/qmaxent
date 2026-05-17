@@ -7,7 +7,7 @@ tests/
 ├── unit/         # Pure-Python logic that does not touch QGIS / Qt.
 │                 # Always runnable from a plain Python install with
 │                 # numpy + rasterio + scikit-learn — no QGIS required.
-├── regression/   # End-to-end claims made in the SoftwareX manuscript
+├── regression/   # End-to-end claims made in the accompanying manuscript
 │                 # (§ 3.3 maxent.jar ↔ QMaxent numerical compatibility).
 │                 # Compared against `tests/fixtures/*.json` baselines
 │                 # with documented tolerances.

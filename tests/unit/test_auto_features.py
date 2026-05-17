@@ -11,7 +11,7 @@ et al. 2017; Merow et al. 2013):
 
 These breakpoints are NOT free parameters — they appear verbatim in
 the maxnet sources and are quoted as the auto-rule in § 2.2 (②
-Parameters) of the SoftwareX manuscript. Any silent change to them
+Parameters) of the accompanying manuscript. Any silent change to them
 would (a) break maxent.jar comparability claimed in § 2.3 and (b)
 invalidate the auto-selected configurations used in the example
 Bradypus / Ariolimax demonstrations.

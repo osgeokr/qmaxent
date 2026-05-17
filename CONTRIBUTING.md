@@ -22,7 +22,7 @@ QMaxent ships as a QGIS plugin and is mirrored on PyPI-style tooling
 - Runtime dependencies are NOT declared in `pyproject.toml`. They are
   managed at first launch by `core/venv_manager.py`, which builds a
   plugin-private virtual environment under `~/.qgis_qmaxent/`.
-- The companion SoftwareX manuscript has specific numerical claims
+- The accompanying manuscript has specific numerical claims
   (§ 3.3) that are pinned in `tests/fixtures/pitta_golden_values.json`
   and asserted by the regression test tier. Any change that can move
   these numbers needs to update the fixture and the manuscript

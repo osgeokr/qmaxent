@@ -16,10 +16,10 @@
 
 ## Manuscript impact
 
-<!-- QMaxent ships with a companion SoftwareX manuscript whose
-     numerical claims (§ 3.3) are pinned in tests/fixtures/. If this
-     PR could shift any of those numbers, say so here and regenerate
-     the fixture per docs/golden-values.md. Otherwise: "No impact". -->
+<!-- QMaxent has an accompanying manuscript whose numerical claims
+     (§ 3.3) are pinned in tests/fixtures/. If this PR could shift any
+     of those numbers, say so here and regenerate the fixture per
+     docs/golden-values.md. Otherwise: "No impact". -->
 
 ## Checklist
 

@@ -22,10 +22,10 @@ re-established.
    keywords, contributors, etc. so the deposition does not start
    blank.
 
-## Pre-flight: getting a DOI ready *before* SoftwareX acceptance
+## Pre-flight: getting a DOI ready *before* manuscript acceptance
 
-The SoftwareX manuscript needs to cite the released software (per
-reference [31] of the manuscript). Acceptance-day workflow:
+The accompanying manuscript will need to cite the released software.
+Acceptance-day workflow:
 
 ```
 ┌─────────────────────┐    ┌─────────────────────┐    ┌─────────────────────┐
@@ -58,7 +58,7 @@ pipx run cffconvert -i CITATION.cff --validate
 ### B. Tag and publish the GitHub Release
 
 ```bash
-git tag -a v0.1.7 -m "QMaxent v0.1.7 (SoftwareX submission)"
+git tag -a v0.1.7 -m "QMaxent v0.1.7"
 git push origin v0.1.7
 ```
 
@@ -66,7 +66,7 @@ Then on GitHub:
 
 1. **Releases → Draft a new release.**
 2. Select the `v0.1.7` tag.
-3. Title: `QMaxent v0.1.7 (SoftwareX submission)`.
+3. Title: `QMaxent v0.1.7`.
 4. Body: short release notes (highlights, breaking changes if any,
    acknowledgements). Keep this prose-only; Zenodo will combine it
    with the rich description in `.zenodo.json`.
@@ -94,12 +94,12 @@ The DOIs were placeholders until step B finished. Now:
    for future readers and is what the manuscript will reference at
    galley-proof time.
 
-### D. Cite the issued DOI in the SoftwareX manuscript
+### D. Cite the issued DOI in the accompanying manuscript
 
-At galley-proof stage, replace reference [31]'s placeholder DOI with
-the issued Zenodo version DOI. The manuscript's "Code metadata" table
-(SoftwareX template) gets the same DOI as the *Software Code
-Identifier*.
+At galley-proof stage, replace the placeholder DOI in the manuscript's
+software-citation reference with the issued Zenodo version DOI. If the
+target journal uses a "Code metadata" table, the same DOI is the
+*Software Code Identifier*.
 
 ## Sanity nets that catch the most common mistakes
 
@@ -127,5 +127,6 @@ is a real, citable record forever, so:
 - Update `.zenodo.json` with a clear "RC" note so anyone who
   stumbles on the rc DOI sees it is not the canonical record.
 
-For the SoftwareX submission, the rc round is optional; the existing
-release-zenodo.yml sanity-check workflow is sufficient assurance.
+For the upcoming manuscript submission, the rc round is optional;
+the existing release-zenodo.yml sanity-check workflow is sufficient
+assurance.

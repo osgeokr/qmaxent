@@ -60,5 +60,5 @@
       "scheme": "doi"
     }
   ],
-  "notes": "The companion SoftwareX manuscript (under review at submission time) describes the design, the maxent.jar numerical-compatibility benchmark on the Pitta nympha dataset (Lee et al. 2025, Global Ecology and Conservation 60:e03939), and the SDM-to-survey closed-loop demonstration. The maxent.jar input-export feature in § 2.2 enables GIS-native reproducibility audits of existing maxent.jar publications."
+  "notes": "An accompanying manuscript describes the design, the maxent.jar numerical-compatibility benchmark on the Pitta nympha dataset (Lee et al. 2025, Global Ecology and Conservation 60:e03939), and the SDM-to-survey closed-loop demonstration. The maxent.jar input-export feature enables GIS-native reproducibility audits of existing maxent.jar publications. Once that manuscript is accepted, its DOI will be added to related_identifiers and to the CITATION.cff preferred-citation block."
 }

@@ -12,7 +12,7 @@ inconsistencies appears:
   - The "About QMaxent" dialog shows a different version than the
     QGIS plugin manager,
   - GitHub's "Cite this repository" widget claims a different
-    version than the SoftwareX manuscript references (§ Reference
+    version than the accompanying manuscript references (§ Reference
     [31] of the manuscript cites a specific version of QMaxent),
   - Zenodo / DOI metadata drifts from the released artefact.
 
