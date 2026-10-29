@@ -806,7 +806,7 @@
         
   
   <span class="md-ellipsis">
-    ⑤ 우선조사 후보지
+    ⑤ 조사지점 선정
   </span>
   
 
@@ -1209,7 +1209,7 @@
 <li><strong>② Parameters</strong> — 피처 클래스, 정규화, 공간 CV 방식 선택</li>
 <li><strong>③ Training</strong> — 진행 막대를 보면서 모델 학습</li>
 <li><strong>④ Results</strong> — 반응 곡선, Jackknife 중요도, 공간 투영 확인</li>
-<li><strong>⑤ Priority Sites for Survey</strong> — 적합도 지도에서 현장 조사 후보지 추출</li>
+<li><strong>⑤ 조사지점 선정</strong> (Survey Site Selection): 적합도 지도에서 현장 조사지점 선정</li>
 </ol>
 <p>각 탭은 독립적인 챕터에서 자세히 다룹니다.</p>
 <h2 id="_2">누구를 위한 도구인가<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
@@ -1223,7 +1223,7 @@
 <tbody>
 <tr>
 <td><strong>현장 생태학자</strong></td>
-<td>코드 작성 없이 적합도 지도 구축; 즉시 활용 가능한 우선조사 후보지</td>
+<td>코드 작성 없이 적합도 지도 구축; 즉시 활용 가능한 현장 조사지점 목록</td>
 </tr>
 <tr>
 <td><strong>대학원생</strong></td>
@@ -1269,10 +1269,10 @@
 <td>Geographic K-Fold (기본값)</td>
 </tr>
 <tr>
-<td>자동 hyperparameter rule</td>
-<td>없음</td>
-<td>사용자 정의</td>
-<td>maxnet 자동 규칙</td>
+<td>자동 피처 규칙</td>
+<td>auto features (80개 이상이면 LQPHT)</td>
+<td><code>classes = "default"</code> (최대 LQPH)</td>
+<td>maxnet 기본 규칙 (최대 LQPH)</td>
 </tr>
 <tr>
 <td>범주형 외삽 처리</td>
@@ -1287,7 +1287,7 @@
 <td>다중 시트 XLSX</td>
 </tr>
 <tr>
-<td>우선조사 후보지 추출</td>
+<td>조사지점 선정</td>
 <td>없음</td>
 <td>없음</td>
 <td>내장</td>
@@ -1300,11 +1300,11 @@
 <li>알고리즘 자체: <a href="../references/">Phillips, Anderson &amp; Schapire 2006</a>;
   <a href="../references/">Phillips et al. 2017</a>;
   <a href="../references/">Fithian &amp; Hastie 2013</a></li>
-<li>피처 선택 규칙: <a href="../references/">Phillips &amp; Dudík 2008</a>;
-  <a href="../references/">Radosavljevic &amp; Anderson 2014</a></li>
+<li>자동 피처 규칙: <a href="../references/">Phillips et al. 2017</a> (maxnet 기본 규칙);
+  모델 복잡도와 과적합: <a href="../references/">Radosavljevic &amp; Anderson 2014</a></li>
 <li>공간 CV 기본값: <a href="../references/">Roberts et al. 2017</a></li>
 <li>출력 cloglog 변환: <a href="../references/">Phillips et al. 2017</a></li>
-<li>우선조사 후보지 설계:
+<li>조사지점 선정 설계:
   <a href="../references/">Williams et al. 2009</a>;
   <a href="../references/">Rhoden, Peterman &amp; Taylor 2017</a></li>
 <li>보고 표준: <a href="../references/">Araújo et al. 2019</a>;

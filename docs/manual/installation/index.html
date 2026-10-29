@@ -806,7 +806,7 @@
         
   
   <span class="md-ellipsis">
-    ⑤ Priority Sites for Survey
+    ⑤ Survey Site Selection
   </span>
   
 
@@ -1198,13 +1198,15 @@
 <h1 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h1>
 <p>QMaxent installs as a regular QGIS plugin. After the plugin itself is in
 place, a one-time dependency setup downloads the Python libraries Maxent
-needs into an isolated virtual environment that does not affect your
-system Python or QGIS itself.</p>
+needs into a separate QMaxent folder that does not affect your system
+Python or QGIS itself. On Linux and macOS this folder is a Python virtual
+environment; on Windows it is a plain package folder filled by the QGIS
+Python's own pip (see <a href="../dependencies/">Dependencies</a>).</p>
 <h2 id="system-requirements">System requirements<a class="headerlink" href="#system-requirements" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>QGIS</strong> 3.44 LTR or later</li>
 <li><strong>Operating system</strong>: Windows 10/11, macOS 12+, or any modern Linux distribution</li>
-<li><strong>Disk space</strong>: ~500 MB free for the Python virtual environment</li>
+<li><strong>Disk space</strong>: about 600 MB free for the QMaxent package folder</li>
 <li><strong>Internet access</strong> is required only on first run to download the Python
     dependencies; routine model fitting and projection run fully offline.</li>
 </ul>
@@ -1250,8 +1252,11 @@ expected and is dealt with in the next chapter.</p>
 <p>When a new release ships, the QGIS Plugin Manager will mark QMaxent as
 upgradable. Click <strong>Upgrade Plugin</strong> in the <strong>Installed</strong> tab. Dependencies
 generally do not need to be reinstalled across patch releases (0.1.x →
-0.1.y); QMaxent will alert you in the <strong>Dependencies</strong> dialog if anything
-has changed.</p>
+0.1.y). When the package list or the installation method changes, the
+<strong>Dependencies</strong> dialog reports that the dependencies need updating; click
+<strong>Install / Update Dependencies</strong> once more. This is the case when you
+upgrade to 0.2.0 on Windows, because 0.2.0 changed how packages are
+installed there.</p>
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
 <details class="warning">
 <summary>QMaxent does not appear in the search results</summary>
@@ -1264,6 +1269,15 @@ your preference — QMaxent's stable releases do not require it.</p>
 <summary>Plugin installs but the menu entry does not appear</summary>
 <p>Restart QGIS. Some QGIS versions require a restart for top-level menu
 entries from new plugins to register.</p>
+</details>
+<details class="warning">
+<summary>Windows: installation stops with 'ensurepip ... returned non-zero exit status 1'</summary>
+<p>QMaxent 0.1.x created a Python virtual environment, and this step
+fails with QGIS 3.44.15 and later on Windows. QMaxent 0.2.0 no longer
+needs a virtual environment on Windows: it installs the packages with
+the QGIS Python's own pip into the QMaxent package folder. Upgrade the
+plugin to 0.2.0 or later and click <strong>Install / Update Dependencies</strong>
+again. Details are in <a href="../dependencies/">Dependencies</a>.</p>
 </details>
 <details class="warning">
 <summary>Corporate proxy or restricted network</summary>

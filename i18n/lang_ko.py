@@ -46,7 +46,7 @@ STRINGS: dict[str, str] = {
 
     # ── Parameters tab ──────────────────────────────────────────────────────
     "Feature Types":                        "피처 타입",
-    "Auto (sample-size based, Phillips et al. 2017)":  "자동 (샘플 수 기반, Phillips et al. 2017)",
+    "Auto (maxnet default rule by sample size)":  "자동 (출현점 수에 따른 maxnet 기본 규칙)",
     "Manual selection":                     "수동 선택",
     "Regularization":                       "정규화",
     "Regularization multiplier:":           "정규화 배율:",
@@ -499,7 +499,7 @@ STRINGS: dict[str, str] = {
     "CV AUC={v:.4f}":                       "CV AUC={v:.4f}",
 
     # ── Priority Sites for Survey ──────────────────────────────────────────
-    "Priority Sites":                       "우선순위 지점",
+    "Survey Site Selection":                "조사지점 선정",
 
     "Threshold method:":                    "임계값 방법:",
     "10th percentile training presence (T10; Pearson 2007)":
@@ -511,29 +511,29 @@ STRINGS: dict[str, str] = {
     "Custom value...":                      "사용자 지정...",
     "Computed threshold value:":            "계산된 임계값:",
 
-    "Number of priority sites:":            "우선순위 지점 수:",
+    "Number of survey sites:":              "조사지점 수:",
     "Min. distance from existing presences (m):":
         "기존 출현지로부터 최소 거리 (m):",
     "Min. distance between sites (m):":     "지점 간 최소 거리 (m):",
 
-    "Add administrative address (province/city/district)":
-        "행정주소 자동 추가 (도/시·군·구/읍·면·동)",
+    "Add administrative address (OpenStreetMap)":
+        "행정구역 주소 자동 추가 (OpenStreetMap)",
 
     "Output vector layer:":                 "출력 벡터 layer:",
     "Output path (.gpkg)":                  "출력 경로 (.gpkg)",
     "GeoPackage (*.gpkg)":                  "GeoPackage (*.gpkg)",
 
-    "▶  Extract Priority Sites":            "▶  우선순위 지점 추출",
+    "▶  Select Survey Sites":               "▶  조사지점 선정",
     "Starting...":                          "시작 중...",
     "Failed.":                              "실패.",
     "No sites extracted.":                  "추출된 지점 없음.",
 
     "Train a model first (or load an existing .pkl).":
         "먼저 모델을 학습하거나 기존 .pkl 을 로드해 주세요.",
-    "Run a spatial projection first — the priority sampling needs a "
+    "Run a spatial projection first — survey site selection needs a "
     "prediction raster.\n\nTip: ④ Results → Spatial Projection → "
     "▶ Run Spatial Projection.":
-        "먼저 공간 예측을 수행해 주세요 — 우선순위 추출에는 예측 래스터가 "
+        "먼저 공간 예측을 수행해 주세요. 조사지점 선정에는 예측 래스터가 "
         "필요합니다.\n\n안내: ④ Results → Spatial Projection → "
         "▶ Run Spatial Projection.",
     "No presence layer selected (① Data tab).":
@@ -546,24 +546,24 @@ STRINGS: dict[str, str] = {
     "{mins}m {rem}s. The progress bar will report each step.":
         "{n} 지점을 1초당 1건 속도로 역지오코딩하는 데 약 {mins}분 "
         "{rem}초가 소요됩니다. 진행률 바에서 단계별로 확인할 수 있습니다.",
-    "Priority site extraction failed:\n{msg}":
-        "우선순위 지점 추출 실패:\n{msg}",
+    "Survey site selection failed:\n{msg}":
+        "조사지점 선정 실패:\n{msg}",
     "Could not write output:\n{e}":
         "출력 파일을 쓸 수 없습니다:\n{e}",
-    "Could not auto-load priority sites layer: {e}":
-        "우선순위 지점 layer 를 자동 로드할 수 없습니다: {e}",
-    "✓ {n} priority sites extracted ({m} = {t:.4f}); "
+    "Could not auto-load survey sites layer: {e}":
+        "조사지점 layer 를 자동 로드할 수 없습니다: {e}",
+    "✓ {n} survey sites selected ({m} = {t:.4f}); "
     "{g}/{n} geocoded. Output: {p}":
-        "✓ 우선순위 지점 {n}개 추출 완료 ({m} = {t:.4f}); "
+        "✓ 조사지점 {n}개 선정 완료 ({m} = {t:.4f}); "
         "{g}/{n} 지오코딩 완료. 출력: {p}",
-    "⚠ {dropped} of {total} priority sites could not be "
+    "⚠ {dropped} of {total} survey sites could not be "
     "written to the GeoPackage and were dropped.":
-        "⚠ 우선순위 지점 {total}개 중 {dropped}개를 GeoPackage 에 "
+        "⚠ 조사지점 {total}개 중 {dropped}개를 GeoPackage 에 "
         "쓰지 못해 제외되었습니다.",
 
     # ── v0.1.0 newly added strings ──────────────────────────────────────────
     # Tab labels that gained the ⑤ prefix or were renamed.
-    "⑤ Priority Sites for Survey":          "⑤ 우선 조사대상지",
+    "⑤ Survey Site Selection":              "⑤ 조사지점 선정",
 
     # Priority Sites tab — group titles after numeric prefixes were dropped.
     "Sampling strategy":                     "샘플링 전략",
@@ -583,10 +583,10 @@ STRINGS: dict[str, str] = {
     # Priority Sites — main-thread geocoding progress messages.
     "Reverse geocoding 0/{n}…":              "역지오코딩 0/{n}…",
     "Reverse geocoding {i}/{n}…":            "역지오코딩 {i}/{n}…",
-    "Priority site extraction failed:\n{e}\n\n"
+    "Survey site selection failed:\n{e}\n\n"
     "Full traceback in: View → Panels → Log "
     "Messages → QMaxent.":
-        "우선 조사대상지 추출 실패:\n{e}\n\n"
+        "조사지점 선정 실패:\n{e}\n\n"
         "자세한 traceback 확인: View → Panels → Log "
         "Messages → QMaxent.",
 
@@ -652,22 +652,29 @@ STRINGS: dict[str, str] = {
 
     # ── Discovery vs Validation mode (UI redesign) ──────────────────────────
     "Survey purpose":                        "조사 목적",
-    "Discovery mode — find new populations in unsurveyed areas":
-        "Discovery 모드 — 미조사 지역에서 새 개체군 발견",
-    "Validation mode — test the suitability gradient":
-        "Validation 모드 — 적합도 gradient 검증",
+    "High-suitability search: look for new populations in "
+    "unsurveyed areas":
+        "고적합도 탐색: 미조사 지역에서 새 개체군 찾기",
+    "Gradient-stratified sampling: check the model along its "
+    "suitability gradient":
+        "적합도 구간별 층화 표집: 예측 적합도 구간 전반에서 모델 확인",
     "Sample sites within a high-suitability band, focused on "
     "the most likely habitat for the species.":
         "고적합도 구간 내에서 지점을 샘플링하여 가장 유력한 "
         "서식지에 조사 노력을 집중합니다.",
-    "Sample equal numbers from four suitability quartiles "
-    "(Rhoden 2017). Will include lower-suitability sites by "
-    "design — useful for evaluating the model gradient.":
-        "적합도 4분위에서 동일 개수씩 샘플링합니다 "
-        "(Rhoden 2017). 의도적으로 낮은 적합도 지점도 포함되며, "
-        "모델 gradient 평가에 유용합니다.",
-    "Discovery settings":                    "Discovery 설정",
-    "Validation settings":                   "Validation 설정",
+    "Divide the cells above a threshold into four suitability "
+    "quartiles and sample the same number of sites from each "
+    "(Rhoden et al. 2017). Lower-suitability sites are included "
+    "on purpose, so field results can show whether observed "
+    "occurrence follows the predicted gradient. The threshold "
+    "only sets the sampling frame; no binary map is produced.":
+        "임계값 이상인 셀을 적합도 4분위로 나누고 각 구간에서 같은 "
+        "수의 지점을 뽑습니다 (Rhoden et al. 2017). 낮은 적합도 "
+        "지점도 일부러 포함하므로, 현장 조사 결과로 실제 출현이 "
+        "예측 적합도 구간을 따르는지 확인할 수 있습니다. 임계값은 "
+        "표집 범위만 정하며, 이진 지도를 만들지 않습니다.",
+    "High-suitability search settings":      "고적합도 탐색 설정",
+    "Gradient-stratified sampling settings": "구간별 층화 표집 설정",
     "Minimum suitability:":                  "최소 적합도:",
     "Cells with suitability ≥ this value form the candidate "
     "pool. Default is auto-filled to (raster max × 0.9) when "
@@ -825,4 +832,131 @@ STRINGS: dict[str, str] = {
     "auto-save next to model.pkl.":
         "전체 훈련 로그를 원하는 위치에 텍스트 파일로 저장합니다. "
         "model.pkl 옆에 자동 저장되는 파일과는 별개입니다.",
+
+    # ── v0.1.8: raster CRS checks and Data-list sync ────────────────────────
+    "Status: ⚠ CRS problem in {n} raster(s): {names}. "
+    "See the message for how to fix it.":
+        "상태: ⚠ 래스터 {n}개의 좌표계(CRS)에 문제가 있습니다: {names}. "
+        "해결 방법은 안내창을 확인하세요.",
+    "Status: {n} raster(s) left the QGIS project and were "
+    "removed from this list. Click Check Raster Consistency "
+    "again.":
+        "상태: QGIS 프로젝트에서 빠진 래스터 {n}개를 목록에서 "
+        "제거했습니다. 래스터 일관성 검사를 다시 실행하세요.",
+    "The current QGIS project has no raster layers.\n\n"
+    "Load your environmental rasters first (Layer > Add "
+    "Layer > Add Raster Layer..., or drag the files onto "
+    "the map), then click \"Add from project\" again.":
+        "현재 QGIS 프로젝트에 래스터 레이어가 없습니다.\n\n"
+        "먼저 환경변수 래스터를 불러온 뒤(레이어 > 레이어 추가 > "
+        "래스터 레이어 추가, 또는 파일을 지도에 끌어다 놓기) "
+        "\"프로젝트에서 추가\"를 다시 누르세요.",
+    "Status: all project rasters are already in the list.":
+        "상태: 프로젝트의 래스터가 모두 이미 목록에 있습니다.",
+    "In the ① Data tab, load rasters into the QGIS "
+    "project and click \"Add from project\".":
+        "① 데이터 탭에서 래스터를 QGIS 프로젝트에 불러온 뒤 "
+        "\"프로젝트에서 추가\"를 누르세요.",
+
+    # ── v0.2.0 additions ───────────────────────────────────────────────────
+    'A table with longitude / latitude or X / Y columns, e.g. a GBIF download.':
+        '경도/위도 또는 X/Y 열이 있는 표 (예: GBIF 내려받기 자료).',
+    'Add raster files':
+        '래스터 파일 추가',
+    'Add raster files...':
+        '래스터 파일 추가...',
+    'Address language:':
+        '주소 언어:',
+    'Any point format QGIS can read: GeoPackage, Shapefile, GeoJSON, KML, GML, FlatGeobuf, ...':
+        'QGIS가 읽을 수 있는 모든 점 형식: GeoPackage, Shapefile, GeoJSON, KML, GML, FlatGeobuf 등',
+    'Any single-band raster GDAL can read: GeoTIFF, ESRI ASCII (.asc), raster .grd, ERDAS .img, VRT, NetCDF subdatasets, ...':
+        'GDAL이 읽을 수 있는 단일 밴드 래스터: GeoTIFF, ESRI ASCII(.asc), 래스터 .grd, ERDAS .img, VRT, NetCDF 하위 데이터셋 등',
+    'Browse...':
+        '찾아보기...',
+    'Choose a coordinate reference system.':
+        '좌표계를 선택하세요.',
+    'Choose an existing CSV / TXT file.':
+        '존재하는 CSV/TXT 파일을 선택하세요.',
+    'Choose two different columns for X and Y.':
+        'X와 Y에 서로 다른 열을 선택하세요.',
+    'Coordinate reference system:':
+        '좌표계:',
+    'Decimal-degree tables (e.g. GBIF decimalLongitude / decimalLatitude) use EPSG:4326. The layer is added to the project and selected as the presence layer.':
+        '십진 경위도 표(예: GBIF의 decimalLongitude/decimalLatitude)는 EPSG:4326을 씁니다. 레이어는 프로젝트에 추가되고 출현 레이어로 선택됩니다.',
+    'Delimited text (*.csv *.txt *.tsv);;All files (*)':
+        '구분 텍스트 (*.csv *.txt *.tsv);;모든 파일 (*)',
+    'Delimiter:':
+        '구분자:',
+    'English':
+        '영어',
+    'Evaluate on:':
+        '평가 자료:',
+    'File:':
+        '파일:',
+    'Held-out CV test folds (all folds pooled)':
+        '교차검증 검증 폴드 (전체 폴드 합산)',
+    "Language of the administrative names returned by OpenStreetMap. Local names use each country's own language (e.g. Spanish in the Dominican Republic).":
+        'OpenStreetMap에서 받아 오는 행정구역 이름의 언어입니다. 현지 이름은 각 나라의 언어를 씁니다(예: 도미니카공화국은 스페인어).',
+    'Load CSV (X/Y columns)...':
+        'CSV 불러오기 (X/Y 열)...',
+    'Load presence points from CSV':
+        'CSV에서 출현점 불러오기',
+    'Local names':
+        '현지 이름',
+    'No points could be read. Check the delimiter and that the X / Y columns contain numbers.':
+        '점을 읽지 못했습니다. 구분자와 X/Y 열에 숫자가 들어 있는지 확인하세요.',
+    'Open point file':
+        '점 파일 열기',
+    'Open point file...':
+        '점 파일 열기...',
+    'QGIS could not open this file.':
+        'QGIS가 이 파일을 열 수 없습니다.',
+    'QGIS interface language':
+        'QGIS 화면 언어',
+    'QMaxent uses one raster band per environmental variable, but these rasters have several bands:\n{names}\n\nSplit them into single-band files first, e.g. Processing > GDAL > Raster conversion > Rearrange bands (one band per output), then add the single-band files.':
+        'QMaxent는 환경변수 하나에 래스터 밴드 하나를 씁니다. 다음 래스터는 밴드가 여러 개입니다:\n{names}\n\n먼저 단일 밴드 파일로 나눈 뒤 추가하세요. 예: 프로세싱 > GDAL > 래스터 변환 > 밴드 재배열(Rearrange bands)로 밴드마다 파일 하나씩 저장.',
+    'Rasters (*.tif *.tiff *.asc *.grd *.img *.vrt *.nc *.bil *.sdat *.rst);;All files (*)':
+        '래스터 (*.tif *.tiff *.asc *.grd *.img *.vrt *.nc *.bil *.sdat *.rst);;모든 파일 (*)',
+    'Run Maxent':
+        'Maxent 실행',
+    'Select environmental rasters':
+        '환경변수 래스터 선택',
+    'Select presence point file':
+        '출현점 파일 선택',
+    'Select presence table':
+        '출현자료 표 선택',
+    'Status: rasters added. Click Check Raster Consistency.':
+        '상태: 래스터를 추가했습니다. 래스터 일관성 검사를 실행하세요.',
+    'These files could not be opened as rasters:\n{f}':
+        '다음 파일은 래스터로 열 수 없습니다:\n{f}',
+    'This layer does not contain points. QMaxent needs presence records as points (one point per record).':
+        '이 레이어에는 점이 없습니다. QMaxent는 출현 기록을 점(기록 하나에 점 하나)으로 받습니다.',
+    'Training data (maxent.jar convention)':
+        '학습 자료 (maxent.jar 방식)',
+    'Training data: the full model is evaluated on all training presences and background points, as maxent.jar does. Use this to compare variable rankings with maxent.jar studies.\nHeld-out CV test folds: each cross-validation fold model is evaluated on its own test fold and the results of all folds are pooled. This shows how much predictive performance on new locations depends on each variable. Requires K-Fold or Checkerboard cross-validation.':
+        '학습 자료: 전체 모델을 모든 학습 출현점과 배경점에 적용해 평가합니다(maxent.jar 방식). maxent.jar 연구와 변수 순위를 비교할 때 쓰세요.\n교차검증 검증 폴드: 폴드마다 만든 모델을 해당 검증 폴드에 적용하고 전체 폴드 결과를 합칩니다. 새로운 지역에 대한 예측 성능이 각 변수에 얼마나 의존하는지 보여 줍니다. K-Fold 또는 Checkerboard 교차검증이 필요합니다.',
+    "Uses the default feature classes of maxnet, the R "
+    "implementation of Maxent by its authors (Phillips et al. "
+    "2017), based on the number of presence points: fewer than "
+    "10 = linear; 10 to 14 = + quadratic; 15 to 79 = + hinge; "
+    "80 or more = + product. Threshold features are not used "
+    "automatically (as in maxnet); select them under Manual "
+    "selection if needed.\n"
+    "This is a default, not a guarantee of the best model: the "
+    "most suitable feature classes depend on the data. Compare "
+    "alternatives with Manual selection and cross-validation, "
+    "or with a model-selection tool such as ENMeval.":
+        "Maxent 개발자들의 R 구현인 maxnet의 기본 피처 규칙(Phillips et al. 2017)을 "
+        "출현점 수에 따라 적용합니다: 10개 미만 = linear, 10~14개 = + quadratic, "
+        "15~79개 = + hinge, 80개 이상 = + product. threshold 피처는 maxnet과 같이 "
+        "자동으로 쓰지 않으며, 필요하면 수동 선택에서 고르세요.\n"
+        "이 규칙은 기본값일 뿐 최적 모델을 보장하지 않습니다. 가장 알맞은 피처 유형은 "
+        "자료에 따라 다르므로, 수동 선택과 교차검증으로 비교하거나 ENMeval 같은 모델 "
+        "선택 도구를 함께 쓰세요.",
+    'Vector files (*.gpkg *.shp *.geojson *.json *.kml *.kmz *.gml *.fgb *.sqlite);;All files (*)':
+        '벡터 파일 (*.gpkg *.shp *.geojson *.json *.kml *.kmz *.gml *.fgb *.sqlite);;모든 파일 (*)',
+    'X / longitude column:':
+        'X / 경도 열:',
+    'Y / latitude column:':
+        'Y / 위도 열:',
 }

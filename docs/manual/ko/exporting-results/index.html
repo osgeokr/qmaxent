@@ -721,7 +721,7 @@
         
   
   <span class="md-ellipsis">
-    ⑤ 우선조사 후보지
+    ⑤ 조사지점 선정
   </span>
   
 
@@ -860,9 +860,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#table-5" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
-      선택 — Table 5 — 우선조사 후보지
+      조사지점 선정 임계값과 조사지점 목록
     </span>
   </a>
   
@@ -874,7 +874,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       내보내기 커스터마이즈
     </span>
@@ -883,7 +883,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#_6" class="md-nav__link">
     <span class="md-ellipsis">
       워크북 인용
     </span>
@@ -1230,9 +1230,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#table-5" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
-      선택 — Table 5 — 우선조사 후보지
+      조사지점 선정 임계값과 조사지점 목록
     </span>
   </a>
   
@@ -1244,7 +1244,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       내보내기 커스터마이즈
     </span>
@@ -1253,7 +1253,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#_6" class="md-nav__link">
     <span class="md-ellipsis">
       워크북 인용
     </span>
@@ -1287,7 +1287,7 @@
 <h2 id="_2">출력 폴더 레이아웃<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
 <p>학습 + 공간 투영 + <code>Save analysis charts as PNG</code> 체크박스가 켜진 실행
 직후 출력 폴더는 다음과 같습니다:</p>
-<p><img alt="QMaxent 출력 폴더 — model.pkl, prediction.tif, results.xlsx, priority_sites.gpkg, 그리고 PNG로 저장된 세 분석 차트" src="../../images/results/output-folder.png" /></p>
+<p><img alt="QMaxent 출력 폴더: model.pkl, prediction.tif, results.xlsx, survey_sites.gpkg, 그리고 PNG로 저장된 분석 차트" src="../../images/results/output-folder.png" /></p>
 <table>
 <thead>
 <tr>
@@ -1301,6 +1301,16 @@
 <td><code>model.pkl</code></td>
 <td>학습</td>
 <td><em>Load existing model (.pkl)…</em> 로 나중에 재로드</td>
+</tr>
+<tr>
+<td><code>model_model_card.json</code></td>
+<td>학습</td>
+<td>설정, 자료 요약, 성능, 임계값, 변수 중요도를 담은 모델 카드 (<a href="../saving-models/">모델 저장 및 재사용</a>)</td>
+</tr>
+<tr>
+<td><code>model_coefficients.csv</code></td>
+<td>학습</td>
+<td>모든 Maxent 피처의 유형, 변수, 기준값(knot), 계수</td>
 </tr>
 <tr>
 <td><code>prediction.tif</code></td>
@@ -1318,9 +1328,9 @@
 <td>다중 시트 보충 표</td>
 </tr>
 <tr>
-<td><code>priority_sites.gpkg</code></td>
-<td>Priority Sites 탭</td>
-<td>현장 가능 후보 지점</td>
+<td><code>survey_sites.gpkg</code></td>
+<td>조사지점 선정 탭</td>
+<td>현장 조사지점</td>
 </tr>
 <tr>
 <td><code>prediction_roc.png</code></td>
@@ -1369,14 +1379,17 @@ without-test), 그리고 기여 크기를 스캔하기 쉽게 만드는 "Train A
 <p>푸터 노트가 drop 열을 설명:
 <em>Drop = full-model AUC − without-variable AUC; 큰 drop은 변수의 고유한
 기여가 다른 변수에서 회복하기 어려움을 가리킵니다.</em></p>
-<h3 id="table-5">선택 — Table 5 — 우선조사 후보지<a class="headerlink" href="#table-5" title="Permanent link">&para;</a></h3>
-<p><strong>Priority Sites for Survey</strong> 탭을 실행했다면 같은 워크북에 다섯 번째
-시트가 추가되며 후보 위치당 한 행을 가집니다. 컬럼은 <code>lat</code>, <code>lon</code>,
-<code>suitability</code>, 그리고 — 역지오코딩이 활성화됐을 때 — <code>country</code>,
-<code>province</code>, <code>city_county</code>, <code>district</code>, 사람이 읽을 수 있는 <code>display_name</code>.
-형식은 QMaxent가 GeoPackage 안에서 사용하는 것과 동일:</p>
-<p><img alt="Priority Sites 속성 테이블 — 한국어 역지오코딩된 행정 주소를 가진 20개 후보" src="../../images/results/attribute-table-priority-sites.png" /></p>
-<h2 id="_4">내보내기 커스터마이즈<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<h3 id="_4">조사지점 선정 임계값과 조사지점 목록<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<p>워크북의 <code>Survey Sites</code> 시트는 <strong>⑤ 조사지점 선정</strong> 탭의 적합도 구간별 층화 표집에
+쓰는 임계값(MTP, T10, MaxSSS)을 학습 자료에서 계산해 기록합니다.</p>
+<p>조사지점 목록 자체는 <code>survey_sites.gpkg</code> 에 저장됩니다. 조사지점당 한 행이며
+컬럼은 <code>id</code>, <code>lat</code>, <code>lon</code>, <code>suitability</code>, <code>quartile</code>, 그리고 역지오코딩을 켰을 때
+<code>country</code>, <code>province</code>, <code>city_county</code>, <code>district</code>, 사람이 읽을 수 있는
+<code>display_name</code> 입니다. 주소 필드는 OpenStreetMap의 일반 행정 단위이며, 기본으로
+현지 이름(각 나라의 언어)으로 기록됩니다
+(<a href="../priority-sites/">⑤ 조사지점 선정</a> 참고):</p>
+<p><img alt="조사지점 속성 테이블: 역지오코딩된 행정 주소를 가진 20개 조사지점" src="../../images/results/attribute-table-priority-sites.png" /></p>
+<h2 id="_5">내보내기 커스터마이즈<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
 <p><strong>② Parameters</strong> 탭의 기본 파일 경로는 <code>&lt;home&gt;/qmaxent_output/results.xlsx</code>
 입니다. 쓰기 가능한 어떤 곳으로든 변경 가능 — 상대 경로는 현재 QGIS 프로젝트
 폴더에 대해 해석됩니다.</p>
@@ -1387,7 +1400,7 @@ without-test), 그리고 기여 크기를 스캔하기 쉽게 만드는 "Train A
 analysis charts as PNG</strong> 체크박스로 제어됩니다. 체크된 상태에서 투영 실행
 시점에 GeoTIFF 옆에 세 개의 추가 PNG가 작성됩니다 — <strong>단일 컬럼 원고
 그림에 직접 붙여넣을 수 있는 크기</strong> (300 dpi, 약 1.6 MB 각).</p>
-<h2 id="_5">워크북 인용<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<h2 id="_6">워크북 인용<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
 <p>XLSX는 발표된 보충 표가 인용되는 방식으로 인용되도록 설계됐습니다:</p>
 <blockquote>
 <p>Yu, B.-H. (2026). QMaxent results workbook for <em><species></em>

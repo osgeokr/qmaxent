@@ -354,7 +354,7 @@ NOMINATIM_USER_AGENT = "qmaxent/0.1.0 (https://github.com/osgeokr/qmaxent)"
 
 
 def reverse_geocode_one(
-    lat: float, lon: float, language: str = "ko,en", timeout: float = 15.0
+    lat: float, lon: float, language: str = None, timeout: float = 15.0
 ) -> dict:
     """Look up a single coordinate via Nominatim.
 
@@ -366,16 +366,24 @@ def reverse_geocode_one(
     with empty strings — geocoding is best-effort and never fatal.
     The caller is responsible for the 1-req/sec rate limit; this
     function does not sleep.
+
+    v0.2.0: works for any country. The four
+    fields are generic OSM address levels (country, first-level
+    division, municipality, locality), not Korean-specific units.
+    ``language`` is an Accept-Language string such as "en" or "es,en";
+    None (default) asks OSM for local names (the ``name`` tag), so a
+    site in the Dominican Republic returns Spanish names and a site in
+    Korea Korean names. v0.1.x always requested "ko,en".
     """
-    qs = urllib.parse.urlencode(
-        {
-            "lat": f"{lat:.6f}",
-            "lon": f"{lon:.6f}",
-            "format": "json",
-            "accept-language": language,
-            "zoom": "14",  # ~ city / town level
-        }
-    )
+    params = {
+        "lat": f"{lat:.6f}",
+        "lon": f"{lon:.6f}",
+        "format": "json",
+        "zoom": "14",  # ~ city / town level
+    }
+    if language:
+        params["accept-language"] = language
+    qs = urllib.parse.urlencode(params)
     url = f"{NOMINATIM_URL}?{qs}"
     # Defence in depth: urllib.request.urlopen accepts file:// and other
     # local schemes by default. NOMINATIM_URL is a hardcoded https URL,
@@ -402,20 +410,26 @@ def reverse_geocode_one(
     addr = data.get("address", {}) or {}
     return {
         "country": str(addr.get("country", "")),
-        # Korean 도 ≈ "state"/"province"; OSM uses "state" most of the time
-        "province": str(addr.get("state", "") or addr.get("province", "")),
-        # Korean 시/군/구 ≈ city / county / borough
+        # First-level division (Korean do, Dominican provincia, US state)
+        "province": str(
+            addr.get("state", "") or addr.get("province", "") or addr.get("region", "")
+        ),
+        # Municipality level (Korean si/gun/gu, Dominican municipio)
         "city_county": str(
             addr.get("city", "")
+            or addr.get("municipality", "")
             or addr.get("county", "")
             or addr.get("town", "")
             or addr.get("borough", "")
         ),
-        # Korean 읍/면/동 ≈ suburb / village / city_district
+        # Locality level (Korean eup/myeon/dong, Dominican distrito
+        # municipal / seccion / paraje)
         "district": str(
             addr.get("suburb", "")
             or addr.get("village", "")
             or addr.get("city_district", "")
+            or addr.get("hamlet", "")
+            or addr.get("quarter", "")
             or addr.get("neighbourhood", "")
         ),
         "display_name": str(data.get("display_name", "")),

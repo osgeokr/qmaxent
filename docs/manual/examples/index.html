@@ -716,7 +716,7 @@
         
   
   <span class="md-ellipsis">
-    ⑤ Priority Sites for Survey
+    ⑤ Survey Site Selection
   </span>
   
 
@@ -1176,7 +1176,7 @@ QMaxent and a different real-world workflow.</p>
 <tr>
 <td><a href="bradypus/">Bradypus variegatus</a></td>
 <td>Three-toed sloth</td>
-<td>Bundled dataset; 9 variables, 116 presences</td>
+<td>Bundled dataset; 8 bioclimatic variables + biome, 116 presences</td>
 <td>The complete QMaxent feature tour — same workflow as the original Maxent paper</td>
 </tr>
 <tr>
@@ -1189,7 +1189,7 @@ QMaxent and a different real-world workflow.</p>
 <td><a href="pitta-nympha/">Pitta nympha</a></td>
 <td>Fairy pitta</td>
 <td>Reproduction of <a href="../references/">Lee et al. 2025</a></td>
-<td>How to reproduce a published Java-MaxEnt study in QMaxent and compare results</td>
+<td>How to reproduce a published study in QMaxent and compare results with maxent.jar on identical inputs</td>
 </tr>
 </tbody>
 </table>
@@ -1203,23 +1203,28 @@ ready</strong> banner is green.</p>
 <p>Two of the three datasets are bundled with the plugin — load them via
 <strong>Plugins → QMaxent → Download Example Dataset → \&lt;species name&gt;</strong>:</p>
 <ul>
-<li><strong>Bradypus variegatus</strong> — 9 variables, 116 presences, ships with the
-  plugin. Bit-identical to the Phillips et al. 2006 dataset.</li>
+<li><strong>Bradypus variegatus</strong>: 9 variables (8 bioclimatic variables and a
+  categorical biome raster), 116 presences, ships with the plugin.
+  Bit-identical to the Phillips et al. 2006 dataset as distributed with
+  the R package dismo.</li>
 <li><strong>Ariolimax</strong> — 6 variables, 3,732 presences, the elapid library's
   default Pacific-coast slug dataset. <strong>The official download is
   pre-harmonised</strong> — to follow the Ariolimax worked example exactly,
   you will need to use the deliberately desynchronised version
   described in the example's header.</li>
-<li><strong>Pitta nympha</strong> — 10 variables, 47 nests in Geoje-si, South Korea.
+<li><strong>Pitta nympha</strong>: 10 variables (2 categorical), 47 nests in
+  Geoje-si, South Korea.
   Sourced from the supplementary archive of Lee et al. 2025; not
   bundled with the plugin (licence considerations).</li>
 </ul>
 <h2 id="reproducibility">Reproducibility<a class="headerlink" href="#reproducibility" title="Permanent link">&para;</a></h2>
-<p>All three examples are run with <strong>fixed random seeds</strong> so the numbers
-in the screenshots match exactly what you will see on your machine.
-Any difference &gt;0.001 in AUC is a sign that some setting is different
-from the example's instructions; check the <strong>② Parameters</strong> tab
-configuration line by line.</p>
+<p>All three examples are run with <strong>fixed random seeds</strong>. Since v0.2.0
+the seed also fixes the background sample, so with the same inputs,
+the same raster order and the same settings, a run reproduces the same
+numbers. Some screenshots and numbers in the Bradypus
+and Ariolimax chapters were recorded with v0.1.x (LQPHT under Auto,
+unseeded background) and differ slightly from what v0.2.0 gives; those
+places are marked.</p>
 
 
 

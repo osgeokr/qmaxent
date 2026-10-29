@@ -714,7 +714,7 @@
         
   
   <span class="md-ellipsis">
-    ⑤ Priority Sites for Survey
+    ⑤ Survey Site Selection
   </span>
   
 
@@ -1063,6 +1063,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#windows-ensurepip-returned-non-zero-exit-status-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Windows: "ensurepip ... returned non-zero exit status 1"
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#could-not-find-a-version-that-satisfies-the-requirement-elapid" class="md-nav__link">
     <span class="md-ellipsis">
       "Could not find a version that satisfies the requirement elapid"
@@ -1108,6 +1117,24 @@
   <a href="#convergence-not-reached-after-500-iterations" class="md-nav__link">
     <span class="md-ellipsis">
       "Convergence not reached after 500 iterations"
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#these-rasters-cannot-be-aligned-because-of-their-coordinate-reference-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      "These rasters cannot be aligned because of their coordinate reference system"
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qmaxent-uses-one-raster-band-per-environmental-variable" class="md-nav__link">
+    <span class="md-ellipsis">
+      "QMaxent uses one raster band per environmental variable"
     </span>
   </a>
   
@@ -1273,6 +1300,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#windows-ensurepip-returned-non-zero-exit-status-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Windows: "ensurepip ... returned non-zero exit status 1"
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#could-not-find-a-version-that-satisfies-the-requirement-elapid" class="md-nav__link">
     <span class="md-ellipsis">
       "Could not find a version that satisfies the requirement elapid"
@@ -1318,6 +1354,24 @@
   <a href="#convergence-not-reached-after-500-iterations" class="md-nav__link">
     <span class="md-ellipsis">
       "Convergence not reached after 500 iterations"
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#these-rasters-cannot-be-aligned-because-of-their-coordinate-reference-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      "These rasters cannot be aligned because of their coordinate reference system"
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qmaxent-uses-one-raster-band-per-environmental-variable" class="md-nav__link">
+    <span class="md-ellipsis">
+      "QMaxent uses one raster band per environmental variable"
     </span>
   </a>
   
@@ -1452,6 +1506,13 @@ the required packages (<code>elapid</code>, <code>numpy</code>, <code>scikit-lea
 On Windows, run <strong>OSGeo4W Shell → <code>python -m ensurepip --upgrade</code></strong>;
 on macOS/Linux, install QGIS via the OSGeo4W or Conda channel that ships
 with <code>pip</code> enabled.</p>
+<h3 id="windows-ensurepip-returned-non-zero-exit-status-1">Windows: "ensurepip ... returned non-zero exit status 1"<a class="headerlink" href="#windows-ensurepip-returned-non-zero-exit-status-1" title="Permanent link">&para;</a></h3>
+<p>This error comes from QMaxent 0.1.x with QGIS 3.44.15 or later on
+Windows, where creating a Python virtual environment fails. QMaxent
+0.2.0 installs the packages with the QGIS Python's own pip into the
+QMaxent package folder instead, without a virtual environment. Upgrade
+the plugin and click <strong>Install / Update Dependencies</strong> again. See
+<a href="../dependencies/#where-the-packages-are-installed">Dependencies</a>.</p>
 <h3 id="could-not-find-a-version-that-satisfies-the-requirement-elapid">"Could not find a version that satisfies the requirement elapid"<a class="headerlink" href="#could-not-find-a-version-that-satisfies-the-requirement-elapid" title="Permanent link">&para;</a></h3>
 <p>This usually means the QGIS Python is older than 3.9. QMaxent requires
 <strong>Python ≥ 3.9</strong> because that is the floor elapid sets. Upgrade QGIS to
@@ -1485,6 +1546,19 @@ Three common causes:</p>
 <li><strong>Categorical variable with very rare classes</strong>. Re-bin the rare
   classes into an <code>Other</code> category before modeling.</li>
 </ul>
+<h3 id="these-rasters-cannot-be-aligned-because-of-their-coordinate-reference-system">"These rasters cannot be aligned because of their coordinate reference system"<a class="headerlink" href="#these-rasters-cannot-be-aligned-because-of-their-coordinate-reference-system" title="Permanent link">&para;</a></h3>
+<p><strong>Check Raster Consistency</strong> found a raster with no CRS, or with a local
+(engineering) CRS without a datum, which PROJ cannot reproject. This is
+typical of a <code>.prj</code> file that only names a projection, such as
+<code>NAD83(NSRS2007) / Michigan South</code>. The message names the file and, when
+possible, the matching EPSG code. In the <strong>Layers</strong> panel, right-click
+the raster, choose <strong>Layer CRS &gt; Set Layer CRS...</strong>, pick the correct
+CRS, and run the check again; Check and <strong>Harmonize to Folder...</strong> then
+use that CRS. See <a href="../data-tab/#rasters-with-an-unusable-crs">① Data tab</a>.</p>
+<h3 id="qmaxent-uses-one-raster-band-per-environmental-variable">"QMaxent uses one raster band per environmental variable"<a class="headerlink" href="#qmaxent-uses-one-raster-band-per-environmental-variable" title="Permanent link">&para;</a></h3>
+<p>A raster in the list has several bands. Split it into single-band files,
+for example with <strong>Processing &gt; GDAL &gt; Raster conversion &gt; Rearrange
+bands</strong> (one band per output), and add the single-band files instead.</p>
 <h3 id="grid-mismatch-crs-extent-resolution-differ-across-rasters">"Grid mismatch — CRS, extent, resolution differ across rasters"<a class="headerlink" href="#grid-mismatch-crs-extent-resolution-differ-across-rasters" title="Permanent link">&para;</a></h3>
 <p>This is the <strong>Check Raster Consistency</strong> failure mode. Click
 <strong>Harmonize to Folder…</strong> and let QMaxent reproject every raster to the
@@ -1511,7 +1585,9 @@ training resolution is methodologically defensible
 (<a href="../references/">Elith, Kearney &amp; Phillips 2010</a>).</p>
 <h2 id="output-and-projection">Output and projection<a class="headerlink" href="#output-and-projection" title="Permanent link">&para;</a></h2>
 <h3 id="why-are-some-cells-in-my-projection-nodata-when-the-rasters-cover-them">"Why are some cells in my projection NoData when the rasters cover them?"<a class="headerlink" href="#why-are-some-cells-in-my-projection-nodata-when-the-rasters-cover-them" title="Permanent link">&para;</a></h3>
-<p>The unified preflight dialog auto-masks two cell categories to NoData:</p>
+<p>The unified preflight dialog auto-masks two cell categories to NoData
+(a categorical class missing from the training data no longer makes the
+projection fail; see <a href="../results-tab/#the-unified-preflight-dialog">④ Results tab</a>):</p>
 <ol>
 <li>Categorical class codes that did not appear during training.</li>
 <li>Cells where any continuous variable lies outside its training

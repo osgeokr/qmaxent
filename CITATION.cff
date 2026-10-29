@@ -8,8 +8,8 @@ authors:
     email: bhyu@knps.or.kr
     affiliation: Korea National Park Service
     # orcid: "https://orcid.org/0000-0000-0000-0000"  # TODO: fill in
-version: 0.1.7
-date-released: 2026-05-16
+version: 0.2.0
+date-released: 2026-10-29
 license: MIT
 repository-code: "https://github.com/osgeokr/qmaxent"
 url: "https://osgeokr.github.io/qmaxent/"

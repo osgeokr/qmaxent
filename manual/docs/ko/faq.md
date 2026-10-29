@@ -16,6 +16,15 @@
 실행; macOS/Linux에서는 `pip`이 활성화된 OSGeo4W 또는 Conda 채널을 통해
 QGIS를 설치하세요.
 
+### Windows에서 "ensurepip ... returned non-zero exit status 1"
+
+QGIS 3.44.15 이상의 Windows판에서 v0.1.x의 의존성 설치가 가상환경 안의
+`ensurepip` 단계에서 멈추던 문제입니다. v0.2.0은 Windows에서 가상환경을 만들지 않고
+QGIS 자체 pip로 QMaxent 패키지 폴더(`%USERPROFILE%\.qgis_qmaxent\venv_py3.12\Lib\site-packages`
+처럼 QGIS의 Python 버전을 따름)에 설치하므로 이 오류가 생기지 않습니다. 플러그인을
+업데이트한 뒤 의존성을 다시 설치하세요. 환경변수 `QMAXENT_FORCE_VENV=1` 이 설정되어
+있다면 해제하세요([의존성 관리](dependencies.md) 참고).
+
 ### "Could not find a version that satisfies the requirement elapid"
 
 QGIS Python이 3.9보다 오래된 경우입니다. QMaxent는 elapid가 설정한
@@ -42,14 +51,19 @@ QGIS Python이 3.9보다 오래된 경우입니다. QMaxent는 elapid가 설정�
 3. 일치하지 않으면 레이어가 잘못 투영된 것 — **Vector → Save Layer
    As…**로 래스터의 CRS로 출현 레이어를 다시 내보냅니다.
 
+일부 출현점만 빠진 경우에는 학습 로그의
+`⚠ k of n presence points fall outside the rasters or on NoData cells and were
+excluded.` 줄이 제외된 개수를 알려 줍니다
+([③ 학습 탭](training-tab.md) 참고).
+
 ### "Convergence not reached after 500 iterations"
 
 모델이 반복 한도 내에서 가능도 최대를 찾지 못했습니다. 흔한 세 가지
 원인:
 
 - **선택한 피처 클래스에 비해 출현이 너무 적음**. **② Parameters**에서
-  **Auto** 모드로 전환하면 maxnet 규칙이 피처 집합을 자동으로
-  단순화합니다.
+  **자동 (출현점 수에 따른 maxnet 기본 규칙)** 으로 전환하면 출현점 수에
+  맞춰 피처 집합이 줄어듭니다.
 - **고도로 공선적인 변수**. 결과 탭의 **Jackknife Importance**로
   거의 영에 가까운 기여자를 식별하여 제거합니다.
 - **매우 희귀한 클래스를 가진 범주형 변수**. 모델링 전에 희귀
@@ -61,6 +75,28 @@ QGIS Python이 3.9보다 오래된 경우입니다. QMaxent는 elapid가 설정�
 Folder…**를 클릭하여 QMaxent가 모든 래스터를 가장 고해상도로
 재투영하게 하세요. [Ariolimax 예제](examples/ariolimax.md)가 이
 워크플로를 단계별로 안내합니다.
+
+### "래스터 N개의 좌표계(CRS)에 문제가 있습니다"
+
+**래스터 일관성 점검** 이 다른 좌표계로 변환할 수 없는 래스터를 찾았다는
+뜻입니다. 좌표계 정보가 없거나, `.prj` 에 `"NAD83(NSRS2007) / Michigan South"`
+같은 이름만 있고 datum이 없는 로컬(engineering) 좌표계인 경우입니다. 안내창에
+표시된 파일을 레이어 패널에서 우클릭하고 `레이어 좌표계 > 레이어 좌표계
+설정...` 에서 올바른 좌표계(안내창이 제안한 EPSG 코드가 있으면 그것)를 지정한 뒤
+점검을 다시 실행하세요. 지정한 좌표계는 점검과 Harmonize에 함께 반영됩니다
+([① 데이터 탭](data-tab.md) 참고).
+
+### "다중 밴드 래스터는 쓸 수 없다"는 안내
+
+QMaxent는 환경변수 하나에 밴드 하나를 씁니다. `프로세싱 > GDAL > 래스터 변환 >
+밴드 재배열` 로 밴드마다 파일 하나씩 저장한 뒤 단일 밴드 파일을 추가하세요.
+
+### 같은 설정인데 실행할 때마다 결과가 조금씩 다릅니다
+
+**② Parameters** 의 **랜덤 시드 고정** 이 켜져 있는지 확인하세요. v0.2.0부터
+시드가 배경점 추출에도 적용됩니다(v0.1.x에서는 실행마다 배경점이 달랐습니다).
+배경점은 래스터 목록의 첫 래스터에서 뽑으므로, 래스터 순서가 바뀌어도 결과가
+달라질 수 있습니다.
 
 ## 성능
 
@@ -101,6 +137,8 @@ unified preflight 대화상자는 두 셀 범주를 NoData로 자동 마스킹�
 
 가능 — 그러나 preflight 대화상자가 새 지역 범위가 학습 범위를 초과하는
 모든 연속 변수를 표시하고 보지 못한 범주형 코드를 자동 마스킹합니다.
+v0.2.0부터는 학습 자료에 없던 범주가 남아 있어도 예측이 멈추지 않으며, 그 셀은
+범주 기여가 없는 것으로 계산됩니다.
 **Yes**를 클릭하기 전에 대화상자를 읽으세요; 보고된 외삽은 논문에서
 논의할 발견으로 취급합니다.
 
@@ -111,6 +149,12 @@ unified preflight 대화상자는 두 셀 범주를 NoData로 자동 마스킹�
 표본이 주어졌을 때의 출현 확률"로 보정되며, 이는 어떤 종의 분포역
 대부분에서 진정으로 낮습니다 (<0.5). 봉우리(0.7+)가 중요한 부분이며;
 절대 척도는 종 간이나 연구 간에 직접 비교할 수 없습니다.
+
+### 조사지점을 다시 선정했더니 `survey_sites_1.gpkg` 가 생겼습니다
+
+같은 이름의 GeoPackage가 이미 있으면 QMaxent는 프로젝트에서 그 레이어를 빼고 새
+결과로 교체합니다. 다른 프로그램(다른 QGIS 창, 파일 탐색기 미리보기 등)이 파일을
+열고 있어 지울 수 없을 때만 `survey_sites_1.gpkg` 처럼 다음 빈 이름으로 저장합니다.
 
 ## 좋은 질문을 하는 방법
 

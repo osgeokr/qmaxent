@@ -23,26 +23,40 @@ scikit-learn's logistic-regression routines
 ([Anderson 2023](references.md);
 [Pedregosa et al. 2011](references.md)).
 
-## The maxnet auto-rule for feature selection
+## The maxnet default rule for feature selection
 
 The Maxent feature classes (Linear, Quadratic, Product, Hinge, Threshold)
-trade off **flexibility** against **over-fit risk**. The
-[Phillips & Dudík 2008](references.md) benchmark on hundreds of species
-established a sample-size-based rule that has held up across
-benchmarks since:
+trade off **flexibility** against **over-fit risk**. maxent.jar and its
+R counterpart maxnet both choose default feature classes from the number
+of presence points. QMaxent's **Auto (maxnet default rule by sample size)**
+mode applies the maxnet default
+([Phillips et al. 2017](references.md);
+`maxnet.formula(classes = "default")`):
 
-| Sample size | Allowed features |
+| Presences | Feature classes |
 |---|---|
-| ≤ 10 | L |
-| ≤ 30 | L, Q |
-| ≤ 80 | L, Q, H |
-| > 80 | L, Q, P, H, T |
+| fewer than 10 | L |
+| 10 to 14 | L, Q |
+| 15 to 79 | L, Q, H |
+| 80 or more | L, Q, P, H |
 
-QMaxent's **Auto** mode applies this rule directly. The benchmark
-underlying the rule is the most extensively replicated tuning
-recommendation in the Maxent literature; deviating from it without an
-ENMeval-style ([Muscarella et al. 2014](references.md)) hyperparameter
-search is hard to defend in a publication.
+Unlike the maxent.jar rule, which QMaxent used up to v0.1.x, the maxnet
+default never adds threshold features. This matters for QMaxent's
+engine: elapid fits the model with scikit-learn, which applies one
+regularization strength to all features, whereas maxent.jar regularizes
+each feature class separately. Under a single penalty the many
+step-shaped threshold features overfit. On the Bradypus benchmark
+(random 10-fold CV), the test AUC was 0.873 with LQPHT and 0.890 with
+LQPH, against 0.895 for maxent.jar with LQPHT. Threshold features are
+still available under **Manual selection**.
+
+The rule is a default, not a guarantee of the best model. The most
+suitable feature classes and regularization depend on the data
+([Merow, Smith & Silander 2013](references.md);
+[Radosavljevic & Anderson 2014](references.md)). For a publication,
+compare alternatives with **Manual selection** and spatial
+cross-validation, or with a model-selection tool such as ENMeval
+([Muscarella et al. 2014](references.md)).
 
 ## Why spatial cross-validation matters
 
@@ -90,6 +104,24 @@ descending drop so the most uniquely-informative variables are at the
 top. This is the format used in the published Maxent literature since
 Phillips et al. 2006.
 
+## Permutation importance and its evaluation data
+
+Permutation importance shuffles one variable at a time and measures the
+drop in AUC. The result depends on the data the AUC is computed on, so
+QMaxent lets you choose it (**Evaluate on** on the ② Parameters tab):
+
+- **Training data (maxent.jar convention)** (default): the full model on
+  all training presences and background points. This is how maxent.jar
+  computes permutation importance, so rankings can be compared directly
+  with maxent.jar studies.
+- **Held-out CV test folds (all folds pooled)**: each fold model on its
+  own test fold, with the results of all folds pooled. This measures how
+  much predictive performance at new locations depends on each variable.
+  It needs K-Fold or Checkerboard cross-validation.
+
+Up to v0.1.x QMaxent used the test data of the first CV fold only,
+which made rankings unstable and not comparable with maxent.jar.
+
 ## Threshold methods (MTP / T10 / MaxSSS)
 
 When you need a binary suitable/unsuitable map (e.g. for reserve-design
@@ -136,7 +168,10 @@ codes the model has not seen during training:
 - **Java MaxEnt** silently maps unseen codes to a random class,
   producing arbitrary suitability values at affected cells.
 - **QMaxent** detects unseen codes via the unified preflight dialog
-  and **auto-masks them to NoData** rather than extrapolating.
+  and **auto-masks them to NoData** rather than extrapolating. If an
+  unseen class still reaches the model, the projection does not fail
+  (since v0.2.0): those cells get no categorical contribution, as in
+  maxent.jar.
 
 This is the recommended practice
 ([Elith, Kearney & Phillips 2010](references.md)) — extrapolation

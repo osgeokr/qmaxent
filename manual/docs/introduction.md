@@ -62,8 +62,10 @@ QMaxent's defaults follow the recommendations of:
     and cloglog output transform.
 - Elith et al. (2011) and Merow, Smith & Silander (2013) for practitioner
     guidance on inputs and settings.
-- Radosavljevic & Anderson (2014) for the auto-rule that selects feature
-    classes by sample size.
+- The maxnet R package (Phillips et al. 2017) for the default rule that
+    selects feature classes by sample size. It is a default, not a
+    guarantee of the best model (Merow, Smith & Silander 2013;
+    Radosavljevic & Anderson 2014).
 - Roberts et al. (2017) for spatial cross-validation as the default
     evaluation method.
 

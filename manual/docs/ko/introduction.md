@@ -15,7 +15,7 @@ QMaxent는 [maxnet](https://cran.r-project.org/package=maxnet) /
 2. **② Parameters** — 피처 클래스, 정규화, 공간 CV 방식 선택
 3. **③ Training** — 진행 막대를 보면서 모델 학습
 4. **④ Results** — 반응 곡선, Jackknife 중요도, 공간 투영 확인
-5. **⑤ Priority Sites for Survey** — 적합도 지도에서 현장 조사 후보지 추출
+5. **⑤ 조사지점 선정** (Survey Site Selection): 적합도 지도에서 현장 조사지점 선정
 
 각 탭은 독립적인 챕터에서 자세히 다룹니다.
 
@@ -23,7 +23,7 @@ QMaxent는 [maxnet](https://cran.r-project.org/package=maxnet) /
 
 | 사용자 | QMaxent의 가치 |
 |---|---|
-| **현장 생태학자** | 코드 작성 없이 적합도 지도 구축; 즉시 활용 가능한 우선조사 후보지 |
+| **현장 생태학자** | 코드 작성 없이 적합도 지도 구축; 즉시 활용 가능한 현장 조사지점 목록 |
 | **대학원생** | 발표 논문 재현; 다중 시트 XLSX 보충표로 학위논문 부록 작성 |
 | **보전 단체** | QGIS 안에서 멸종위기종의 잠재 서식지 신속 평가 |
 | **방법론 연구자** | Java MaxEnt와의 정량적 비교; ENMeval/Wallace 결과 검증 |
@@ -35,10 +35,10 @@ QMaxent는 [maxnet](https://cran.r-project.org/package=maxnet) /
 | GUI | 자체 Swing GUI | 없음 (스크립트) | QGIS 도크 |
 | 백엔드 | Java MaxEnt | maxnet (glmnet) | elapid (Python) |
 | 공간 CV | 75/25 분할 | 사용자 구현 | Geographic K-Fold (기본값) |
-| 자동 hyperparameter rule | 없음 | 사용자 정의 | maxnet 자동 규칙 |
+| 자동 피처 규칙 | auto features (80개 이상이면 LQPHT) | `classes = "default"` (최대 LQPH) | maxnet 기본 규칙 (최대 LQPH) |
 | 범주형 외삽 처리 | 무작위 클래스 | 명시적 처리 필요 | 자동 NoData 마스킹 |
 | 출력 보충표 | TXT/HTML | 사용자 구현 | 다중 시트 XLSX |
-| 우선조사 후보지 추출 | 없음 | 없음 | 내장 |
+| 조사지점 선정 | 없음 | 없음 | 내장 |
 
 ## 방법론 계보
 
@@ -47,11 +47,11 @@ QMaxent의 기본값은 다음 핵심 SDM 문헌의 권고를 따릅니다:
 - 알고리즘 자체: [Phillips, Anderson & Schapire 2006](references.md);
   [Phillips et al. 2017](references.md);
   [Fithian & Hastie 2013](references.md)
-- 피처 선택 규칙: [Phillips & Dudík 2008](references.md);
-  [Radosavljevic & Anderson 2014](references.md)
+- 자동 피처 규칙: [Phillips et al. 2017](references.md) (maxnet 기본 규칙);
+  모델 복잡도와 과적합: [Radosavljevic & Anderson 2014](references.md)
 - 공간 CV 기본값: [Roberts et al. 2017](references.md)
 - 출력 cloglog 변환: [Phillips et al. 2017](references.md)
-- 우선조사 후보지 설계:
+- 조사지점 선정 설계:
   [Williams et al. 2009](references.md);
   [Rhoden, Peterman & Taylor 2017](references.md)
 - 보고 표준: [Araújo et al. 2019](references.md);

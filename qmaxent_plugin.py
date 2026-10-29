@@ -76,10 +76,16 @@ class QMaxentPlugin:
         for action in self._actions:
             self.iface.removePluginMenu("QMaxent", action)
         if self._main_dock:
+            try:
+                self._main_dock.shutdown()
+            except Exception:
+                pass
             self.iface.removeDockWidget(self._main_dock)
+            self._main_dock.deleteLater()
             self._main_dock = None
         if self._setup_dock:
             self.iface.removeDockWidget(self._setup_dock)
+            self._setup_dock.deleteLater()
             self._setup_dock = None
 
     def _show_main_dock(self):

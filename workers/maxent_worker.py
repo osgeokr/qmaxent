@@ -86,6 +86,7 @@ class MaxentWorker(QThread):
         super().__init__(parent)
         self._cfg = config
         self._cancelled = False
+        self._cv_fold_models = []  # filled by _cross_validate (v0.2.0)
 
     def cancel(self):
         self._cancelled = True
@@ -247,9 +248,27 @@ class MaxentWorker(QThread):
                 # the reproject path on the safe side.
                 same = False
             if not same:
+
+                def _short(c):
+                    try:
+                        from pyproj import CRS as _PCRS
+
+                        pc = _PCRS.from_user_input(c.to_wkt() if hasattr(c, "to_wkt") else c)
+                        e = pc.to_epsg()
+                        if e:
+                            return f"EPSG:{e}"
+                        if pc.name and pc.name != "unknown":
+                            return pc.name
+                        if pc.coordinate_operation is not None:
+                            return f"custom {pc.coordinate_operation.method_name}"
+                    except Exception:
+                        pass
+                    return str(c)[:60]
+
                 self.log.emit(
-                    f"  ⚠ CRS mismatch — presence={presence_gdf.crs}, "
-                    f"raster={raster_crs}; reprojecting presences."
+                    f"  ℹ Presence CRS ({_short(presence_gdf.crs)}) differs "
+                    f"from raster CRS ({_short(raster_crs)}); "
+                    f"reprojecting presences."
                 )
                 presence_gdf = presence_gdf.to_crs(raster_crs)
         elif raster_crs is None:
@@ -263,6 +282,12 @@ class MaxentWorker(QThread):
         # spatial sampling effort (Phillips et al. 2009). Otherwise points
         # are drawn uniformly from the first raster's valid extent.
         self._check(5, f"Sampling {n_background:,} background points...")
+        # v0.2.0: elapid draws background points with numpy's global
+        # generator, so "Fix random seed" did not cover them in v0.1.x
+        # (each run sampled a different background). Seed it here so a
+        # fixed seed makes the whole run reproducible.
+        if cfg.get("random_seed") is not None:
+            np.random.seed(int(cfg["random_seed"]))
         if cfg.get("bias_path"):
             bg_gs = eb.sample_bias_file(cfg["bias_path"], count=n_background)
         else:
@@ -281,6 +306,39 @@ class MaxentWorker(QThread):
         n_presence = len(presence_clean)
         n_background = len(background_clean)
         self.log.emit(f"  → Presence: {n_presence}, Background: {n_background:,}")
+        # v0.2.0: say why presences were dropped, and flag points that
+        # share a raster cell (maxent.jar removes such duplicates by
+        # default; QMaxent keeps them, so the user can thin first).
+        # elapid.annotate drops NoData rows itself, so count from the
+        # input layer, not from the annotated frame.
+        n_pres_in = len(presence_gdf)
+        if n_pres_in > n_presence:
+            self.log.emit(
+                f"  ⚠ {n_pres_in - n_presence} of {n_pres_in} presence "
+                f"points fall outside the rasters or on NoData cells and "
+                f"were excluded."
+            )
+        try:
+            import rasterio
+            from rasterio.transform import rowcol
+
+            with rasterio.open(raster_paths[0]) as _src:
+                _rc = rowcol(
+                    _src.transform,
+                    presence_clean.geometry.x.values,
+                    presence_clean.geometry.y.values,
+                )
+            _cells = list(zip(np.asarray(_rc[0]).tolist(), np.asarray(_rc[1]).tolist()))
+            n_dup = len(_cells) - len(set(_cells))
+            if n_dup > 0:
+                self.log.emit(
+                    f"  ℹ {n_dup} presence point(s) share a raster cell "
+                    f"with another presence. maxent.jar removes such "
+                    f"duplicates by default; QMaxent keeps them. Consider "
+                    f"spatial thinning if this is not intended."
+                )
+        except Exception:
+            pass
 
         # Minimum-sample-size guards. After dropna it is possible to be
         # left with too few records to fit any meaningful model — for
@@ -328,12 +386,9 @@ class MaxentWorker(QThread):
         if cfg.get("feature_types_auto", True):
             feature_types = auto_feature_types(n_presence)
         else:
-            # Fallback (only used when cfg lacks "feature_types"): full
-            # LQPHT — same default the UI seeds in Manual selection
-            # (Phillips et al. 2017's standard Maxent feature set).
-            feature_types = cfg.get(
-                "feature_types", ["linear", "quadratic", "hinge", "product", "threshold"]
-            )
+            # Fallback (only used when cfg lacks "feature_types"): LQPH,
+            # the same default the UI seeds in Manual selection.
+            feature_types = cfg.get("feature_types", ["linear", "quadratic", "hinge", "product"])
         ft_origin = "auto-rule" if cfg.get("feature_types_auto", True) else "manual"
         self.log.emit(f"  → Feature types: {feature_types}  (n_presence={n_presence}, {ft_origin})")
 
@@ -733,16 +788,33 @@ class MaxentWorker(QThread):
         if cfg.get("do_permutation", True):
             self._check(90, "Computing permutation importance...")
             try:
-                # Use the held-out test fold for an honest estimate
-                # when CV is configured. Falls back to the full design
-                # matrix when no CV partition is available.
-                if first_fold is not None:
-                    _, te_mask = first_fold
-                    x_pi, y_pi = x[te_mask], y[te_mask]
-                    pi_source = "held-out test set"
+                # v0.2.0: the evaluation data is
+                # now explicit.
+                #   "training" (default): full model on all training
+                #       presences + background, the maxent.jar
+                #       convention (Phillips et al. 2006). Use this to
+                #       compare rankings with maxent.jar studies.
+                #   "heldout": each CV fold model on its own test fold,
+                #       pooled over ALL folds (v0.1.x used only the
+                #       first fold, which made rankings unstable and not
+                #       comparable to maxent.jar).
+                pi_eval = cfg.get("permutation_eval", "training")
+                fold_models = [
+                    (m_f, te)
+                    for m_f, te in (self._cv_fold_models or [])
+                    if len(np.unique(y[te])) == 2
+                ]
+                if pi_eval == "heldout" and not fold_models:
+                    self.log.emit(
+                        "  ℹ No usable CV test folds (CV off, Buffered "
+                        "LOO, or single-class folds); permutation "
+                        "importance uses the training data instead."
+                    )
+                    pi_eval = "training"
+                if pi_eval == "heldout":
+                    pi_source = f"held-out test folds (pooled over {len(fold_models)} folds)"
                 else:
-                    x_pi, y_pi = x, y
-                    pi_source = "training set"
+                    pi_source = "training data (presences + background; maxent.jar convention)"
 
                 n_repeats = int(cfg.get("permutation_repeats", 10))
                 # ─── 5. Permutation importance ─────────────────────────
@@ -753,14 +825,30 @@ class MaxentWorker(QThread):
                     f"evaluated on {pi_source}) ───"
                 )
                 pi_seed = cfg.get("random_seed")
-                importances = eb.permutation_importance_scores(
-                    model,
-                    x_pi,
-                    y_pi,
-                    n_repeats=n_repeats,
-                    n_jobs=1,
-                    random_state=pi_seed,
-                )
+                if pi_eval == "heldout":
+                    parts = []
+                    for k, (m_f, te) in enumerate(fold_models):
+                        parts.append(
+                            eb.permutation_importance_scores(
+                                m_f,
+                                x[te],
+                                y[te],
+                                n_repeats=n_repeats,
+                                n_jobs=1,
+                                random_state=(None if pi_seed is None else int(pi_seed) + k),
+                            )
+                        )
+                    # (n_features, n_repeats * n_folds)
+                    importances = np.concatenate(parts, axis=1)
+                else:
+                    importances = eb.permutation_importance_scores(
+                        model,
+                        x,
+                        y,
+                        n_repeats=n_repeats,
+                        n_jobs=1,
+                        random_state=pi_seed,
+                    )
                 # importances shape: (n_features, n_repeats)
                 pi_mean = importances.mean(axis=1)
                 pi_std = importances.std(axis=1)
@@ -862,6 +950,15 @@ class MaxentWorker(QThread):
                         f"results ({type(e).__name__}); charts will "
                         f"not survive a reload of this .pkl."
                     )
+                # v0.2.0: portable, human-readable
+                # companions to the .pkl (which is Python-only and must
+                # not be opened from untrusted sources).
+                try:
+                    card, coef = self._save_model_card(model, cfg, result)
+                    self.log.emit(f"  → Model card saved: {card}")
+                    self.log.emit(f"  → Coefficients saved: {coef}")
+                except Exception as e:
+                    self.log.emit(f"  → Model card not written ({type(e).__name__}: {e})")
         except Exception:
             # Failure here would silently cripple the load-model UX
             # (no charts after reload), but should never block training.
@@ -1029,6 +1126,9 @@ class MaxentWorker(QThread):
 
         aucs = []
         first_fold = None
+        # v0.2.0: fold models + test masks, reused for held-out
+        # permutation importance (mean across all folds).
+        self._cv_fold_models = []
         # Per-fold ROC traces. We collect (fpr, tpr) for every fold so the
         # Results-tab ROC panel can render the academic-standard plot
         # (each fold's curve in the background, mean curve highlighted)
@@ -1057,6 +1157,7 @@ class MaxentWorker(QThread):
                     categorical=categorical_indices or None,
                     labels=feature_names,
                 )
+                self._cv_fold_models.append((m, te))
                 # Compute predictions once and derive both AUC and the
                 # ROC trace from them — saves a second pass through
                 # the model.
@@ -1110,6 +1211,7 @@ class MaxentWorker(QThread):
                     categorical=categorical_indices or None,
                     labels=feature_names,
                 )
+                self._cv_fold_models.append((m, te))
                 try:
                     preds = m.predict(x[te])
                     auc = float(roc_auc_score(y[te], preds))
@@ -1142,6 +1244,7 @@ class MaxentWorker(QThread):
                     categorical=categorical_indices or None,
                     labels=feature_names,
                 )
+                self._cv_fold_models.append((m, te))
                 try:
                     preds = m.predict(x[te])
                     auc = float(roc_auc_score(y[te], preds))
@@ -1645,6 +1748,233 @@ class MaxentWorker(QThread):
                 self.log.emit(f"      {without_skip_reason}")
 
         return results, full_train_auc, full_test_auc
+
+    def _save_model_card(self, model, cfg: dict, result: dict):
+        """Write <model>_model_card.json and <model>_coefficients.csv.
+
+        The JSON records everything needed to understand, cite and
+        re-run the model (software versions, settings, data summary,
+        performance, thresholds, variable importance, model constants).
+        The CSV lists every Maxent feature with its fitted coefficient
+        (lambda), in the order used by elapid's prediction
+        ``exp(features @ beta + alpha)`` before the output transform.
+        """
+        import csv
+        import datetime
+        import json
+
+        base = os.path.splitext(cfg["output_model"])[0]
+        _b = getattr(model, "beta_scores_", None)
+        betas = np.asarray(_b if _b is not None else [], dtype=float).ravel()
+        _tr = getattr(model, "transformer", None)
+        _lab = getattr(_tr, "feature_names_", None) if _tr is not None else None
+        labels = list(_lab) if _lab is not None else []
+        card_path = base + "_model_card.json"
+        coef_path = base + "_coefficients.csv"
+        meta = getattr(model, "_qmaxent_meta", {}) or {}
+
+        def _num(v):
+            try:
+                f = float(v)
+                return None if np.isnan(f) else f
+            except (TypeError, ValueError):
+                return v
+
+        def _plugin_version():
+            try:
+                here = os.path.dirname(os.path.dirname(__file__))
+                with open(os.path.join(here, "metadata.txt"), encoding="utf-8") as fh:
+                    for line in fh:
+                        if line.startswith("version="):
+                            return line.split("=", 1)[1].strip()
+            except OSError:
+                pass
+            return "unknown"
+
+        try:
+            import elapid
+
+            elapid_ver = getattr(elapid, "__version__", "unknown")
+        except Exception:
+            elapid_ver = "unknown"
+
+        cv_names = {
+            0: "None",
+            1: "Geographic K-Fold",
+            2: "Random K-Fold",
+            3: "Checkerboard",
+            4: "Buffered LOO",
+        }
+        cv_aucs = [a for a in (result.get("cv_aucs") or []) if a is not None and not np.isnan(a)]
+        names = list(meta.get("feature_names", []))
+        cats = set(meta.get("categorical_indices", []) or [])
+
+        card = {
+            "format": "QMaxent model card",
+            "format_version": 1,
+            "created": datetime.datetime.now().isoformat(timespec="seconds"),
+            "software": {"qmaxent": _plugin_version(), "elapid": elapid_ver},
+            "files": {
+                "model_pkl": os.path.basename(cfg["output_model"]),
+                "coefficients_csv": os.path.basename(coef_path),
+                "note": (
+                    "The .pkl file reloads the model in QMaxent or "
+                    "elapid. It is a Python pickle: open it only from "
+                    "trusted sources. This JSON and the CSV are safe "
+                    "to share."
+                ),
+            },
+            "settings": {
+                "feature_types": list(meta.get("feature_types", [])),
+                "feature_types_mode": (
+                    "auto (maxnet default rule)"
+                    if cfg.get("feature_types_auto", True)
+                    else "manual"
+                ),
+                "beta_multiplier": _num(cfg.get("beta_mult", 1.0)),
+                "output_transform": cfg.get("transform", "cloglog"),
+                "n_hinge_features": cfg.get("n_hinge"),
+                "n_threshold_features": cfg.get("n_threshold"),
+                "add_presences_to_background": bool(cfg.get("add_to_bg", False)),
+                "distance_weights": bool(cfg.get("distance_weights", False)),
+                "cross_validation": cv_names.get(
+                    cfg.get("cv_method", 0), str(cfg.get("cv_method"))
+                ),
+                "n_folds": cfg.get("n_folds"),
+                "random_seed": cfg.get("random_seed"),
+                "permutation_importance_data": result.get("permutation_source"),
+            },
+            "data": {
+                "n_presence": meta.get("n_presence"),
+                "n_background": meta.get("n_background"),
+                "variables": [
+                    {
+                        "order": i + 1,
+                        "name": nm,
+                        "type": "categorical" if i in cats else "continuous",
+                        "min": _num((meta.get("varmin") or {}).get(nm)),
+                        "max": _num((meta.get("varmax") or {}).get(nm)),
+                        "raster": (
+                            os.path.normpath(meta["raster_paths"][i])
+                            if i < len(meta.get("raster_paths") or [])
+                            else None
+                        ),
+                    }
+                    for i, nm in enumerate(names)
+                ],
+            },
+            "performance": {
+                "training_auc": _num(result.get("full_auc")),
+                "cv_auc_per_fold": [_num(a) for a in cv_aucs],
+                "cv_auc_mean": _num(np.mean(cv_aucs)) if cv_aucs else None,
+                "cv_auc_sd": _num(np.std(cv_aucs)) if cv_aucs else None,
+            },
+            "thresholds": {k: _num(v) for k, v in (meta.get("thresholds") or {}).items()},
+            "variable_importance": {
+                "permutation_percent": {
+                    r["variable"]: _num(r.get("importance_pct"))
+                    for r in (result.get("permutation_results") or [])
+                },
+                "jackknife": result.get("jackknife_results") or [],
+            },
+            "model_constants": {
+                "alpha": _num(getattr(model, "alpha_", None)),
+                "entropy": _num(getattr(model, "entropy_", None)),
+                "n_features": int(betas.size),
+                "n_nonzero_coefficients": int(np.count_nonzero(betas)),
+            },
+        }
+        with open(card_path, "w", encoding="utf-8") as fh:
+            json.dump(card, fh, indent=2, ensure_ascii=False, default=str)
+
+        rows = self._coefficient_rows(model, names, labels, betas.size)
+        with open(coef_path, "w", newline="", encoding="utf-8") as fh:
+            w = csv.writer(fh)
+            w.writerow(
+                ["index", "feature_type", "variable", "detail", "knot", "coefficient", "nonzero"]
+            )
+            for i, b in enumerate(betas):
+                ftype, var, detail, knot = rows[i]
+                w.writerow(
+                    [
+                        i + 1,
+                        ftype,
+                        var,
+                        detail,
+                        "" if knot is None else f"{float(knot):.10g}",
+                        f"{float(b):.10g}",
+                        int(b != 0),
+                    ]
+                )
+        return card_path, coef_path
+
+    @staticmethod
+    def _coefficient_rows(model, names, type_labels, n):
+        """(feature_type, variable, detail, knot) for each coefficient.
+
+        Mirrors elapid 1.0.x MaxentFeatureTransformer.transform: blocks
+        in the order linear, quadratic, product, threshold, hinge,
+        categorical; threshold and hinge columns are grouped by
+        variable. Falls back to the bare feature type when the layout
+        cannot be reconstructed (e.g. a future elapid version).
+        """
+        fallback = [
+            ((type_labels[i] if i < len(type_labels) else "feature"), "", "", None)
+            for i in range(n)
+        ]
+        try:
+            tr_ = model.transformer
+            cont = list(tr_.continuous_ or [])
+            cvars = [names[i] for i in cont]
+            rows = []
+            ft = tr_.feature_types
+            if "linear" in ft:
+                rows += [("linear", v, "", None) for v in cvars]
+            if "quadratic" in ft:
+                rows += [("quadratic", v, "squared", None) for v in cvars]
+            if "product" in ft:
+                if len(cvars) == 1:
+                    rows += [("product", cvars[0], "", None)]
+                else:
+                    for a in range(len(cvars) - 1):
+                        for b in range(a + 1, len(cvars)):
+                            rows.append(("product", f"{cvars[a]} x {cvars[b]}", "", None))
+            if "threshold" in ft:
+                th = tr_.estimators_["threshold"].threshold_indices_
+                for j, v in enumerate(cvars):
+                    for k in range(th.shape[0]):
+                        rows.append(("threshold", v, f"value > knot ({k + 1})", th[k, j]))
+            if "hinge" in ft:
+                hi = tr_.estimators_["hinge"].hinge_indices_
+                nk = hi.shape[0] - 1
+                for j, v in enumerate(cvars):
+                    for k in range(nk):
+                        rows.append(
+                            (
+                                "hinge",
+                                v,
+                                f"left hinge {k + 1}: 0 below knot, rises to 1 at variable max",
+                                hi[k, j],
+                            )
+                        )
+                    for k in range(nk):
+                        rows.append(
+                            (
+                                "hinge",
+                                v,
+                                f"right hinge {k + 1}: rises from "
+                                f"variable min, 1 at and above knot",
+                                hi[k + 1, j],
+                            )
+                        )
+            if tr_.categorical_:
+                cat_est = tr_.estimators_.get("categorical")
+                for ci, est in zip(tr_.categorical_, cat_est.estimators_):
+                    for lev in est.categories_[0]:
+                        rows.append(("categorical", names[ci], f"class = {lev}", None))
+            return rows if len(rows) == n else fallback
+        except Exception:
+            return fallback
 
     def _save_xlsx(self, result: dict, cfg: dict):
         """Multi-sheet styled XLSX combining everything a researcher
@@ -2247,11 +2577,11 @@ class MaxentWorker(QThread):
         # ════════════════════════════════════════════════════════════════
         ps = meta.get("priority_thresholds", None)
         if ps:
-            ws = wb.create_sheet("Priority Sites")
+            ws = wb.create_sheet("Survey Sites")
             _write_section_title(
                 ws,
                 1,
-                "Table 6. Priority Sites threshold values from the training data.",
+                "Table 6. Threshold values for survey site selection (training data).",
                 n_cols=2,
             )
             _write_header(ws, 2, ["Threshold method", "Value"])

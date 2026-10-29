@@ -716,7 +716,7 @@
         
   
   <span class="md-ellipsis">
-    ⑤ 우선조사 후보지
+    ⑤ 조사지점 선정
   </span>
   
 
@@ -999,28 +999,28 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#8-priority-sites-for-survey" class="md-nav__link">
+  <a href="#8-survey-site-selection" class="md-nav__link">
     <span class="md-ellipsis">
-      8. 우선조사 후보지 (Priority Sites for Survey)
+      8. 조사지점 선정 (Survey Site Selection)
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="8. 우선조사 후보지 (Priority Sites for Survey)">
+    <nav class="md-nav" aria-label="8. 조사지점 선정 (Survey Site Selection)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#81-discovery" class="md-nav__link">
+  <a href="#81" class="md-nav__link">
     <span class="md-ellipsis">
-      8.1 Discovery 모드
+      8.1 고적합도 탐색 모드
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#82-validation" class="md-nav__link">
+  <a href="#82" class="md-nav__link">
     <span class="md-ellipsis">
-      8.2 Validation 모드
+      8.2 적합도 구간별 층화 표집 모드
     </span>
   </a>
   
@@ -1340,28 +1340,28 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#8-priority-sites-for-survey" class="md-nav__link">
+  <a href="#8-survey-site-selection" class="md-nav__link">
     <span class="md-ellipsis">
-      8. 우선조사 후보지 (Priority Sites for Survey)
+      8. 조사지점 선정 (Survey Site Selection)
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="8. 우선조사 후보지 (Priority Sites for Survey)">
+    <nav class="md-nav" aria-label="8. 조사지점 선정 (Survey Site Selection)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#81-discovery" class="md-nav__link">
+  <a href="#81" class="md-nav__link">
     <span class="md-ellipsis">
-      8.1 Discovery 모드
+      8.1 고적합도 탐색 모드
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#82-validation" class="md-nav__link">
+  <a href="#82" class="md-nav__link">
     <span class="md-ellipsis">
-      8.2 Validation 모드
+      8.2 적합도 구간별 층화 표집 모드
     </span>
   </a>
   
@@ -1482,12 +1482,15 @@ variegatus (Phillips et al, 2006 standard)</strong>을 선택하고 저장 폴�
 <a href="../../exporting-results/">결과 내보내기</a>를 참고하세요.</p>
 <h2 id="3">3. 모델 설정<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
 <p><strong>② Parameters</strong>로 이동합니다. 이 가이드 투어에서는 모든 기본값을
-그대로 받아 사용합니다. 각 기본값이 학술적 권장치이므로 그 선택이 어떤
-결과를 만드는지 확인하는 데 가장 적합한 출발점입니다.</p>
+그대로 받아 사용합니다. 기본값이 어떤 결과를 만드는지 확인하는 출발점으로
+알맞기 때문입니다. 다만 자동 피처 규칙은 기본값일 뿐 최적 모델을 보장하지
+않으므로, 실제 연구에서는 수동 선택과 교차검증으로 다른 조합과 비교하세요.</p>
 <p><img alt="모든 기본값이 적용된 Parameters 탭" src="../../../images/ui/dock-2-parameters-defaults.png" /></p>
 <ul>
-<li><strong>Feature Types</strong>: Auto. <a href="../../references/">Phillips &amp; Dudík 2008</a>의
-  maxnet 자동 규칙은 출현점 116개에 대해 LQPHT 전체를 선택합니다.</li>
+<li><strong>Feature Types</strong>: 자동 (출현점 수에 따른 maxnet 기본 규칙).
+  <a href="../../references/">Phillips et al. 2017</a>의 maxnet 기본 규칙은 출현점
+  116개(80개 이상)에 대해 LQPH를 선택합니다. threshold 피처는 자동으로
+  추가되지 않습니다.</li>
 <li><strong>Regularization multiplier</strong>: 1.0
   (<a href="../../references/">Phillips &amp; Dudík 2008</a> 권장).</li>
 <li><strong>Spatial evaluation</strong>: Geographic K-Fold
@@ -1495,17 +1498,25 @@ variegatus (Phillips et al, 2006 standard)</strong>을 선택하고 저장 폴�
   buffer 50,000 m, 고정 random seed = 42
   (<a href="../../references/">Roberts et al. 2017</a> 기본값).</li>
 <li><strong>Jackknife variable importance</strong>: 활성화.</li>
-<li><strong>Permutation importance</strong>: 활성화, 반복 10회.</li>
+<li><strong>Permutation importance</strong>: 활성화, 반복 10회, 평가 자료는 기본값인
+  <strong>학습 자료 (maxent.jar 방식)</strong>.</li>
 <li><strong>Output Files</strong>: <code>qmaxent_output/model.pkl</code> 및
   <code>qmaxent_output/results.xlsx</code>.</li>
 </ul>
-<p>고정 random seed는 <strong>이 튜토리얼을 따라 하시는 모든 분이 비트 단위로
-동일한 결과</strong>를 얻도록 보장합니다 —
+<p>고정 random seed는 <strong>이 튜토리얼을 따라 하시는 모든 분이 같은 결과</strong>를
+얻도록 해 줍니다(v0.2.0부터 배경점 추출에도 적용되므로 래스터 순서를 그대로
+두세요). 이는
 <a href="../../references/">Araújo et al. 2019</a>이 강조하는 계산 재현성의 핵심
 요건입니다.</p>
 <h2 id="4">4. 학습 + 교차검증 실행<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
 <p><strong>▶ Run Maxent</strong>를 누릅니다. <strong>③ Training</strong> 탭이 활성화되고 약 30초 내에
 모든 단계가 완료됩니다.</p>
+<div class="admonition note">
+<p class="admonition-title">화면의 수치</p>
+<p>이 절의 화면과 AUC 값은 v0.1.x(자동 규칙 LQPHT)에서 얻은 것입니다. v0.2.0은
+LQPH를 선택하고 배경점 추출에도 시드를 적용하므로 수치가 조금 다르게
+나옵니다. 흐름과 해석은 같습니다.</p>
+</div>
 <p><img alt="100%로 완료된 Training 탭의 전체 로그" src="../../../images/ui/dock-3-training-completed.png" /></p>
 <p>탭 하단의 상태 줄에 요약이 표시됩니다 —
 <code>presence=116 background=10,104 | train AUC=0.9569 | CV AUC=0.7436</code>.
@@ -1557,9 +1568,11 @@ variegatus (Phillips et al, 2006 standard)</strong>을 선택하고 저장 폴�
   모드(전체 모델 기준선, <em>해당 변수만</em>, <em>해당 변수 제외</em>)의 AUC를
   변수별로 산출합니다.</li>
 <li><strong>Permutation importance</strong> — scikit-learn의 <code>permutation_importance</code>,
-  <code>n_repeats=10</code>, 검증 세트에서 평가. 결과는 ④ Results의
+  <code>n_repeats=10</code>. 기본값에서는 전체 모델을 모든 학습 출현점과 배경점에
+  적용해 평가합니다(maxent.jar 방식). 결과는 ④ Results의
   Permutation Importance 하위 탭에 표시됩니다.</li>
-<li><strong>Save results</strong> — <code>results.xlsx</code>와 <code>training_log.txt</code>가 <code>.pkl</code> 옆에
+<li><strong>Save results</strong> — <code>results.xlsx</code>, <code>training_log.txt</code>, 그리고 모델 카드
+  <code>model_model_card.json</code> 과 계수표 <code>model_coefficients.csv</code> 가 <code>.pkl</code> 옆에
   자동 저장됩니다.</li>
 </ul>
 <p><strong>Train AUC 0.957 vs. CV AUC 0.744 ± 0.075</strong>. 그 차이는 공간적으로
@@ -1581,9 +1594,9 @@ variegatus (Phillips et al, 2006 standard)</strong>을 선택하고 저장 폴�
 <p>연강수량 1,500–3,500 mm 구간에 적합도가 가장 높게 할당되어 있습니다 —
 이는 남미 열대 우림 기후대에 해당합니다. 약 800 mm 이하부터는 적합도가
 급격히 떨어지며, 곡선 모양은 hinge와 quadratic 피처의 결합입니다.
-다른 변수를 드롭다운에서 시도해 보면 부드러운 U자·정점형 곡선은
-quadratic 계열, 각진 불연속점은 hinge·threshold 피처에서 비롯됨을 확인할
-수 있습니다.</p>
+다른 변수를 드롭다운에서 시도해 보면 부드러운 U자형이나 정점형 곡선은
+quadratic 계열, 각진 꺾임은 hinge 피처에서 비롯됨을 확인할 수 있습니다.
+계단 모양은 threshold 피처를 수동으로 켰을 때 나타납니다.</p>
 <h3 id="jackknife">잭나이프 중요도 (Jackknife)<a class="headerlink" href="#jackknife" title="Permanent link">&para;</a></h3>
 <p><strong>Jackknife Importance</strong> 하위 탭은 각 변수의 단독 신호와 누락 시 손실을
 나란히 비교합니다. 짙은 막대(<em>Only this variable</em>)와 옅은 막대
@@ -1601,9 +1614,11 @@ quadratic 계열, 각진 불연속점은 hinge·threshold 피처에서 비롯됨
 </ul>
 <h3 id="permutation-importance">치환 중요도 (Permutation importance)<a class="headerlink" href="#permutation-importance" title="Permanent link">&para;</a></h3>
 <p><strong>Permutation Importance</strong> 하위 탭은 같은 질문에 다른 방식으로
-답합니다. scikit-learn의 <code>permutation_importance</code>는 검증 세트에서
-각 변수의 값을 무작위로 섞고, AUC 하락을 측정하고, 10회 반복 평균을
-전체 합 100%로 정규화합니다.</p>
+답합니다. scikit-learn의 <code>permutation_importance</code>는 평가 자료(기본값은
+학습 자료)에서 각 변수의 값을 무작위로 섞고, AUC 하락을 측정하고, 10회 반복
+평균을 전체 합 100%로 정규화합니다. <strong>② Parameters</strong> 에서 평가 자료를
+<strong>교차검증 검증 폴드 (전체 폴드 합산)</strong> 으로 바꾸면 새로운 지역에 대한 예측
+성능이 각 변수에 얼마나 의존하는지 볼 수 있습니다.</p>
 <p><img alt="Permutation 중요도 막대" src="../../../images/examples/bradypus/permutation.png" /></p>
 <p>여기서도 <code>bio7</code>과 <code>bio12</code>가 우세합니다. Permutation 관점은 전체 중요도를
 모든 변수에 분배하므로 maxent.jar의 변수별 percentage 표와 직접 비교
@@ -1621,12 +1636,15 @@ quadratic 계열, 각진 불연속점은 hinge·threshold 피처에서 비롯됨
 구역이 분포합니다. 모델은 안데스 산맥의 한랭 고지대와 매우 건조한
 브라질 동북 카아팅가 지역을 정확히 부적합으로 판정합니다.</p>
 <h2 id="7">7. 결과물 저장<a class="headerlink" href="#7" title="Permanent link">&para;</a></h2>
-<p>자동으로 두 개의 파일이 저장되었습니다.</p>
+<p>자동으로 다음 파일이 저장되었습니다.</p>
 <ul>
 <li><code>qmaxent_output/model.pkl</code> — 학습된 모델의 직렬화 산출물.
   Data 탭의 <strong>Load existing model (.pkl)…</strong> 버튼으로 나중에 다시
   불러올 수 있고, 협업자에게 공유할 수도 있습니다. 보안 주의 사항은
   <a href="../../saving-models/">모델 저장 및 재사용</a>을 참고하세요.</li>
+<li><code>qmaxent_output/model_model_card.json</code>, <code>qmaxent_output/model_coefficients.csv</code>:
+  설정, 자료 요약, 성능, 임계값, 변수 중요도를 담은 모델 카드와 모든 피처의
+  계수표. <code>.pkl</code> 과 달리 공유해도 안전한 텍스트 파일입니다.</li>
 <li><code>qmaxent_output/results.xlsx</code> — 실험 설정, 변수 목록, CV 결과,
   잭나이프, 치환 중요도, 반응 곡선 변곡점, 임계값 등을 시트별로
   정리한 다중 시트 표. 시트 구성은
@@ -1636,36 +1654,42 @@ quadratic 계열, 각진 불연속점은 hinge·threshold 피처에서 비롯됨
 곡선·ROC·잭나이프·치환 중요도 4개의 300 dpi PNG가 GeoTIFF 옆에 함께
 저장됩니다. 출판물 단일 칼럼 그림용으로 바로 붙여넣을 수 있는 크기로
 출력됩니다.</p>
-<h2 id="8-priority-sites-for-survey">8. 우선조사 후보지 (Priority Sites for Survey)<a class="headerlink" href="#8-priority-sites-for-survey" title="Permanent link">&para;</a></h2>
+<h2 id="8-survey-site-selection">8. 조사지점 선정 (Survey Site Selection)<a class="headerlink" href="#8-survey-site-selection" title="Permanent link">&para;</a></h2>
 <p>학습된 모델을 곧바로 활용해 후속 조사 계획을 세우는 단계입니다.
-<strong>⑤ Priority Sites for Survey</strong> 탭은 서로 다른 두 가지 모드를
-제공합니다 — <strong>Discovery</strong>(새 개체군 <em>발견</em>)와
-<strong>Validation</strong>(적합도 구간별 <em>층화 검증</em>).</p>
-<h3 id="81-discovery">8.1 Discovery 모드<a class="headerlink" href="#81-discovery" title="Permanent link">&para;</a></h3>
-<p>Discovery는 높은 적합도 구간에서 후보를 추출합니다. 탭을 열고 모드를
-<strong>Discovery</strong> 유지, 자동 설정된 최소 적합도(~0.81)를 그대로, <code>n_sites = 20</code>,
-1 km / 500 m 간격 기본값으로 두고 <strong>▶ Extract Priority Sites</strong>를 누릅니다.</p>
-<p><img alt="폼이 입력된 Discovery 모드 Priority Sites 탭" src="../../../images/ui/dock-5-priority-sites-discovery.png" /></p>
-<p>20개 후보지(빨간 점)가 적합도 지도 위에 추출되고, attribute table에는
-Nominatim 역지오코딩으로 행정 정보가 자동 부착됩니다.</p>
-<p><img alt="캔버스 위 Discovery 후보지와 attribute table" src="../../../images/ui/dock-5-priority-sites-extracted.png" /></p>
-<p>각 후보는 기존 출현점에서 최소 1 km, 다른 후보에서 최소 500 m 이상
+<strong>⑤ 조사지점 선정</strong> 탭은 서로 다른 두 가지 모드를 제공합니다.
+<strong>고적합도 탐색</strong> 은 새 개체군을 <em>찾는</em> 모드이고, <strong>적합도 구간별 층화
+표집</strong> 은 예측 적합도 구간 전반에서 모델을 <em>확인하는</em> 모드입니다.</p>
+<h3 id="81">8.1 고적합도 탐색 모드<a class="headerlink" href="#81" title="Permanent link">&para;</a></h3>
+<p>고적합도 탐색은 높은 적합도 구간에서 조사지점을 뽑습니다. 탭을 열고 모드를
+<strong>고적합도 탐색</strong> 으로 유지, 자동 설정된 <strong>최소 적합도</strong>(~0.81)를 그대로,
+<strong>조사지점 수</strong> 20, 1 km / 500 m 간격 기본값으로 두고 <strong>▶  조사지점 선정</strong> 을
+누릅니다.</p>
+<p><img alt="설정이 입력된 고적합도 탐색 모드의 조사지점 선정 탭" src="../../../images/ui/dock-5-priority-sites-discovery.png" /></p>
+<p>20개 조사지점(빨간 점, <code>Survey sites</code> 레이어)이 적합도 지도 위에 표시되고,
+<code>survey_sites.gpkg</code> 의 attribute table에는 Nominatim 역지오코딩으로 행정 정보가
+자동 부착됩니다. <strong>주소 언어</strong> 기본값인 <strong>현지 이름</strong> 에서는 각 나라의 언어로
+기록됩니다(예: 브라질의 지점은 포르투갈어).</p>
+<p><img alt="캔버스 위 고적합도 탐색 조사지점과 attribute table" src="../../../images/ui/dock-5-priority-sites-extracted.png" /></p>
+<p>각 조사지점은 기존 출현점에서 최소 1 km, 다른 조사지점에서 최소 500 m 이상
 떨어져 있어 한 차례 출장에서 여러 곳을 합리적으로 방문할 수 있게
-배치됩니다. Discovery는 <em>"종이 있을 수 있지만 우리가 아직 가 보지
+배치됩니다. 고적합도 탐색은 <em>"종이 있을 수 있지만 우리가 아직 가 보지
 않은 곳은 어디인가?"</em>라는 질문에 답하는 모드로,
+<a href="../../references/">Williams et al. 2009</a>와
 <a href="../../references/">Rhoden et al. 2017</a>의 "Maxent-directed surveys"
-패러다임에 정확히 대응합니다.</p>
-<h3 id="82-validation">8.2 Validation 모드<a class="headerlink" href="#82-validation" title="Permanent link">&para;</a></h3>
-<p>모드를 <strong>Validation</strong>로 바꾸면 다른 표집을 수행합니다 — 임계값 이상의
-적합도 셀을 4개 분위로 층화하여 각 분위에서 균등하게 후보를 뽑습니다.
-이렇게 하면 한 번의 현장 출장으로 모델의 보정(calibration)을 적합도
-전 구간에서 검증할 수 있습니다.</p>
-<p><img alt="분위 층화가 설정된 Validation 모드 Priority Sites 탭" src="../../../images/ui/dialog-priority-validation.png" /></p>
-<p>산출된 후보지는 저적합도부터 고적합도까지 대략 균등 분포하며, attribute
-table에는 각 후보의 분위 정보가 부착됩니다.</p>
-<p><img alt="분위별 색이 적용된 Validation 모드 후보지" src="../../../images/maps/priority-sites-validation-canvas.png" /></p>
-<p>Validation은 새로운 개체군 발견보다 <strong>모델 검증</strong>에 적합한 모드로,
-§ 4에서 계산한 교차검증 AUC의 현장 측 보완 절차에 해당합니다.</p>
+접근에 대응합니다.</p>
+<h3 id="82">8.2 적합도 구간별 층화 표집 모드<a class="headerlink" href="#82" title="Permanent link">&para;</a></h3>
+<p>모드를 <strong>적합도 구간별 층화 표집</strong> 으로 바꾸면 다른 방식으로 표집합니다.
+<strong>구간별 층화 표집 설정</strong> 에서 고른 임계값(MTP, T10, MaxSSS, 사용자 지정)
+이상인 셀을 적합도 4분위로 나누고, 구간마다 같은 수의 조사지점을 뽑습니다.
+임계값은 표집 범위만 정하며 이진 지도를 만들지 않습니다. 낮은 적합도 지점도
+일부러 포함하므로 한 번의 현장 출장으로 모델의 보정(calibration)을 적합도
+구간 전반에서 확인할 수 있습니다.</p>
+<p><img alt="분위 층화가 설정된 적합도 구간별 층화 표집 모드의 조사지점 선정 탭" src="../../../images/ui/dialog-priority-validation.png" /></p>
+<p>선정된 조사지점은 낮은 적합도부터 높은 적합도까지 대략 균등하게 분포하며,
+attribute table의 <code>quartile</code> 필드에 각 지점의 분위(1~4)가 기록됩니다.</p>
+<p><img alt="분위별 색이 적용된 적합도 구간별 층화 표집 조사지점" src="../../../images/maps/priority-sites-validation-canvas.png" /></p>
+<p>적합도 구간별 층화 표집은 새로운 개체군 발견보다 <strong>모델 검증</strong>에 알맞은
+모드로, § 4에서 계산한 교차검증 AUC를 현장에서 보완하는 절차에 해당합니다.</p>
 <h2 id="_1">다음 단계<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>격자가 정합되지 않은 자료로 동일한 워크플로우</strong>:

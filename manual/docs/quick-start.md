@@ -46,14 +46,17 @@ The status line should turn green:
 
 ## Step 4 · Accept the Parameters defaults
 
-Switch to **② Parameters**. For this quick tour, every default is
-deliberately the recommended setting from the SDM literature
-([Phillips & Dudík 2008](references.md), [Radosavljevic & Anderson 2014](references.md)):
+Switch to **② Parameters**. For this quick tour, accept the defaults.
+They are sensible starting values from the SDM literature
+([Phillips & Dudík 2008](references.md), [Phillips et al. 2017](references.md)),
+not a guarantee of the best model for your data:
 
-- **Feature classes**: Auto (the maxnet rule that follows Phillips & Dudík
-  2008 picks LQPHT for any sample size ≥ 80)
+- **Feature classes**: **Auto (maxnet default rule by sample size)**,
+  which gives LQPH (linear, quadratic, product, hinge) for 80 or more
+  presences, so LQPH for the 116 Bradypus records
 - **Regularization multiplier**: 1.0
-- **Spatial CV**: Geographic K-Fold, 5 folds, fixed seed 0
+- **Spatial CV**: Geographic K-Fold, 5 folds, **Fix random seed** 42
+  (the seed also fixes the background sample)
 - **Jackknife variable importance**: enabled
 - **Output files**: `qmaxent_output/model.pkl` and
   `qmaxent_output/results.xlsx`
@@ -72,8 +75,9 @@ Click **▶ Run Maxent** at the bottom of the dock. Focus shifts to the
 
 ![Training tab at 100% with the full log](images/ui/dock-3-training-completed.png)
 
-The log reports `Training AUC = 0.9569` and a 5-fold mean
-`CV AUC = 0.7436 ± 0.0750`. The honest gap between training and CV AUC is
+The log reports a training AUC of about 0.96 and a 5-fold mean CV AUC
+of about 0.74 (the screenshot was recorded with an earlier version; exact
+values differ slightly in v0.2.0). The honest gap between training and CV AUC is
 itself a good sign — it tells you the model has not been silently
 over-fitted to the training presences (a risk that
 [Roberts et al. 2017](references.md) document at length).

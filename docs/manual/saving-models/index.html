@@ -721,7 +721,7 @@
         
   
   <span class="md-ellipsis">
-    ⑤ Priority Sites for Survey
+    ⑤ Survey Site Selection
   </span>
   
 
@@ -787,6 +787,15 @@
   <a href="#saving-a-trained-model" class="md-nav__link">
     <span class="md-ellipsis">
       Saving a trained model
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#model-card-and-coefficient-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      Model card and coefficient table
     </span>
   </a>
   
@@ -1151,6 +1160,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#model-card-and-coefficient-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      Model card and coefficient table
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#reloading-a-saved-model" class="md-nav__link">
     <span class="md-ellipsis">
       Reloading a saved model
@@ -1237,6 +1255,32 @@ Distribute it alongside the <code>results.xlsx</code> workbook when sharing with
 collaborators or publishing supplementary material — that is the pair
 of files <a href="../references/">Araújo et al. 2019</a> cite as the minimum
 reproducibility unit for a published SDM.</p>
+<h2 id="model-card-and-coefficient-table">Model card and coefficient table<a class="headerlink" href="#model-card-and-coefficient-table" title="Permanent link">&para;</a></h2>
+<p>Since v0.2.0, QMaxent writes two plain-text files next to the <code>.pkl</code>,
+named after it (for <code>model.pkl</code>: <code>model_model_card.json</code> and
+<code>model_coefficients.csv</code>):</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&lt;model&gt;_model_card.json</code></td>
+<td>Software versions (QMaxent, elapid); settings (feature classes and whether Auto or Manual selection chose them, regularization multiplier, output transform, hinge and threshold knots, CV method and folds, random seed, permutation-importance evaluation data); data summary (presence and background counts, each variable with its type, training range and raster file); performance (training AUC, per-fold and mean CV AUC); thresholds (MTP, T10, MaxSSS); variable importance (permutation and jackknife); model constants</td>
+</tr>
+<tr>
+<td><code>&lt;model&gt;_coefficients.csv</code></td>
+<td>One row per Maxent feature: index, feature type (linear, quadratic, product, threshold, hinge, categorical), variable, a short description, the knot value for hinge and threshold features, the fitted coefficient, and whether it is non-zero</td>
+</tr>
+</tbody>
+</table>
+<p>Use the model card to report the run in a methods section or a
+supplement, and the coefficient table to see which features the
+regularization kept. Unlike the <code>.pkl</code>, both files are <strong>safe to open and
+share</strong>: they contain only text and numbers, no executable code.</p>
 <h2 id="reloading-a-saved-model">Reloading a saved model<a class="headerlink" href="#reloading-a-saved-model" title="Permanent link">&para;</a></h2>
 <p>On the <strong>① Data</strong> tab, click <strong>Load existing model (.pkl)…</strong> and select
 the saved file. QMaxent reads the variable list out of the pickle and
@@ -1268,7 +1312,7 @@ are mapped.</p>
 <p>After confirmation, QMaxent rewires the dock as if you had just trained
 the model fresh — the <strong>③ Training</strong> tab is skipped and <strong>④ Results</strong>
 is enabled directly. You can immediately run a spatial projection or
-extract priority sites against the new raster stack.</p>
+select survey sites against the new raster stack.</p>
 <h2 id="re-projecting-onto-an-updated-raster-stack">Re-projecting onto an updated raster stack<a class="headerlink" href="#re-projecting-onto-an-updated-raster-stack" title="Permanent link">&para;</a></h2>
 <p>The most common reason to reload a model is to <strong>apply it to a more
 recent or higher-resolution version of the same environmental layers</strong>
@@ -1288,17 +1332,21 @@ data — particularly important when the new rasters extend the
 geographic extent or include time periods outside the original
 training range.</p>
 <h2 id="security-note-on-python-pickle-files">Security note on Python pickle files<a class="headerlink" href="#security-note-on-python-pickle-files" title="Permanent link">&para;</a></h2>
-<p><code>.pkl</code> files are <strong>executable Python bytecode</strong>. Loading a malicious
-<code>.pkl</code> can run arbitrary code on your machine. Only load <code>.pkl</code> files
-that you produced yourself or that come from trusted collaborators.</p>
+<p><code>.pkl</code> files are <strong>Python pickles</strong>, which can contain executable code.
+Loading a malicious <code>.pkl</code> can run arbitrary code on your machine. Only
+open <code>.pkl</code> files that you produced yourself or that come from trusted
+collaborators. The model card (<code>.json</code>) and the coefficient table
+(<code>.csv</code>) are safe to share and open.</p>
 <p>QMaxent has no way to verify the provenance of a third-party <code>.pkl</code>
 beyond what Python's <code>pickle</code> module itself does (which is nothing).
 For published QMaxent results, the safe pattern is:</p>
 <ul>
-<li>Distribute the <code>model.pkl</code> alongside the <code>results.xlsx</code> workbook so
-  reviewers have the deterministic seed, hyperparameters, and inputs
-  needed to <strong>re-train an equivalent model from scratch</strong> if they
-  prefer not to load the pickle.</li>
+<li>Distribute the <code>model.pkl</code> alongside the <code>results.xlsx</code> workbook and
+  the model card so reviewers have the deterministic seed,
+  hyperparameters, and inputs needed to <strong>re-train an equivalent model
+  from scratch</strong> if they prefer not to load the pickle. The model card
+  and coefficient table let them inspect the model without opening the
+  pickle at all.</li>
 <li>Sign the <code>.pkl</code> with a SHA-256 hash in your supplementary materials.</li>
 </ul>
 <h2 id="next">Next<a class="headerlink" href="#next" title="Permanent link">&para;</a></h2>
@@ -1342,7 +1390,7 @@ every <code>model.pkl</code>.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../priority-sites/" class="md-footer__link md-footer__link--prev" aria-label="Previous: ⑤ Priority Sites for Survey">
+          <a href="../priority-sites/" class="md-footer__link md-footer__link--prev" aria-label="Previous: ⑤ Survey Site Selection">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1352,7 +1400,7 @@ every <code>model.pkl</code>.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                ⑤ Priority Sites for Survey
+                ⑤ Survey Site Selection
               </div>
             </div>
           </a>

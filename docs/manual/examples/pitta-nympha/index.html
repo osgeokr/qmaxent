@@ -716,7 +716,7 @@
         
   
   <span class="md-ellipsis">
-    ⑤ Priority Sites for Survey
+    ⑤ Survey Site Selection
   </span>
   
 
@@ -1029,18 +1029,27 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-priority-sites-for-survey" class="md-nav__link">
+  <a href="#6-survey-site-selection" class="md-nav__link">
     <span class="md-ellipsis">
-      6. Priority sites for survey
+      6. Survey site selection
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-what-this-example-demonstrates" class="md-nav__link">
+  <a href="#7-comparison-with-maxentjar" class="md-nav__link">
     <span class="md-ellipsis">
-      7. What this example demonstrates
+      7. Comparison with maxent.jar
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-what-this-example-demonstrates" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. What this example demonstrates
     </span>
   </a>
   
@@ -1292,18 +1301,27 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-priority-sites-for-survey" class="md-nav__link">
+  <a href="#6-survey-site-selection" class="md-nav__link">
     <span class="md-ellipsis">
-      6. Priority sites for survey
+      6. Survey site selection
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-what-this-example-demonstrates" class="md-nav__link">
+  <a href="#7-comparison-with-maxentjar" class="md-nav__link">
     <span class="md-ellipsis">
-      7. What this example demonstrates
+      7. Comparison with maxent.jar
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-what-this-example-demonstrates" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. What this example demonstrates
     </span>
   </a>
   
@@ -1330,20 +1348,22 @@
 <h1 id="pitta-nympha">Pitta nympha<a class="headerlink" href="#pitta-nympha" title="Permanent link">&para;</a></h1>
 <p>The fairy pitta <em>Pitta nympha</em> is a long-distance migratory passerine
 that breeds in dense, multi-strata broadleaved forest. The dataset
-shipped here reproduces a published field study — Lee et al. (2025,
-<em>Global Ecology and Conservation</em> 60:e03939) — that surveyed nest
-sites on Geoje Island (Geoje-si, South Korea) and trained a Maxent
-model with <strong>maxnet R</strong> (ENMeval 2.0). Re-running the same data in
-QMaxent serves two purposes:</p>
+used here comes from a published field study, Lee et al. (2025,
+<em>Global Ecology and Conservation</em> 64:e03939), which surveyed nest
+sites on Geoje Island (Geoje-si, South Korea), selected Maxent
+settings with ENMeval and fitted the final model with linear,
+quadratic and hinge features (LQH) and a regularization multiplier of
+4. Re-running the same data in QMaxent serves two purposes:</p>
 <ol>
 <li><strong>Worked example for real, small-n field data</strong> (47 nest locations)
-   with a mix of continuous topographic variables and a categorical
-   forest-age class.</li>
-<li><strong>Cross-implementation comparison</strong> with maxent.jar — see § 3.3 of
-   the accompanying manuscript for the formal IWLR ↔ coordinate-
-   descent equivalence numbers (Default β=1 and Lee-matched β=4).</li>
+   with a mix of continuous topographic and forest-structure variables
+   and two categorical variables.</li>
+<li><strong>Cross-implementation comparison</strong> with maxent.jar on identical
+   inputs, at the default regularization (β = 1) and at the settings of
+   Lee et al. (β = 4). See <a href="#7-comparison-with-maxentjar">§ 7</a> below.</li>
 </ol>
 <h2 id="1-dataset">1. Dataset<a class="headerlink" href="#1-dataset" title="Permanent link">&para;</a></h2>
+<p>The ten covariates are those of Lee et al. (2025, Table 1):</p>
 <table>
 <thead>
 <tr>
@@ -1366,12 +1386,12 @@ QMaxent serves two purposes:</p>
 <tr>
 <td><code>TIN</code></td>
 <td>Continuous raster</td>
-<td>Terrain ruggedness</td>
+<td>Elevation</td>
 </tr>
 <tr>
 <td><code>ASPECT</code></td>
 <td>Continuous raster</td>
-<td>Aspect (degrees, sin-cos pre-processed)</td>
+<td>Aspect</td>
 </tr>
 <tr>
 <td><code>SLOPE</code></td>
@@ -1384,11 +1404,6 @@ QMaxent serves two purposes:</p>
 <td>Soil moisture index</td>
 </tr>
 <tr>
-<td><code>AGE</code></td>
-<td><strong>Categorical</strong> raster</td>
-<td>Forest age class (1–4)</td>
-</tr>
-<tr>
 <td><code>DBH</code></td>
 <td>Continuous raster</td>
 <td>Mean trunk diameter at breast height</td>
@@ -1396,7 +1411,12 @@ QMaxent serves two purposes:</p>
 <tr>
 <td><code>HEIGHT</code></td>
 <td>Continuous raster</td>
-<td>Mean canopy height</td>
+<td>Mean tree height</td>
+</tr>
+<tr>
+<td><code>AGE</code></td>
+<td><strong>Categorical</strong> raster</td>
+<td>Forest age class</td>
 </tr>
 <tr>
 <td><code>CANOPY_COVER</code></td>
@@ -1405,59 +1425,86 @@ QMaxent serves two purposes:</p>
 </tr>
 <tr>
 <td><code>SPECIES</code></td>
-<td>Continuous raster</td>
-<td>Dominant tree species (numeric code)</td>
+<td><strong>Categorical</strong> raster</td>
+<td>Dominant tree species (class code)</td>
 </tr>
 </tbody>
 </table>
 <p>All ten rasters share a common grid (EPSG:5186 KGD2002 / Central
-Belt, 10 m × 10 m). This is real survey-data: the dataset is not
+Belt, 10 m × 10 m). This is real survey data: the dataset is not
 bundled with the plugin's Example Dataset Downloader; the
 corresponding author of the manuscript holds the canonical copy
 (contact bhyu@knps.or.kr).</p>
 <h2 id="2-loading-data">2. Loading data<a class="headerlink" href="#2-loading-data" title="Permanent link">&para;</a></h2>
 <p>On <strong>① Data</strong>, pick <code>pitta_nympha_occurrence</code> from the Presence
 Points Layer drop-down (47 points), add all ten rasters from the
-project, <strong>mark <code>AGE</code> as <code>[categorical]</code></strong>, and click
+project, <strong>mark <code>AGE</code> and <code>SPECIES</code> as <code>[categorical]</code></strong>, and click
 <strong>Check Raster Consistency</strong>:</p>
-<p><img alt="Data tab with Pitta nympha presence layer (47 points) + 10 rasters, AGE flagged categorical, grid consistency OK" src="../../images/examples/pitta-nympha/data-tab.png" /></p>
+<p><img alt="Data tab with Pitta nympha presence layer (47 points) + 10 rasters, AGE and SPECIES flagged categorical, grid consistency OK" src="../../images/examples/pitta-nympha/data-tab.png" /></p>
 <p>The status line reads
 <code>✓ All 10 rasters share grid (CRS: EPSG:5186, resolution: 10 × 10)</code>.
 The presence points cluster on Geoje Island's central forested
 ridges:</p>
 <p><img alt="Geoje Island canvas with the 47 fairy-pitta nest locations" src="../../images/examples/pitta-nympha/canvas.png" /></p>
+<p>Keep the raster order unchanged between runs: background points are
+drawn from the first raster in the list, so the order is part of what
+makes a run reproducible.</p>
 <h2 id="3-lee-matched-parameters">3. Lee-matched parameters<a class="headerlink" href="#3-lee-matched-parameters" title="Permanent link">&para;</a></h2>
 <p>On <strong>② Parameters</strong>, switch to <strong>Manual selection</strong> for Feature
-Types and tick <strong>Linear</strong>, <strong>Quadratic</strong>, <strong>Hinge</strong> (un-tick
+Types and tick <strong>Linear</strong>, <strong>Quadratic</strong>, <strong>Hinge</strong> (untick
 Product and Threshold). Set <strong>Regularization multiplier = 4.00</strong>.
 For Spatial evaluation, choose <strong>Random K-Fold (Phillips 2006)</strong>
-with <strong>Folds = 10</strong> and seed = 42. Leave Jackknife and Permutation
-importance enabled (10 repeats):</p>
+with <strong>Folds = 10</strong>, and leave <strong>Fix random seed</strong> on with the value
+42. Leave Jackknife and Permutation importance enabled (10 repeats,
+<strong>Evaluate on: Training data (maxent.jar convention)</strong>):</p>
 <p><img alt="Parameters tab with Lee-matched manual configuration — LQH features, β=4, Random K-Fold 10-fold" src="../../images/examples/pitta-nympha/parameters.png" /></p>
-<p>This configuration is the one ENMeval selected as optimal in
-Lee et al. (2025) and the one labelled "Lee-matched" in § 3.3 of
-the accompanying manuscript. Re-running it under maxent.jar
-v3.4.4 on the same data yields the maxent.jar side of the
-comparison (Training AUC = 0.8692 ± 0.0230, 10-fold CV AUC =
-0.8128 ± 0.1022) — within the |Δ| &lt; 0.005 micro-convergence band
-documented for IWLR ↔ coordinate-descent in § 2.3.</p>
+<p>This is the configuration that ENMeval selected in Lee et al. (2025).
+Note that <strong>Auto (maxnet default rule by sample size)</strong> would also give
+LQH for 47 presences (15 to 79 presences); the manual selection makes
+the choice explicit. Lee et al. evaluated the final model with ten
+random 75/25 splits of the presences; random 10-fold CV is the closest
+option in QMaxent.</p>
 <h2 id="4-training">4. Training<a class="headerlink" href="#4-training" title="Permanent link">&para;</a></h2>
 <p>Click <strong>▶ Run Maxent</strong>. The Training tab finishes in ~ 20 seconds:</p>
 <p><img alt="Training log for Pitta nympha — Lee-matched configuration" src="../../images/examples/pitta-nympha/training-log.png" /></p>
-<p>The status bar at the bottom reads
-<code>presence=47 background=6,491 | train AUC=0.8718 | CV AUC=0.8092</code>.</p>
+<p>With the fixed seed, QMaxent v0.2.0 uses 47 presences and 9,384
+background points. With v0.2.0:</p>
 <ul>
-<li><strong>Full-data model</strong> — <code>Training AUC = 0.8718</code> (QMaxent side of the
-  manuscript's Table 3 Lee-matched row; maxent.jar = 0.8692,
-  |Δ| = 0.0026, well within the 0.005 tolerance band).</li>
-<li><strong>Cross-validation</strong> — Random K-Fold n=10, seed=42. Pooled mean ±
-  std = <strong>0.8092 ± 0.1012</strong>. Per-fold AUCs visible in the log range
-  from 0.6150 to 0.9533 — a wider spread than Bradypus or Ariolimax,
-  reflecting the small sample (4–5 test presences per fold) typical
-  of field-survey datasets.</li>
+<li><strong>Full-data model</strong>: training AUC = 0.8645.</li>
+<li><strong>Cross-validation</strong>: Random K-Fold n=10, seed=42, CV AUC =
+  <strong>0.812 ± 0.110</strong> (mean ± SD across folds). The per-fold AUCs spread
+  widely, reflecting the small sample (4–5 test presences per fold)
+  typical of field-survey datasets.</li>
 </ul>
+<p>The table below shows how the CV AUC depends on the regularization
+multiplier and on the partition (QMaxent v0.2.0, mean ± SD across folds):</p>
+<table>
+<thead>
+<tr>
+<th>β</th>
+<th>Random 10-fold</th>
+<th>Geographic 5-fold</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>0.805 ± 0.108</td>
+<td>0.713 ± 0.138</td>
+</tr>
+<tr>
+<td>4</td>
+<td>0.812 ± 0.110</td>
+<td>0.739 ± 0.134</td>
+</tr>
+</tbody>
+</table>
+<p>Geographic folds give lower AUCs than random folds, as expected when
+the test presences are spatially separated from the training presences
+(<a href="../../references/">Roberts et al. 2017</a>). The stronger regularization
+of β = 4 helps slightly under both partitions.</p>
 <h3 id="jackknife-with-a-categorical-variable">Jackknife with a categorical variable<a class="headerlink" href="#jackknife-with-a-categorical-variable" title="Permanent link">&para;</a></h3>
-<p>The log surfaces a useful diagnostic that does not appear in the
+<p>The log can surface a diagnostic that does not appear in the
 Bradypus / Ariolimax runs:</p>
 <blockquote>
 <p><code>only-*</code> skipped: dummy-column workaround produced a near-random
@@ -1465,16 +1512,16 @@ model (train AUC = 0.531); maxnet's lasso regularisation collapsed
 the OneHot weights. Lower the regularization multiplier or read
 importance from the <code>without-*</code> row.</p>
 </blockquote>
-<p><code>AGE</code> is the only categorical variable in the stack. In the <em>only-
-this-variable</em> jackknife pass it must be one-hot encoded, but at
-β = 4 the L1 lasso penalty collapses every OneHot weight back to
-near-zero — Maxent has nothing left to score with. QMaxent detects
-this collapse, skips the affected <code>only-*</code> row, and tells you in
-plain English. The <code>without-*</code> row remains informative and is the
-right place to read AGE's incremental contribution.</p>
+<p>In the <em>only-this-variable</em> jackknife pass a categorical variable such
+as <code>AGE</code> must be one-hot encoded, but at β = 4 the L1 lasso penalty can
+collapse every OneHot weight back to near-zero, and Maxent has nothing
+left to score with. QMaxent detects this collapse, skips the affected
+<code>only-*</code> row, and tells you in plain English. The <code>without-*</code> row
+remains informative and is the right place to read the variable's
+incremental contribution.</p>
 <p>This is exactly the over-regularisation failure mode
-<a href="../../references/">Merow et al. 2013</a> describe. The β = 1 Default
-run (not shown here) recovers a meaningful <code>only-AGE</code> AUC.</p>
+<a href="../../references/">Merow et al. 2013</a> describe. A β = 1 run
+recovers a meaningful <code>only-*</code> AUC.</p>
 <h2 id="5-variable-behaviour">5. Variable behaviour<a class="headerlink" href="#5-variable-behaviour" title="Permanent link">&para;</a></h2>
 <h3 id="response-curve-aspect">Response curve — <code>ASPECT</code><a class="headerlink" href="#response-curve-aspect" title="Permanent link">&para;</a></h3>
 <p><img alt="Response curve for ASPECT" src="../../images/examples/pitta-nympha/response-curve-aspect.png" /></p>
@@ -1484,46 +1531,93 @@ preference for shaded, cool, humid microclimates on ridge shoulders.</p>
 <h3 id="jackknife-importance">Jackknife importance<a class="headerlink" href="#jackknife-importance" title="Permanent link">&para;</a></h3>
 <p><img alt="Jackknife variable importance for the 10 Pitta nympha variables" src="../../images/examples/pitta-nympha/jackknife.png" /></p>
 <p><code>ASPECT</code>, <code>TWI</code>, and <code>SPECIES</code> carry the strongest <em>without-row</em>
-signals — removing them costs the most. <code>AGE</code>'s <code>only-*</code> bar is
-absent for the reason described in § 4 above; its <code>without-*</code>
-ranking (~ 0.81) places it mid-pack, which is the honest reading.</p>
+signals: removing them costs the most. A skipped <code>only-*</code> bar means
+the collapse described in § 4 above occurred; read that variable's
+<code>without-*</code> bar instead.</p>
 <h3 id="permutation-importance">Permutation importance<a class="headerlink" href="#permutation-importance" title="Permanent link">&para;</a></h3>
-<p>The permutation pass evaluates each variable on the held-out test
-set independent of the lasso shrinkage that disabled AGE's
-<code>only-*</code> row, so all ten variables get a comparable percentage:</p>
+<p>The permutation pass shuffles each variable in the fitted model, so it
+is not affected by the lasso collapse that can disable a categorical
+variable's <code>only-*</code> jackknife row, and all ten variables get a
+comparable percentage:</p>
 <p><img alt="Permutation importance bars for the 10 Pitta nympha variables" src="../../images/examples/pitta-nympha/permutation.png" /></p>
-<p>The agreement between Jackknife <code>without-*</code> and Permutation
-rankings (Spearman ρ at this β = 4 configuration is small, see
-manuscript § 3.3) reflects the over-regularisation effect rather
-than an implementation bug.</p>
-<h2 id="6-priority-sites-for-survey">6. Priority sites for survey<a class="headerlink" href="#6-priority-sites-for-survey" title="Permanent link">&para;</a></h2>
-<p>After projection, the <strong>⑤ Priority Sites for Survey → Discovery</strong>
-mode produces field-trip candidates on Geoje. Because the study
-area is much smaller than Bradypus or Ariolimax, the suitability
-threshold (~ 0.88) and spacing rules (1 km from existing
-presences, 500 m between candidates) yield a tractable list of
-about twenty new search locations:</p>
-<p><img alt="Discovery-mode candidates on the Geoje suitability map, with attribute table populated by Nominatim reverse geocoding" src="../../images/examples/pitta-nympha/priority-map.png" /></p>
-<p>Nominatim reverse geocoding populates the attribute table with
-administrative names down to <em>eup/myeon/dong</em> level where
-available — a one-step path from model to field-trip planning.</p>
-<h2 id="7-what-this-example-demonstrates">7. What this example demonstrates<a class="headerlink" href="#7-what-this-example-demonstrates" title="Permanent link">&para;</a></h2>
+<p>With <strong>Evaluate on: Training data (maxent.jar convention)</strong> the ranking
+is computed the same way as in maxent.jar and in Lee et al. (2025).
+<code>TWI</code>, <code>ASPECT</code> and <code>SPECIES</code> are the top three variables in QMaxent, in
+maxent.jar and in Lee et al. (2025, Table 4); see § 7.</p>
+<h2 id="6-survey-site-selection">6. Survey site selection<a class="headerlink" href="#6-survey-site-selection" title="Permanent link">&para;</a></h2>
+<p>After projection, the <strong>⑤ Survey Site Selection</strong> tab in
+<strong>High-suitability search</strong> mode produces field-trip candidates on
+Geoje. With <strong>Minimum suitability</strong> at its automatic value of 0.900
+(0.9 × the raster maximum), <strong>Sampling order: Random</strong>, 20 sites, at
+least 1,000 m from known nests and at least 500 m apart, QMaxent
+returns a tractable list of twenty new search locations:</p>
+<p><img alt="High-suitability search sites on the Geoje suitability map, with attribute table populated by Nominatim reverse geocoding" src="../../images/examples/pitta-nympha/priority-map.png" /></p>
+<p>Reverse geocoding fills the <code>country</code>, <code>province</code>, <code>city_county</code> and
+<code>district</code> fields from OpenStreetMap. With <strong>Address language: Local
+names</strong> (the default) the names are in Korean; choose <strong>English</strong> for
+English names. A level that OpenStreetMap does not hold for a location
+is left blank. This is a one-step path from model to field-trip
+planning.</p>
+<h2 id="7-comparison-with-maxentjar">7. Comparison with maxent.jar<a class="headerlink" href="#7-comparison-with-maxentjar" title="Permanent link">&para;</a></h2>
+<p>QMaxent v0.2.0 gave maxent.jar 3.4.4 and QMaxent <strong>identical
+inputs</strong>: the same 47 presences and the same 9,384 background points
+(sampled by QMaxent with seed 42 and exported in SWD format), with LQH
+features. Permutation importance was evaluated on the training data in
+both programs.</p>
+<p><strong>Full-data fits on identical inputs</strong></p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Training AUC, maxent.jar</th>
+<th>Training AUC, QMaxent</th>
+<th>Prediction correlation (Pearson r)</th>
+<th>Permutation-importance rank agreement (Spearman ρ)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>β = 1 (default)</td>
+<td>0.8795</td>
+<td>0.8738</td>
+<td>0.957</td>
+<td>0.648</td>
+</tr>
+<tr>
+<td>β = 4 (Lee et al. settings)</td>
+<td>0.8520</td>
+<td>0.8645</td>
+<td>0.894</td>
+<td>0.867 (p = 0.001)</td>
+</tr>
+</tbody>
+</table>
+<p>The two programs agree closely but not to the third decimal. elapid's
+scikit-learn backend applies one regularization strength to all
+features, while maxent.jar regularizes each feature class separately,
+so the fitted coefficients differ somewhat. Rank agreement of the
+variable importances is moderate at β = 1 and strong at β = 4.</p>
+<p><strong>Lee et al. (2025) protocol</strong></p>
+<p>Following the final-model protocol of Lee et al. (LQH, β = 4, ten random
+75/25 splits of the presences, identical splits in both programs), the
+QMaxent permutation-importance ranking agrees with Lee et al. (2025,
+Table 4) at Spearman ρ = 0.830. The top three variables are the same in
+maxent.jar, QMaxent and Lee et al.: <code>TWI</code>, <code>ASPECT</code> and <code>SPECIES</code>. The
+bias file of Lee et al. was not reproduced.</p>
+<h2 id="8-what-this-example-demonstrates">8. What this example demonstrates<a class="headerlink" href="#8-what-this-example-demonstrates" title="Permanent link">&para;</a></h2>
 <ol>
 <li><strong>Real-data workflow with small-n field surveys</strong> (47 presences,
    10 covariates, real-world spatial scale).</li>
-<li><strong>Categorical variable handling</strong> plus the OneHot-collapse
-   diagnostic when over-regularised.</li>
-<li><strong>The Lee-matched (β = 4) configuration</strong> that the accompanying
-   manuscript uses for its maxent.jar numerical-compatibility
-   benchmark (§ 3.3 / Table 3).</li>
-<li><strong>A different, narrower kind of priority-sites use-case</strong> —
-   targeted re-survey of known sub-populations rather than continental
+<li><strong>Categorical variable handling</strong> (<code>AGE</code>, <code>SPECIES</code>) plus the
+   OneHot-collapse diagnostic when over-regularised.</li>
+<li><strong>The Lee-matched (β = 4) configuration</strong> and its comparison with
+   maxent.jar on identical inputs (§ 7).</li>
+<li><strong>A different, narrower kind of survey site selection</strong>: a targeted
+   search around known sub-populations rather than continental
    discovery.</li>
 </ol>
-<p>For the formal maxent.jar ↔ QMaxent comparison numbers (Training
-AUC |Δ| &lt; 0.005, permutation-importance Spearman ρ at both β=1 and
-β=4) see the accompanying manuscript's § 3.3 and the JSON record
-under <code>tests/fixtures/pitta_golden_values.json</code>.</p>
+<p>The comparison values are recorded in
+<code>tests/fixtures/pitta_golden_values.json</code> in the QMaxent repository.</p>
 
 
 

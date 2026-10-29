@@ -716,7 +716,7 @@
         
   
   <span class="md-ellipsis">
-    ⑤ Priority Sites for Survey
+    ⑤ Survey Site Selection
   </span>
   
 
@@ -1285,14 +1285,17 @@ formulation.</em></p>
 <p><strong>Phillips, S. J., &amp; Dudík, M. (2008).</strong> Modeling of species
 distributions with Maxent: new extensions and a comprehensive evaluation.
 <em>Ecography</em>, 31(2), 161–175.
-<em>The benchmark paper that established the sample-size feature-class rule
-QMaxent's "Auto" mode follows, and the regularization-multiplier
-default of 1.0.</em></p>
+<em>The benchmark paper behind the maxent.jar sample-size feature-class
+rule (used by QMaxent's Auto mode up to v0.1.x) and the
+regularization-multiplier default of 1.0.</em></p>
 <p><strong>Phillips, S. J., Anderson, R. P., Dudík, M., Schapire, R. E., &amp;
 Blair, M. E. (2017).</strong> Opening the black box: an open-source release of
 Maxent. <em>Ecography</em>, 40(7), 887–893.
-<em>The release of the open-source Maxent and the formal recommendation
-to adopt the cloglog output transform — adopted as QMaxent's default.</em></p>
+<em>The release of the open-source Maxent and the maxnet R package, and the
+formal recommendation to adopt the cloglog output transform, adopted as
+QMaxent's default. Since v0.2.0, QMaxent's "Auto (maxnet default rule by
+sample size)" mode follows the maxnet default feature classes
+(<code>maxnet.formula(classes = "default")</code>).</em></p>
 <p><strong>Fithian, W., &amp; Hastie, T. (2013).</strong> Finite-sample equivalence in
 statistical models for presence-only data. <em>The Annals of Applied
 Statistics</em>, 7(4), 1917–1939.
@@ -1385,19 +1388,21 @@ to satisfy. Cited throughout this manual.</em></p>
 models of species distributions: complexity, overfitting and evaluation.
 <em>Journal of Biogeography</em>, 41(4), 629–643.
 <em>The empirical paper documenting how feature-class tuning without
-spatial CV inflates AUC; underlies the warning text in the
-<a href="../parameters-tab/">Parameters tab</a> about the Auto rule.</em></p>
+spatial CV inflates AUC, and that the best settings depend on the data;
+underlies the advice in the <a href="../parameters-tab/">Parameters tab</a> to treat
+the Auto rule as a default and compare alternatives.</em></p>
 <h2 id="survey-design">Survey design<a class="headerlink" href="#survey-design" title="Permanent link">&para;</a></h2>
 <p><strong>Williams, J. N., et al. (2009).</strong> Using species distribution models
 to predict new occurrences for rare plants. <em>Diversity and
 Distributions</em>, 15(4), 565–576.
-<em>The original *Discovery</em>-mode survey-design paper whose workflow QMaxent
-implements in the Priority Sites tab.*</p>
+<em>The original survey-design paper behind the *High-suitability search</em>
+mode of the <a href="../priority-sites/">Survey Site Selection</a> tab.*</p>
 <p><strong>Rhoden, C. M., Peterman, W. E., &amp; Taylor, C. A. (2017).</strong> Maxent-
 directed field surveys identify new populations of narrowly endemic
 habitat specialists. <em>PeerJ</em>, 5, e3632.
 <em>The model-validation companion to Williams et al. 2009; QMaxent's
-*Model validation</em> mode reproduces this design.*</p>
+*Gradient-stratified sampling</em> mode (equal numbers of sites from four
+suitability quartiles) reproduces this design.*</p>
 <p><strong>Stevens, D. L. Jr., &amp; Olsen, A. R. (2004).</strong> Spatially balanced
 sampling of natural resources. <em>Journal of the American Statistical
 Association</em>, 99(465), 262–278.
@@ -1406,7 +1411,7 @@ between-candidate spacing constraint.</em></p>
 <p><strong>Robinson, N. M., et al. (2018).</strong> Refining survey effort: how
 detection probability shapes the design of biodiversity surveys.
 <em>Methods in Ecology and Evolution</em>, 9(3), 575–587.
-<em>Cited in <a href="../priority-sites/">Priority Sites</a> for typical survey-budget
+<em>Cited in <a href="../priority-sites/">Survey Site Selection</a> for typical survey-budget
 heuristics.</em></p>
 <h2 id="worked-example-reference">Worked example reference<a class="headerlink" href="#worked-example-reference" title="Permanent link">&para;</a></h2>
 <p><strong>Lee, S.-J., et al. (2025).</strong> Breeding habitat prediction and

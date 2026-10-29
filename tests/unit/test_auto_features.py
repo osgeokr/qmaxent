@@ -1,19 +1,21 @@
 """Unit tests for the Maxent feature auto-selection rule.
 
 Defends the boundaries documented in ``core/maxent_rules.py``, which
-mirror the maxnet R-package rule (Phillips & Dudík 2008; Phillips
-et al. 2017; Merow et al. 2013):
+mirror the maxnet R-package default, ``maxnet.formula(classes =
+"default")`` (Phillips et al. 2017):
 
     n  <  10  →ㅤL
     10 ≤ n < 15 → LQ
     15 ≤ n < 80 → LQH
-    n  ≥ 80   → LQPHT
+    n  ≥ 80   → LQPH   (v0.2.0; v0.1.x used LQPHT, the maxent.jar rule)
 
 These breakpoints are NOT free parameters — they appear verbatim in
 the maxnet sources and are quoted as the auto-rule in § 2.2 (②
-Parameters) of the accompanying manuscript. Any silent change to them
-would (a) break maxent.jar comparability claimed in § 2.3 and (b)
-invalidate the auto-selected configurations used in the example
+Parameters) of the accompanying manuscript. Threshold features were
+dropped from the n ≥ 80 default in v0.2.0 because they overfit with
+elapid's scikit-learn backend (Bradypus random 10-fold test AUC 0.873
+with LQPHT vs 0.890 with LQPH; maxent.jar LQPHT 0.895). Any silent
+change would invalidate the auto-selected configurations used in the
 Bradypus / Ariolimax demonstrations.
 """
 
@@ -38,9 +40,9 @@ from core.maxent_rules import auto_feature_types
         (15, ["linear", "quadratic", "hinge"]),
         (47, ["linear", "quadratic", "hinge"]),  # § 3.3 Pitta nympha
         (79, ["linear", "quadratic", "hinge"]),
-        (80, ["linear", "quadratic", "product", "hinge", "threshold"]),
-        (116, ["linear", "quadratic", "product", "hinge", "threshold"]),  # Bradypus
-        (5000, ["linear", "quadratic", "product", "hinge", "threshold"]),
+        (80, ["linear", "quadratic", "product", "hinge"]),
+        (116, ["linear", "quadratic", "product", "hinge"]),  # Bradypus
+        (5000, ["linear", "quadratic", "product", "hinge"]),
     ],
 )
 def test_auto_feature_types_breakpoints(n, expected):

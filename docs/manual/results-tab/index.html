@@ -821,7 +821,7 @@
         
   
   <span class="md-ellipsis">
-    ⑤ Priority Sites for Survey
+    ⑤ Survey Site Selection
   </span>
   
 
@@ -1226,7 +1226,7 @@
 
 
 <h1 id="4-results-tab">④ Results tab<a class="headerlink" href="#4-results-tab" title="Permanent link">&para;</a></h1>
-<p>After a successful run, the Results tab unlocks three sub-tabs:</p>
+<p>After a successful run, the Results tab unlocks four sub-tabs:</p>
 <table>
 <thead>
 <tr>
@@ -1242,6 +1242,10 @@
 <tr>
 <td><strong>Jackknife Importance</strong></td>
 <td>Which variables matter most, with ROC plotted alongside</td>
+</tr>
+<tr>
+<td><strong>Permutation Importance</strong></td>
+<td>AUC drop when each variable is shuffled, as % of the total; the data it is evaluated on is set by <strong>Evaluate on</strong> in <a href="../parameters-tab/#permutation-importance">② Parameters</a></td>
 </tr>
 <tr>
 <td><strong>Spatial Projection</strong></td>
@@ -1321,7 +1325,12 @@ single combined dialog:</p>
 <ol>
 <li><strong>Categorical-code coverage</strong> — any class code present in the
    projection rasters but unseen during training is auto-masked to NoData
-   (rather than silently extrapolated to a random class probability).</li>
+   (rather than silently extrapolated to a random class probability).
+   As a further safeguard, since v0.2.0 the projection no longer fails
+   if such a class still reaches the model (for example a class the
+   preflight could not detect): those cells get no categorical
+   contribution, which is how maxent.jar treats a class without training
+   data.</li>
 <li><strong>Continuous-variable extrapolation</strong> — if any continuous variable's
    projection range exceeds its training range
    (<a href="../references/">Elith, Kearney &amp; Phillips 2010</a>), the dialog reports
@@ -1336,8 +1345,8 @@ the input rasters.</p>
 <p>The GeoTIFF is loaded into QGIS with a default white-to-green ramp keyed
 to the cloglog 0–1 range, ready to compose into a publication map.</p>
 <h2 id="next">Next<a class="headerlink" href="#next" title="Permanent link">&para;</a></h2>
-<p>Move to the <a href="../priority-sites/">⑤ Priority Sites for Survey tab</a> to turn
-the suitability raster into a field-ready candidate point layer, or skip
+<p>Move to the <a href="../priority-sites/">⑤ Survey Site Selection tab</a> to turn
+the suitability raster into a field-ready layer of candidate survey sites, or skip
 ahead to <a href="../exporting-results/">Exporting results</a> to learn what is in
 the output workbook.</p>
 
@@ -1394,13 +1403,13 @@ the output workbook.</p>
         
         
           
-          <a href="../priority-sites/" class="md-footer__link md-footer__link--next" aria-label="Next: ⑤ Priority Sites for Survey">
+          <a href="../priority-sites/" class="md-footer__link md-footer__link--next" aria-label="Next: ⑤ Survey Site Selection">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                ⑤ Priority Sites for Survey
+                ⑤ Survey Site Selection
               </div>
             </div>
             <div class="md-footer__button md-icon">

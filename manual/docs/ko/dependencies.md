@@ -4,8 +4,9 @@ QMaxent의 모델링 엔진 — [elapid](https://github.com/earth-chris/elapid) 
 라이브러리와 동반 패키지([rasterio](https://rasterio.readthedocs.io/),
 [geopandas](https://geopandas.org/), [scikit-learn](https://scikit-learn.org/),
 [matplotlib](https://matplotlib.org/)) — 는 QGIS에 기본 포함되지 않습니다.
-플러그인을 처음 사용할 때, **플러그인 전용 격리 가상환경**에 이 의존성들을 설치하여
-시스템 Python이나 QGIS 자체에 영향을 주지 않습니다.
+플러그인을 처음 사용할 때, **QMaxent 전용 폴더**에 이 의존성들을 설치하여
+시스템 Python이나 QGIS 자체에 영향을 주지 않습니다(Linux와 macOS는 격리 가상환경,
+Windows는 패키지 폴더. 아래 [설치 위치와 방식](#install-location) 참고).
 
 이는 약 5분 정도의 일회성 설정입니다.
 
@@ -39,6 +40,30 @@ macOS/Linux는 `~/.qgis_qmaxent`, Windows는 `%USERPROFILE%\.qgis_qmaxent`).
 ![설치 후 QMaxent Dependencies 다이얼로그 — Status: ✓ QMaxent environment ready](images/ui/dialog-dependencies-installed.png)
 
 이제 다이얼로그를 닫고 **QMaxent Analysis** 를 열면 모델링 워크플로가 활성화됩니다.
+
+## 설치 위치와 방식 {#install-location}
+
+설치 폴더 이름은 QGIS에 들어 있는 Python 버전을 따릅니다(예: Python 3.12이면
+`venv_py3.12`).
+
+| 운영체제 | 방식 | 설치 위치 (예) |
+|---|---|---|
+| Linux, macOS | 가상환경(`venv`)을 만들고 그 안의 pip로 설치 | `~/.qgis_qmaxent/venv_py3.12/` (가상환경 폴더) |
+| Windows (v0.2.0) | QGIS 자체 Python의 pip로 패키지 폴더에 설치 (`pip install --target`), 별도 인터프리터 없음 | `%USERPROFILE%\.qgis_qmaxent\venv_py3.12\Lib\site-packages` |
+
+Windows 방식이 바뀐 이유: QGIS 3.44.15 이상의 Windows판에서는 가상환경 안에서
+`ensurepip` 가 실패해("ensurepip ... returned non-zero exit status 1") 패키지를
+하나도 내려받기 전에 설치가 멈췄습니다. QMaxent는 설치한 패키지를 QGIS 안에서
+불러오기만 하므로 Windows에서는 가상환경 인터프리터가 필요 없습니다. v0.2.0은 QGIS
+자체 pip로 QMaxent 패키지 폴더에 설치해 이 문제를 피합니다. Linux와 macOS는 기존
+가상환경 방식을 그대로 씁니다.
+
+두 환경변수로 동작을 바꿀 수 있습니다. QGIS를 시작하기 전에 설정하세요.
+
+| 환경변수 | 효과 |
+|---|---|
+| `QMAXENT_CACHE_DIR` | 기본 `~/.qgis_qmaxent` 대신 다른 위치에 설치 (예: 홈 폴더에 쓸 수 없거나 공간이 부족할 때) |
+| `QMAXENT_FORCE_VENV=1` | Windows에서도 이전(v0.1.x) 가상환경 방식을 사용 |
 
 ## 설치되는 패키지
 
@@ -74,6 +99,13 @@ Dependencies** 가 다시 활성화됩니다.
     관리자에게 `pypi.org` 와 `files.pythonhosted.org` 허용을 요청하세요. 설치 도구는
     QGIS의 프록시 설정을 따르므로, **설정 → 옵션 → 네트워크** 를 구성하면 보통 해결됩니다.
 
+??? warning "Windows에서 'ensurepip ... returned non-zero exit status 1' 오류"
+    v0.1.x를 QGIS 3.44.15 이상의 Windows판에서 쓸 때 생기던 오류입니다. 플러그인을
+    v0.2.0 이상으로 업데이트한 뒤 **Install / Update Dependencies** 를 다시
+    클릭하세요. v0.2.0은 가상환경을 만들지 않고 QGIS 자체 pip로 설치하므로 이
+    단계를 거치지 않습니다([설치 위치와 방식](#install-location) 참고).
+    `QMAXENT_FORCE_VENV=1` 을 설정해 두었다면 해제하세요.
+
 ??? warning "설치 중 디스크 공간 부족"
     설치 중에는 임시로 최종 크기의 약 두 배가 필요합니다. 홈 디렉터리가 있는 드라이브에
     최소 1 GB를 확보하고 다시 시도하세요.
@@ -88,7 +120,8 @@ Dependencies** 가 다시 활성화됩니다.
 
 ## 가상환경 보안 안내
 
-QMaxent의 환경은 표준 Python `venv` 모듈로 생성되며 PyPI에서만 설치됩니다.
+QMaxent의 환경은 Linux와 macOS에서는 표준 Python `venv` 모듈로, Windows에서는
+QGIS 자체 pip의 패키지 폴더 설치로 만들어지며, 어느 경우든 PyPI에서만 설치됩니다.
 플러그인은 런타임에 원격 소스의 임의 코드를 실행하지 않습니다. 저장된 모델 파일
 (`.pkl`)은 별도의 고려사항이며, 신뢰할 수 없는 소스의 pickle을 불러올 때의 보안
 주의는 [모델 저장 및 재사용](saving-models.md)을 참고하세요.

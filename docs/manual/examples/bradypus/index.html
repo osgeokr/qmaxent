@@ -716,7 +716,7 @@
         
   
   <span class="md-ellipsis">
-    ⑤ Priority Sites for Survey
+    ⑤ Survey Site Selection
   </span>
   
 
@@ -999,28 +999,28 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#8-priority-sites-for-survey" class="md-nav__link">
+  <a href="#8-survey-site-selection" class="md-nav__link">
     <span class="md-ellipsis">
-      8. Priority sites for survey
+      8. Survey site selection
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="8. Priority sites for survey">
+    <nav class="md-nav" aria-label="8. Survey site selection">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#81-discovery-mode" class="md-nav__link">
+  <a href="#81-high-suitability-search" class="md-nav__link">
     <span class="md-ellipsis">
-      8.1 Discovery mode
+      8.1 High-suitability search
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#82-validation-mode" class="md-nav__link">
+  <a href="#82-gradient-stratified-sampling" class="md-nav__link">
     <span class="md-ellipsis">
-      8.2 Validation mode
+      8.2 Gradient-stratified sampling
     </span>
   </a>
   
@@ -1340,28 +1340,28 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#8-priority-sites-for-survey" class="md-nav__link">
+  <a href="#8-survey-site-selection" class="md-nav__link">
     <span class="md-ellipsis">
-      8. Priority sites for survey
+      8. Survey site selection
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="8. Priority sites for survey">
+    <nav class="md-nav" aria-label="8. Survey site selection">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#81-discovery-mode" class="md-nav__link">
+  <a href="#81-high-suitability-search" class="md-nav__link">
     <span class="md-ellipsis">
-      8.1 Discovery mode
+      8.1 High-suitability search
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#82-validation-mode" class="md-nav__link">
+  <a href="#82-gradient-stratified-sampling" class="md-nav__link">
     <span class="md-ellipsis">
-      8.2 Validation mode
+      8.2 Gradient-stratified sampling
     </span>
   </a>
   
@@ -1412,7 +1412,10 @@ academically — a complete Bradypus habitat-suitability model.</p>
 <h2 id="0-before-you-start-dependencies">0. Before you start: dependencies<a class="headerlink" href="#0-before-you-start-dependencies" title="Permanent link">&para;</a></h2>
 <p>QMaxent installs its third-party Python libraries (elapid, rasterio,
 geopandas, scikit-learn, scipy, numpy, matplotlib) into an isolated
-virtual environment so they cannot conflict with QGIS's own Python.
+package folder so they cannot conflict with QGIS's own Python (a
+virtual environment on Linux and macOS; on Windows, a package folder
+filled by the QGIS Python's own pip, see
+<a href="../../dependencies/">Dependencies</a>).
 The first time you open the plugin, you are invited to perform a
 one-time install:</p>
 <p><img alt="QMaxent — Dependencies dialog, environment not installed" src="../../images/ui/dialog-dependencies.png" /></p>
@@ -1421,11 +1424,13 @@ through the four pip phases (collecting, downloading, building,
 installing) and finishes with the green badge below — at that point
 every QMaxent feature is ready to run.</p>
 <p><img alt="QMaxent — Dependencies dialog, environment ready" src="../../images/ui/dialog-dependencies-installed.png" /></p>
-<p>If you ever need to recreate the venv (e.g. after a major QGIS
-upgrade), the <strong>Remove Environment</strong> button on the same dialog is the
-clean way to start over.</p>
+<p>If you ever need to recreate the package folder (e.g. after a major
+QGIS upgrade), the <strong>Remove Environment</strong> button on the same dialog is
+the clean way to start over.</p>
 <h2 id="1-dataset">1. Dataset<a class="headerlink" href="#1-dataset" title="Permanent link">&para;</a></h2>
-<p>The Phillips et al. (2006) dataset contains:</p>
+<p>The Phillips et al. (2006) dataset, as distributed with the R package
+dismo, contains 116 presences, 8 bioclimatic variables and one
+categorical biome raster (9 rasters in total):</p>
 <table>
 <thead>
 <tr>
@@ -1487,17 +1492,21 @@ each default is the literature-recommended value, and accepting them
 lets us inspect what those choices produce:</p>
 <p><img alt="Parameters tab with all defaults accepted" src="../../images/ui/dock-2-parameters-defaults.png" /></p>
 <ul>
-<li><strong>Feature Types</strong>: Auto (the maxnet rule of
-  <a href="../../references/">Phillips &amp; Dudík 2008</a> selects all of LQPHT for
-  116 presences).</li>
+<li><strong>Feature Types</strong>: <strong>Auto (maxnet default rule by sample size)</strong>. The
+  maxnet default (<a href="../../references/">Phillips et al. 2017</a>) gives LQPH
+  (linear, quadratic, product, hinge) for 80 or more presences, so LQPH
+  for 116 presences. Threshold features are not added automatically
+  (see <a href="../../parameters-tab/#feature-types">② Parameters tab</a>).</li>
 <li><strong>Regularization multiplier</strong>: 1.0
   (<a href="../../references/">Phillips &amp; Dudík 2008</a> recommendation).</li>
 <li><strong>Spatial evaluation</strong>: Geographic K-Fold
   (<a href="../../references/">Anderson 2023</a>), 5 folds, grid 50,000 m,
-  buffer 50,000 m, fixed random seed = 42
-  (<a href="../../references/">Roberts et al. 2017</a> default).</li>
+  buffer 50,000 m, <strong>Fix random seed</strong> = 42
+  (<a href="../../references/">Roberts et al. 2017</a> default). Since v0.2.0 the
+  seed also fixes the background sample.</li>
 <li><strong>Jackknife variable importance</strong>: enabled.</li>
-<li><strong>Permutation importance</strong>: enabled, 10 repeats.</li>
+<li><strong>Permutation importance</strong>: enabled, 10 repeats, <strong>Evaluate on:
+  Training data (maxent.jar convention)</strong>.</li>
 <li><strong>Output files</strong>: <code>qmaxent_output/model.pkl</code> and
   <code>qmaxent_output/results.xlsx</code>.</li>
 </ul>
@@ -1507,6 +1516,13 @@ bit-identical results</strong> — central to computational reproducibility
 <h2 id="4-running-training-and-cross-validation">4. Running training and cross-validation<a class="headerlink" href="#4-running-training-and-cross-validation" title="Permanent link">&para;</a></h2>
 <p>Click <strong>▶ Run Maxent</strong>. The <strong>③ Training</strong> tab takes over and finishes
 in about 30 seconds:</p>
+<div class="admonition note">
+<p class="admonition-title">Numbers from an earlier version</p>
+<p>The AUC values and fold sizes in this section were recorded with
+QMaxent v0.1.x, which used LQPHT under Auto and drew a new background
+sample on every run. With v0.2.0 (LQPH, seeded background) your
+values will differ slightly; the interpretation is unchanged.</p>
+</div>
 <p><img alt="Training tab at 100% with the full log" src="../../images/ui/dock-3-training-completed.png" /></p>
 <p>The status bar at the bottom summarises the run:
 <code>presence=116 background=10,104 | train AUC=0.9569 | CV AUC=0.7436</code>.
@@ -1558,11 +1574,13 @@ Reading the log section by section:</p>
   5 folds in three modes (full-model reference, <em>only this variable</em>,
   and <em>without this variable</em>). The numbers feed the Jackknife plot
   below.</li>
-<li><strong>Permutation importance</strong> — sklearn <code>permutation_importance</code> with
-  <code>n_repeats=10</code>, evaluated on the held-out test set. Results feed the
-  Permutation Importance sub-tab.</li>
-<li><strong>Save results</strong> — <code>results.xlsx</code> and <code>training_log.txt</code> are
-  persisted next to the <code>.pkl</code>.</li>
+<li><strong>Permutation importance</strong>: sklearn <code>permutation_importance</code> with
+  <code>n_repeats=10</code>, evaluated on the training data (presences and
+  background), as maxent.jar does. Results feed the Permutation
+  Importance sub-tab.</li>
+<li><strong>Save results</strong>: <code>results.xlsx</code>, <code>training_log.txt</code>, the model card
+  (<code>model_model_card.json</code>) and the coefficient table
+  (<code>model_coefficients.csv</code>) are persisted next to the <code>.pkl</code>.</li>
 </ul>
 <p><strong>Train AUC = 0.957</strong> while <strong>CV AUC = 0.744 ± 0.075</strong>. That gap is
 the cost of holding out spatially-distinct validation sets — and a
@@ -1587,8 +1605,9 @@ precipitation):</p>
 — the climatology of South American rainforest — with a sharp drop-off
 below ~800 mm. The shape combines hinge and quadratic features. Try
 other variables in the drop-down: smooth U- or peak-shaped curves
-indicate quadratic terms; sharp angular discontinuities come from
-hinge or threshold features.</p>
+indicate quadratic terms; angular kinks come from hinge features.
+(Step-shaped jumps would come from threshold features, which Auto no
+longer uses.)</p>
 <h3 id="jackknife-importance">Jackknife importance<a class="headerlink" href="#jackknife-importance" title="Permanent link">&para;</a></h3>
 <p>The <strong>Jackknife Importance</strong> sub-tab compares each variable's stand-
 alone signal against its incremental contribution. Dark bars
@@ -1608,12 +1627,17 @@ you each variable's unique value:</p>
 <h3 id="permutation-importance">Permutation importance<a class="headerlink" href="#permutation-importance" title="Permanent link">&para;</a></h3>
 <p>The <strong>Permutation Importance</strong> sub-tab reports the same idea from a
 different lens: scikit-learn's <code>permutation_importance</code> shuffles each
-variable's values on the held-out test set, measures the AUC drop,
-repeats 10 times, and normalises to 100% of the total:</p>
+variable's values, measures the AUC drop, repeats 10 times, and
+normalises to 100% of the total. With the default <strong>Evaluate on:
+Training data (maxent.jar convention)</strong>, the AUC drop is measured on the
+training presences and background, as in maxent.jar. Choose <strong>Held-out
+CV test folds (all folds pooled)</strong> to measure it on the CV test folds
+instead:</p>
 <p><img alt="Permutation importance bars" src="../../images/examples/bradypus/permutation.png" /></p>
 <p><code>bio7</code> and <code>bio12</code> again dominate; the permutation view distributes
-the total importance across all variables and is therefore directly
-comparable to maxent.jar's per-variable percentage table.</p>
+the total importance across all variables and, evaluated on the training
+data, is directly comparable to maxent.jar's per-variable percentage
+table.</p>
 <h2 id="6-spatial-projection">6. Spatial projection<a class="headerlink" href="#6-spatial-projection" title="Permanent link">&para;</a></h2>
 <p>Switch to <strong>Spatial Projection</strong> in the same Results tab. Leave
 <strong>cloglog</strong> as the output transform (the
@@ -1629,12 +1653,17 @@ secondary patches across Central America. The model correctly
 identifies the unsuitability of the Andes (cold, high altitude) and
 the very dry Brazilian Northeast (Caatinga).</p>
 <h2 id="7-saving-outputs">7. Saving outputs<a class="headerlink" href="#7-saving-outputs" title="Permanent link">&para;</a></h2>
-<p>Two files are written automatically:</p>
+<p>These files are written automatically:</p>
 <ul>
 <li><code>qmaxent_output/model.pkl</code> — the serialised trained model. Reload it
   later from the Data tab's <strong>Load existing model (.pkl)…</strong> button or
-  share it with collaborators. Security note in
+  share it with trusted collaborators. Security note in
   <a href="../../saving-models/">Saving and reusing models</a>.</li>
+<li><code>qmaxent_output/model_model_card.json</code> and
+  <code>qmaxent_output/model_coefficients.csv</code>: a plain-text record of the
+  run (software versions, settings, data, performance, thresholds,
+  variable importance) and every Maxent feature with its coefficient.
+  Unlike the <code>.pkl</code>, both are safe to share.</li>
 <li><code>qmaxent_output/results.xlsx</code> — the multi-sheet supplementary table
   containing experimental setup, variable list, CV results, jackknife,
   permutation, response-curve breakpoints, and threshold tables. See
@@ -1645,40 +1674,49 @@ the very dry Brazilian Northeast (Caatinga).</p>
 additional 300-dpi PNGs of the response curves, ROC, jackknife, and
 permutation panels are written next to the GeoTIFF — sized for direct
 paste into a single-column manuscript figure.</p>
-<h2 id="8-priority-sites-for-survey">8. Priority sites for survey<a class="headerlink" href="#8-priority-sites-for-survey" title="Permanent link">&para;</a></h2>
+<h2 id="8-survey-site-selection">8. Survey site selection<a class="headerlink" href="#8-survey-site-selection" title="Permanent link">&para;</a></h2>
 <p>A natural next step is to use the trained model to plan follow-up
-surveys. <strong>⑤ Priority Sites for Survey</strong> offers two distinct modes —
-<strong>Discovery</strong> (looking for <em>new</em> populations) and <strong>Validation</strong>
-(stratified field-checks across the suitability gradient).</p>
-<h3 id="81-discovery-mode">8.1 Discovery mode<a class="headerlink" href="#81-discovery-mode" title="Permanent link">&para;</a></h3>
-<p>Discovery picks candidates from a high-suitability band. Open the
-tab, keep <strong>Discovery</strong> as the mode, leave the auto-set minimum
-suitability of ~0.81, set <code>n_sites = 20</code>, leave the 1 km / 500 m
-spacing defaults, and click <strong>▶ Extract Priority Sites</strong>:</p>
-<p><img alt="Priority Sites tab in Discovery mode — form filled in" src="../../images/ui/dock-5-priority-sites-discovery.png" /></p>
-<p>20 candidate locations (red dots) appear on the suitability map, with
-their attribute table populated by Nominatim reverse geocoding:</p>
-<p><img alt="Discovery-mode candidates on the canvas with attribute table" src="../../images/ui/dock-5-priority-sites-extracted.png" /></p>
-<p>Each candidate is at least 1 km from any known occurrence and at least
-500 m from any other candidate, so a single field trip can plausibly
-cover several at once. Discovery is the right mode when the question
-is <em>"where could the species be that we have not yet looked?"</em> — the
-<a href="../../references/">Rhoden et al. 2017</a> "Maxent-directed surveys"
-paradigm.</p>
-<h3 id="82-validation-mode">8.2 Validation mode<a class="headerlink" href="#82-validation-mode" title="Permanent link">&para;</a></h3>
-<p>Switching the <strong>Survey purpose</strong> to <strong>Validation</strong> draws a different
-kind of sample: candidates are stratified into four quartiles of
-suitability (above a configurable threshold), so a field trip can test
-the model's calibration across the full predicted gradient rather than
-only its high-suitability core:</p>
-<p><img alt="Priority Sites tab in Validation mode — quartile stratification settings" src="../../images/ui/dialog-priority-validation.png" /></p>
+surveys. <strong>⑤ Survey Site Selection</strong> offers two modes:
+<strong>High-suitability search</strong> (looking for <em>new</em> populations) and
+<strong>Gradient-stratified sampling</strong> (field checks across the suitability
+gradient). See <a href="../../priority-sites/">⑤ Survey Site Selection</a> for all
+settings.</p>
+<h3 id="81-high-suitability-search">8.1 High-suitability search<a class="headerlink" href="#81-high-suitability-search" title="Permanent link">&para;</a></h3>
+<p>High-suitability search samples sites from a high-suitability band.
+Open the tab, keep <strong>High-suitability search</strong> as the mode, leave the
+automatic <strong>Minimum suitability</strong> (0.9 × the raster maximum) and
+<strong>Sampling order: Random</strong>, keep 20 sites and the 1,000 m / 500 m
+spacing defaults, and click <strong>▶ Select Survey Sites</strong>:</p>
+<p><img alt="Survey Site Selection tab in High-suitability search mode, form filled in" src="../../images/ui/dock-5-priority-sites-discovery.png" /></p>
+<p>20 sites (red dots) appear on the suitability map as the layer
+<strong>Survey sites</strong> (<code>survey_sites.gpkg</code>), with their attribute table
+populated by OpenStreetMap reverse geocoding. With the default <strong>Address
+language: Local names</strong>, the addresses are in the local language of
+each country (Spanish or Portuguese across most of the Bradypus range):</p>
+<p><img alt="High-suitability search sites on the canvas with attribute table" src="../../images/ui/dock-5-priority-sites-extracted.png" /></p>
+<p>Each site is at least 1 km from any known occurrence and at least
+500 m from any other site, so a single field trip can plausibly
+cover several at once. High-suitability search is the right mode when
+the question is <em>"where could the species be that we have not yet
+looked?"</em></p>
+<h3 id="82-gradient-stratified-sampling">8.2 Gradient-stratified sampling<a class="headerlink" href="#82-gradient-stratified-sampling" title="Permanent link">&para;</a></h3>
+<p>Switching the <strong>Survey purpose</strong> to <strong>Gradient-stratified sampling</strong>
+draws a different kind of sample. A threshold (T10 by default; MTP,
+MaxSSS or a custom value are also offered) only defines the sampling
+frame. The cells above it are split into four suitability quartiles,
+and the same number of sites is drawn from each
+(<a href="../../references/">Rhoden et al. 2017</a>). No binary map is produced.
+A field trip can then test whether the species is found more often
+where the model predicts higher suitability, rather than visiting only
+the high-suitability core:</p>
+<p><img alt="Survey Site Selection tab in Gradient-stratified sampling mode, quartile stratification settings" src="../../images/ui/dialog-priority-validation.png" /></p>
 <p>The resulting sites span low- through high-suitability cells in
 roughly equal numbers, each tagged with its quartile in the attribute
 table:</p>
-<p><img alt="Validation-mode candidates with quartile-coloured stratification" src="../../images/maps/priority-sites-validation-canvas.png" /></p>
-<p>Validation is the right mode for model verification rather than
-discovery — it is the field-side complement of the cross-validation
-AUC we computed in § 4.</p>
+<p><img alt="Gradient-stratified sites with quartile-coloured stratification" src="../../images/maps/priority-sites-validation-canvas.png" /></p>
+<p>Gradient-stratified sampling is the right mode for checking the model
+in the field rather than for discovery: it is the field-side complement
+of the cross-validation AUC we computed in § 4.</p>
 <h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>The same workflow with messy rasters</strong>:

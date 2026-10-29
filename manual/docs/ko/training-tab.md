@@ -13,9 +13,9 @@ QMaxent가 다음 파이프라인을 실행합니다 — 각 단계가 로그에
 ```mermaid
 flowchart TD
     A["배경 지점 표본 추출"] --> B["래스터 공변량 추출<br/>(presence + background)"]
-    B --> C["maxnet 자동 규칙 적용<br/>(또는 수동 피처 선택)"]
+    B --> C["maxnet 기본 규칙 적용<br/>(또는 수동 피처 선택)"]
     C --> D["전체 Maxent 모델 적합<br/>(전체 데이터)"]
-    D --> E["모델 저장 (.pkl)"]
+    D --> E["모델 저장 (.pkl)<br/>+ 모델 카드 JSON, 계수 CSV"]
     D --> F["학습 ROC / AUC 계산"]
     F --> G{"공간 CV<br/>방법?"}
     G -->|Geographic K-Fold| H["폴드 구성, 폴드별 적합,<br/>보류 점수 수집"]
@@ -48,8 +48,9 @@ flowchart TD
 
 - `→ 10,000 background points sampled` — 표본 추출 완료
 - `→ Presence: 116, Background: 10,104` — 최종 개수 (NaN 셀 때문에 요청보다 약간 적음)
-- `→ Feature types: ['linear', 'quadratic', 'product', 'hinge', 'threshold']`
-    — 자동 규칙이 n=116에 대해 모든 LQPHT 선택
+- `→ Feature types: ['linear', 'quadratic', 'product', 'hinge']`: 출현점 80개
+    이상이므로 자동 규칙이 LQPH를 선택 (threshold는 자동으로 추가되지 않음).
+    v0.1.x 화면에는 `'threshold'` 까지 표시됩니다.
 - `→ Training AUC = 0.9569`
 - 폴드별 CV AUC (5개 폴드, 0.59 – 0.86 범위)
 - `→ CV AUC = 0.7436 ± 0.0750` — 폴드 평균 ± 표준편차
@@ -58,6 +59,23 @@ flowchart TD
 
 같은 핵심 수치(`train AUC=0.9569`, `CV AUC=0.7436`)가 도크의 영구 상태바에 그대로
 표시되어 탭을 전환해도 계속 보입니다.
+
+!!! note "화면의 수치"
+    위 화면과 AUC 값은 v0.1.x(LQPHT)에서 얻은 것입니다. v0.2.0에서는 자동 규칙이
+    LQPH를 선택하고 배경점 추출에도 시드가 적용되므로 AUC가 조금 다르게 나옵니다.
+
+### 제외된 출현점과 같은 셀의 출현점
+
+`Presence: …` 줄 바로 아래에 다음 두 안내가 나올 수 있습니다:
+
+- `⚠ k of n presence points fall outside the rasters or on NoData cells and were
+    excluded.`: 래스터 범위 밖에 있거나 NoData 셀에 떨어져 학습에서 제외된
+    출현점 수입니다. 개수가 많다면 출현 레이어와 래스터의 좌표계, 범위를
+    확인하세요.
+- `ℹ k presence point(s) share a raster cell with another presence.`: 다른
+    출현점과 같은 래스터 셀을 공유하는 출현점 수입니다. maxent.jar는 이런 중복을
+    기본으로 제거하지만 QMaxent는 유지합니다. 의도한 것이 아니라면 공간
+    솎아내기(spatial thinning) 후 다시 실행하세요.
 
 ## 자주 보는 경고와 의미
 

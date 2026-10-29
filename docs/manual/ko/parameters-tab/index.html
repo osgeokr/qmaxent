@@ -710,18 +710,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#auto" class="md-nav__link">
+  <a href="#maxnet" class="md-nav__link">
     <span class="md-ellipsis">
-      Auto (권장)
+      자동 (출현점 수에 따른 maxnet 기본 규칙)
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#manual-selection" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
-      Manual selection
+      수동 선택
     </span>
   </a>
   
@@ -733,7 +733,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       정규화
     </span>
@@ -742,7 +742,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       고급
     </span>
@@ -751,7 +751,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       공간 평가
     </span>
@@ -784,7 +784,16 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#permutation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Permutation 중요도
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
     <span class="md-ellipsis">
       출력 파일
     </span>
@@ -854,7 +863,7 @@
         
   
   <span class="md-ellipsis">
-    ⑤ 우선조사 후보지
+    ⑤ 조사지점 선정
   </span>
   
 
@@ -1191,18 +1200,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#auto" class="md-nav__link">
+  <a href="#maxnet" class="md-nav__link">
     <span class="md-ellipsis">
-      Auto (권장)
+      자동 (출현점 수에 따른 maxnet 기본 규칙)
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#manual-selection" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
-      Manual selection
+      수동 선택
     </span>
   </a>
   
@@ -1214,7 +1223,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       정규화
     </span>
@@ -1223,7 +1232,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       고급
     </span>
@@ -1232,7 +1241,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       공간 평가
     </span>
@@ -1265,7 +1274,16 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#permutation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Permutation 중요도
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
     <span class="md-ellipsis">
       출력 파일
     </span>
@@ -1335,47 +1353,60 @@
 </tr>
 </tbody>
 </table>
-<h3 id="auto">Auto (권장)<a class="headerlink" href="#auto" title="Permanent link">&para;</a></h3>
-<p>기본값. QMaxent는 R <code>maxnet</code> 패키지가 사용하는 동일한 <strong>maxnet 자동 규칙</strong> 으로
-출현 지점 수에 따라 LQPHT 부분집합을 활성화합니다:</p>
+<h3 id="maxnet">자동 (출현점 수에 따른 maxnet 기본 규칙)<a class="headerlink" href="#maxnet" title="Permanent link">&para;</a></h3>
+<p>기본값입니다. QMaxent는 Maxent 개발자들의 R 구현인 <code>maxnet</code> 패키지의 기본 피처
+규칙(<code>maxnet.formula(classes = "default")</code>,
+<a href="../references/">Phillips et al. 2017</a>)을 출현점 수에 따라 적용합니다:</p>
 <table>
 <thead>
 <tr>
-<th>출현 점 수</th>
-<th>활성화되는 피처</th>
+<th>출현점 수</th>
+<th>사용하는 피처</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>≥ 80</td>
-<td>모두 (LQPHT)</td>
+<td>10개 미만</td>
+<td>L</td>
 </tr>
 <tr>
-<td>15–79</td>
-<td>LQH (Product, Threshold 제외)</td>
-</tr>
-<tr>
-<td>10–14</td>
+<td>10~14개</td>
 <td>LQ</td>
 </tr>
 <tr>
-<td>&lt; 10</td>
-<td>L만</td>
+<td>15~79개</td>
+<td>LQH</td>
+</tr>
+<tr>
+<td>80개 이상</td>
+<td>LQPH</td>
 </tr>
 </tbody>
 </table>
-<p>이 보수적 스케일링은 작은 데이터셋의 과적합을 방지합니다. 116점 Bradypus 예제를
-포함한 대부분의 연구에서 기본값은 발표된 관행이 권장하는 그대로입니다
-(Radosavljevic &amp; Anderson 2014).</p>
-<h3 id="manual-selection">Manual selection<a class="headerlink" href="#manual-selection" title="Permanent link">&para;</a></h3>
-<p><strong>Manual selection</strong> 을 선택하면 LQPHT의 어떤 조합이든 직접 켜고 끌 수 있습니다.
-다음 경우에 유용:</p>
+<p>threshold 피처는 maxnet과 마찬가지로 자동으로 추가되지 않습니다. 필요하면
+<strong>수동 선택</strong> 에서 직접 고르세요. 116점 Bradypus 예제에는 LQPH가 적용됩니다.</p>
+<div class="admonition note">
+<p class="admonition-title">threshold 피처를 자동 규칙에서 뺀 이유 (v0.2.0)</p>
+<p>v0.1.x는 maxent.jar의 auto features처럼 출현점 80개 이상에서 threshold까지
+켰습니다(LQPHT). 그런데 elapid의 scikit-learn 백엔드는 모든 피처에 같은
+정규화 강도를 적용하므로 threshold 피처가 과적합됩니다. Bradypus 자료의
+Random 10-fold 검증 AUC는 QMaxent LQPHT 0.873, QMaxent LQPH 0.890,
+maxent.jar LQPHT 0.895였습니다.</p>
+</div>
+<p>이 규칙은 기본값일 뿐 최적 모델을 보장하지 않습니다. 가장 알맞은 피처 유형은
+자료에 따라 다르므로, <strong>수동 선택</strong> 과 교차검증으로 여러 조합을 비교하거나
+<a href="../references/">ENMeval</a>(Muscarella et al. 2014) 같은 모델 선택 도구를 함께
+쓰세요.</p>
+<h3 id="_2">수동 선택<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
+<p><strong>수동 선택</strong> (Manual selection)을 고르면 LQPHT의 어떤 조합이든 직접 켜고 끌 수
+있습니다. 처음에는 Linear, Quadratic, Product, Hinge가 체크되어 있고 Threshold는
+해제되어 있습니다. 다음 경우에 유용:</p>
 <ul>
 <li><strong>다른 발표 연구 재현</strong> — 특정 피처 부분집합을 사용한 경우</li>
 <li><strong>과적합 진단</strong> — Hinge와 Threshold를 끄면 AUC를 약간 잃지만 더 부드러운 반응곡선</li>
 <li><strong>민감도 분석</strong> — 어떤 피처 클래스가 예측을 주도하는지 이해</li>
 </ul>
-<h2 id="_2">정규화<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<h2 id="_3">정규화<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
 <p>정규화는 Maxent가 계수를 0 쪽으로 얼마나 강하게 줄이는지를 제어합니다 — 분산을
 편향과 직접 교환합니다. <strong>배수</strong> 가 기본 정규화를 스케일링하며, 1보다 크면 더 부드럽고
 단순한 모델, 1보다 작으면 더 가깝게 적합합니다.</p>
@@ -1407,7 +1438,7 @@
 </table>
 <p>확신이 없으면 1.0으로 두고 교차검증 AUC를 확인하세요. <em>학습</em> AUC가 <em>CV</em> AUC보다
 훨씬 높으면 과적합을 시사하며, 더 큰 배수를 시도할 만합니다.</p>
-<h2 id="_3">고급<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<h2 id="_4">고급<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -1439,7 +1470,7 @@
 </tr>
 </tbody>
 </table>
-<h2 id="_4">공간 평가<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<h2 id="_5">공간 평가<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
 <p>다이얼로그에서 가장 중요한 학술적 결정 — 모델의 예측 성능을 어떻게 측정하는지.
 QMaxent는 5가지 방법을 제공합니다.</p>
 <p><img alt="5개 옵션이 표시된 공간 평가 방법 드롭다운" src="../../images/ui/dock-2-parameters-cv-dropdown.png" /></p>
@@ -1493,8 +1524,12 @@ QMaxent는 5가지 방법을 제공합니다.</p>
     맞춰 설정.</li>
 <li><strong>Buffer</strong>: Buffered LOO의 보류 출현 지점 주변 제외 반경, 미터. 50 km 가 육상
     척추동물의 합리적 기본값 — 분산 거리에 따라 더 작거나 큰 값 사용.</li>
-<li><strong>Fix random seed</strong> <em>(체크박스 + 값)</em>: 재현성을 위해 활성화. 시드는 폴드 구성과
-    배경 표본 추출에 사용되므로, 같은 시드로 재실행하면 비트 단위로 동일한 결과.</li>
+<li><strong>랜덤 시드 고정</strong> (Fix random seed) <em>(체크박스 + 값)</em>: 재현성을 위해 활성화.
+    시드는 폴드 구성, 배경점 추출, 순열 중요도에 쓰이므로 같은 입력과 같은 시드로
+    재실행하면 같은 결과가 나옵니다. v0.1.x에서는 배경점 추출에 시드가 적용되지
+    않아 실행마다 배경점이 달랐습니다. 배경점은 래스터 목록의 첫 래스터에서
+    뽑으므로, 결과를 똑같이 재현하려면 <a href="../data-tab/">① 데이터 탭</a>의 래스터 순서도
+    그대로 유지하세요.</li>
 </ul>
 <h2 id="jackknife">Jackknife 변수 중요도<a class="headerlink" href="#jackknife" title="Permanent link">&para;</a></h2>
 <p>체크하면 QMaxent가 표준 Maxent jackknife 를 계산합니다 — 각 변수에 대해 두 개의
@@ -1503,14 +1538,47 @@ QMaxent는 5가지 방법을 제공합니다.</p>
 추가합니다.</p>
 <p>많은 변수를 가진 모델에서는 학습 시간이 약 <code>2 × (변수 수) + 1</code> 배가 되지만, 일반적인
 &lt; 15개 변수의 경우 추가 비용이 작으므로 기본적으로 켜둡니다.</p>
-<h2 id="_5">출력 파일<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
-<p>모델 실행 시 두 파일이 작성됩니다:</p>
+<h2 id="permutation">Permutation 중요도<a class="headerlink" href="#permutation" title="Permanent link">&para;</a></h2>
+<p><strong>Permutation importance</strong> 를 체크하면 각 변수의 값을 무작위로 섞었을 때 AUC가
+얼마나 떨어지는지 측정합니다(반복 횟수 기본 10회). 재학습이 없어 빠르지만 상관된
+변수의 중요도를 낮게 볼 수 있으므로 Jackknife와 함께 해석하세요.</p>
+<p><strong>평가 자료</strong> (Evaluate on) 옵션으로 AUC 하락을 어느 자료에서 잴지 고릅니다:</p>
+<table>
+<thead>
+<tr>
+<th>옵션</th>
+<th>동작</th>
+<th>쓰임</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>학습 자료 (maxent.jar 방식)</strong> <em>(기본)</em></td>
+<td>전체 모델을 모든 학습 출현점과 배경점에 적용</td>
+<td>maxent.jar 연구와 변수 순위 비교</td>
+</tr>
+<tr>
+<td><strong>교차검증 검증 폴드 (전체 폴드 합산)</strong></td>
+<td>폴드별 모델을 해당 검증 폴드에 적용하고 전체 폴드 결과를 합침</td>
+<td>새로운 지역에 대한 예측 성능이 각 변수에 얼마나 의존하는지 확인</td>
+</tr>
+</tbody>
+</table>
+<p>검증 폴드 옵션은 K-Fold(Geographic, Random) 또는 Checkerboard 교차검증이
+필요합니다. 교차검증을 끄거나 Buffered LOO를 쓰는 등 쓸 수 있는 검증 폴드가
+없으면 학습 자료로 계산하고 로그에 알려 줍니다. 참고로 v0.1.x는 첫 번째 폴드만
+사용했기 때문에 순위가 불안정했습니다.</p>
+<h2 id="_6">출력 파일<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>모델 실행 시 다음 파일이 작성됩니다:</p>
 <ul>
-<li><strong>Model (.pkl)</strong>: 직렬화된 학습 Maxent 모델(elapid <code>MaxentModel</code> 인스턴스가 Python
+<li><strong>모델 파일 (.pkl)</strong>: 직렬화된 학습 Maxent 모델(elapid <code>MaxentModel</code> 인스턴스가 Python
     pickle로). <a href="../data-tab/">① Data 탭</a>에서 다시 불러오기. pickle 보안 안내는
     <a href="../saving-models/">모델 저장 및 재사용</a> 참고.</li>
-<li><strong>Results XLSX</strong>: 실험 설정·변수 목록·교차검증·Jackknife 중요도·우선조사 후보지
-    출력을 담은 다중 시트 Excel 워크북. 학술 논문 보충 표 관행 형식. <a href="../exporting-results/">결과
+<li><strong>모델 카드와 계수표</strong>: <code>.pkl</code> 옆에 <code>&lt;모델&gt;_model_card.json</code> 과
+    <code>&lt;모델&gt;_coefficients.csv</code> 가 함께 저장됩니다. 공유해도 안전한 텍스트
+    파일입니다. 자세한 내용은 <a href="../saving-models/">모델 저장 및 재사용</a> 참고.</li>
+<li><strong>결과 XLSX</strong>: 실험 설정, 변수 목록, 교차검증, Jackknife 중요도, 조사지점 선정
+    임계값을 담은 다중 시트 Excel 워크북. 학술 논문 보충 표 관행 형식. <a href="../exporting-results/">결과
     내보내기</a> 참고.</li>
 </ul>
 <p>두 경로 모두 홈 디렉터리 아래 <code>qmaxent_output</code> 폴더가 기본값이지만, 쓰기 가능한 어느

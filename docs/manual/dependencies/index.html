@@ -584,6 +584,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#where-the-packages-are-installed" class="md-nav__link">
+    <span class="md-ellipsis">
+      Where the packages are installed
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#remove-environment" class="md-nav__link">
     <span class="md-ellipsis">
       Remove Environment
@@ -602,9 +611,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#security-note-on-the-virtual-environment" class="md-nav__link">
+  <a href="#security-note-on-the-package-folder" class="md-nav__link">
     <span class="md-ellipsis">
-      Security note on the virtual environment
+      Security note on the package folder
     </span>
   </a>
   
@@ -824,7 +833,7 @@
         
   
   <span class="md-ellipsis">
-    ⑤ Priority Sites for Survey
+    ⑤ Survey Site Selection
   </span>
   
 
@@ -1187,6 +1196,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#where-the-packages-are-installed" class="md-nav__link">
+    <span class="md-ellipsis">
+      Where the packages are installed
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#remove-environment" class="md-nav__link">
     <span class="md-ellipsis">
       Remove Environment
@@ -1205,9 +1223,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#security-note-on-the-virtual-environment" class="md-nav__link">
+  <a href="#security-note-on-the-package-folder" class="md-nav__link">
     <span class="md-ellipsis">
-      Security note on the virtual environment
+      Security note on the package folder
     </span>
   </a>
   
@@ -1239,13 +1257,15 @@ companions (<a href="https://rasterio.readthedocs.io/">rasterio</a>,
 <a href="https://scikit-learn.org/">scikit-learn</a>,
 <a href="https://matplotlib.org/">matplotlib</a>) — does not ship with QGIS. The
 first time you use the plugin, you install these dependencies into an
-<strong>isolated, per-plugin virtual environment</strong> so they do not affect your
-system Python or QGIS itself.</p>
+<strong>isolated, per-plugin package folder</strong> so they do not affect your
+system Python or QGIS itself. On Linux and macOS this folder is a Python
+virtual environment; on Windows it is a plain package folder (see
+<a href="#where-the-packages-are-installed">Where the packages are installed</a>).</p>
 <p>This is a one-time, ~5-minute setup.</p>
 <h2 id="opening-the-dependencies-dialog">Opening the Dependencies dialog<a class="headerlink" href="#opening-the-dependencies-dialog" title="Permanent link">&para;</a></h2>
 <p>Choose <strong>Plugins → QMaxent → QMaxent Dependencies</strong>.</p>
 <p><img alt="QMaxent Dependencies dialog before install showing Status: Dependencies not installed" src="../images/ui/dialog-dependencies.png" /></p>
-<p>The dialog reports the current state of the QMaxent virtual environment,
+<p>The dialog reports the current state of the QMaxent package folder,
 the plugin version, and a summary of what will be installed.</p>
 <h2 id="environment-status-panel">Environment Status panel<a class="headerlink" href="#environment-status-panel" title="Permanent link">&para;</a></h2>
 <p>The status banner at the top tells you exactly what to do:</p>
@@ -1266,8 +1286,8 @@ the plugin version, and a summary of what will be installed.</p>
 <td>Everything is installed and ready to model</td>
 </tr>
 <tr>
-<td>⚠ <strong>Update available</strong></td>
-<td>New version of one or more dependencies recommended</td>
+<td>✗ <strong>Dependencies need updating</strong></td>
+<td>The package list or the installation method changed with a plugin upgrade; click <strong>Install / Update Dependencies</strong> again</td>
 </tr>
 </tbody>
 </table>
@@ -1276,8 +1296,8 @@ the plugin version, and a summary of what will be installed.</p>
 packages from <a href="https://pypi.org">PyPI</a> into the path shown at the bottom
 of the dialog (default: <code>~/.qgis_qmaxent</code> on macOS/Linux,
 <code>%USERPROFILE%\.qgis_qmaxent</code> on Windows). Total download is approximately
-<strong>300–500 MB</strong> depending on your platform; allow 3–8 minutes on a typical
-broadband connection.</p>
+<strong>300–500 MB</strong> depending on your platform (about 590 MB on disk once
+installed); allow 3–8 minutes on a typical broadband connection.</p>
 <p>When the installer finishes, the status banner turns green:</p>
 <p><img alt="QMaxent Dependencies dialog after install showing Status: ✓ QMaxent environment ready" src="../images/ui/dialog-dependencies-installed.png" /></p>
 <p>You can now close the dialog and open <strong>QMaxent Analysis</strong> — the modeling
@@ -1300,9 +1320,49 @@ workflow is unlocked.</p>
 </ul>
 <p>These are pinned to versions that QMaxent has been tested against; the
 plugin's release notes record which versions ship with each release.</p>
+<h2 id="where-the-packages-are-installed">Where the packages are installed<a class="headerlink" href="#where-the-packages-are-installed" title="Permanent link">&para;</a></h2>
+<p>All dependencies go into one folder per QGIS Python version, inside
+<code>~/.qgis_qmaxent</code> (<code>%USERPROFILE%\.qgis_qmaxent</code> on Windows). The folder
+name includes the Python version, for example <code>venv_py3.12</code> for the
+Python 3.12 that ships with current QGIS releases.</p>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>How the packages are installed</th>
+<th>Package location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Windows</strong></td>
+<td>The QGIS Python's own pip installs the packages into the QMaxent package folder (<code>pip install --target</code>). No separate Python interpreter is created.</td>
+<td><code>%USERPROFILE%\.qgis_qmaxent\venv_py3.12\Lib\site-packages</code></td>
+</tr>
+<tr>
+<td><strong>Linux, macOS</strong></td>
+<td>A Python virtual environment (<code>venv</code>) is created from the QGIS Python, and its pip installs the packages.</td>
+<td><code>~/.qgis_qmaxent/venv_py3.12/lib/python3.12/site-packages</code></td>
+</tr>
+</tbody>
+</table>
+<p>QMaxent only imports these packages inside QGIS, so on Windows it does
+not need an interpreter of its own. This change was made in 0.2.0: with
+QGIS 3.44.15 and later on Windows, the virtual-environment approach of
+0.1.x stopped with <em>"ensurepip ... returned non-zero exit status 1"</em>
+before any package was downloaded.</p>
+<p>Two environment variables change this behaviour. Set them before you
+start QGIS:</p>
+<ul>
+<li><strong><code>QMAXENT_CACHE_DIR</code></strong>: use another folder instead of
+  <code>~/.qgis_qmaxent</code>, for example when your home directory is not
+  writable or has little free space.</li>
+<li><strong><code>QMAXENT_FORCE_VENV=1</code></strong>: on Windows, go back to the old
+  virtual-environment method of 0.1.x. Use it only for troubleshooting.</li>
+</ul>
 <h2 id="remove-environment">Remove Environment<a class="headerlink" href="#remove-environment" title="Permanent link">&para;</a></h2>
-<p>Use <strong>Remove Environment</strong> to delete the entire QMaxent virtual
-environment from disk. You might do this to free disk space, force a
+<p>Use <strong>Remove Environment</strong> to delete the entire QMaxent package folder
+(the virtual environment on Linux and macOS) from disk. You might do this to free disk space, force a
 fresh re-install when something is broken, or switch to a different
 QMaxent version that pins different package versions.</p>
 <p>After removal, the status banner returns to <em>Dependencies not installed</em>
@@ -1315,6 +1375,13 @@ and <strong>Install / Update Dependencies</strong> becomes available again.</p>
 and <code>files.pythonhosted.org</code>. The installer respects QGIS's proxy
 settings, so configuring those in <strong>Settings → Options → Network</strong>
 usually fixes it.</p>
+</details>
+<details class="warning">
+<summary>Windows: 'ensurepip ... returned non-zero exit status 1'</summary>
+<p>You are running QMaxent 0.1.x with QGIS 3.44.15 or later. Upgrade
+the plugin to 0.2.0 or later, which installs the packages without a
+virtual environment on Windows, then click <strong>Install / Update
+Dependencies</strong> again.</p>
 </details>
 <details class="warning">
 <summary>Disk space exhausted during install</summary>
@@ -1333,9 +1400,10 @@ process to pick up the new environment.</p>
 it is, restart QGIS; if it is not, click <strong>Install / Update
 Dependencies</strong> again.</p>
 </details>
-<h2 id="security-note-on-the-virtual-environment">Security note on the virtual environment<a class="headerlink" href="#security-note-on-the-virtual-environment" title="Permanent link">&para;</a></h2>
-<p>QMaxent's environment is created with the standard Python <code>venv</code> module
-and populated only from PyPI. The plugin does not execute arbitrary code
+<h2 id="security-note-on-the-package-folder">Security note on the package folder<a class="headerlink" href="#security-note-on-the-package-folder" title="Permanent link">&para;</a></h2>
+<p>QMaxent's package folder is populated only from PyPI, by the QGIS
+Python's pip on Windows and by a standard Python <code>venv</code> on Linux and
+macOS. The plugin does not execute arbitrary code
 from remote sources at runtime. Saved-model files (<code>.pkl</code>) are a separate
 concern; see <a href="../saving-models/">Saving and reusing models</a> for the
 security note on loading pickle files from untrusted sources.</p>

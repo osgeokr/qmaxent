@@ -19,16 +19,21 @@ before the PR can land.
 2. Place the dataset under a folder outside the repository, e.g.
    `~/qmaxent-bench/pitta/`. Do NOT commit the rasters or
    presence-point CSVs to the repository.
-3. Run the bench script (the maintainer keeps it under
-   `tools/regenerate_pitta_golden_values.py`; it is excluded from
-   the QGIS plugin ZIP). The script:
-   - Fits the Default (β = 1, Geographic K-Fold) configuration.
-   - Fits the Lee-matched (β = 4, Random K-Fold) configuration.
-   - Records training AUC for both configurations.
-   - Records the Spearman ρ between QMaxent and maxent.jar's
-     permutation-importance rankings (the maxent.jar side is the
-     static record from the manuscript's original benchmark).
-   - Writes the new JSON.
+3. Run the comparison scripts of the manuscript supplement
+   (excluded from the plugin ZIP). They import
+   the plugin's own `MaxentWorker` outside QGIS, so the numbers come
+   from exactly the code users run:
+   - `build_swd.py` draws the background exactly as QMaxent does
+     (seeded) and writes identical SWD tables for maxent.jar.
+   - `exp1_equivalence.py`: full-data fits on identical inputs at
+     beta 1 and beta 4 (LQH); training AUC, prediction correlation,
+     permutation-importance ranks (training data in both programs).
+   - `exp2_lee_protocol.py`: Lee et al. (2025) final-model protocol
+     (LQH, beta 4, ten identical 75/25 splits) and the rank agreement
+     with Lee et al. Table 4.
+   - `exp3_partition_beta.py`: beta {1, 4} x partition {Random
+     10-fold, Geographic 5-fold}.
+   Copy the resulting values into the JSON.
 4. Open the diff. Every changed value must be explainable — either
    by the code change in the same PR, or by an upstream dependency
    bump (in which case the dependency version goes in the same PR).
@@ -37,20 +42,25 @@ before the PR can land.
 
 ## What changes are allowed without manuscript revision
 
-- Tolerance-band staying inside the `tolerance` field. If the new
-  Δ is still `< 0.005`, the manuscript's qualitative claim is
-  intact; only the JSON file changes.
-- Spearman ρ at β = 1 staying inside the 0.05 band around 0.818
-  (already encoded in the regression test).
+- Training-AUC differences on identical inputs staying below 0.02,
+  prediction correlation staying at r >= 0.85.
+- Rank agreement staying above the recorded minima (rho >= 0.6 at
+  beta 1, >= 0.8 at beta 4, >= 0.75 against Lee et al. Table 4).
 
 ## What changes require manuscript revision
 
-- A new Δ for training AUC that exceeds 0.005 on either
-  configuration. § 3.3's headline "|Δ| < 0.005" claim has moved.
-- A Spearman ρ at β = 1 that drops below ~ 0.75. § 3.3 describes
-  this number as "strong agreement"; a notably weaker ρ would
-  change that descriptor.
+- Any value crossing the thresholds above: § 3.3 describes the
+  agreement as close / strong, and Table 3 and Fig. 4 report the
+  values.
 
 In both cases the PR description must (a) explain why the change
 is necessary, (b) propose a manuscript-text patch, and (c) note
 which referenced figures (Fig. 4 panels) need redrawing.
+
+## History
+
+- v0.2.0 (2026-10): fixture rebuilt with v0.2.0 on identical inputs for both programs.
+  The v0.1.7 record compared maxent.jar and QMaxent under different
+  validation schemes, different background samples (the background
+  was not seeded in v0.1.x) and different permutation-importance
+  evaluation data, and listed covariates that Lee et al. did not use.

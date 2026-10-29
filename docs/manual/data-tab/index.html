@@ -703,6 +703,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Check Raster Consistency">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rasters-with-an-unusable-crs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rasters with an unusable CRS
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -815,7 +830,7 @@
         
   
   <span class="md-ellipsis">
-    ⑤ Priority Sites for Survey
+    ⑤ Survey Site Selection
   </span>
   
 
@@ -1166,6 +1181,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Check Raster Consistency">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rasters-with-an-unusable-crs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rasters with an unusable CRS
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1224,6 +1254,22 @@ the presence-points selector, the environmental-raster list with its
 QGIS project. Pick the layer that contains your species occurrence records.
 QMaxent reads the geometry and reports the count beside the selector
 (e.g. <code>116 presence points loaded</code>).</p>
+<p>If the records are not in the project yet, two buttons below the
+drop-down load them without a detour through the QGIS menus. The new
+layer is added to the project and selected as the presence layer.</p>
+<ul>
+<li><strong>Open point file...</strong>: any point format QGIS can read (GeoPackage,
+  Shapefile, GeoJSON, KML, GML, FlatGeobuf and others). A file that does
+  not contain points is refused with a message.</li>
+<li><strong>Load CSV (X/Y columns)...</strong>: a delimited table with one row per
+  record, for example a GBIF download. QMaxent detects the delimiter
+  (comma, semicolon, tab or pipe) and suggests the longitude/latitude or
+  X/Y columns from their names (for example <code>decimalLongitude</code> and
+  <code>decimalLatitude</code> in GBIF files, or <code>lon</code>/<code>lat</code>, <code>x</code>/<code>y</code>). Check the
+  suggested columns and choose the coordinate reference system of the
+  coordinates. The default is EPSG:4326, which is correct for
+  decimal-degree tables.</li>
+</ul>
 <p>Tips for preparing this layer:</p>
 <ul>
 <li><strong>Geometry</strong> must be <code>Point</code> or <code>MultiPoint</code>. Lines and polygons must be
@@ -1239,17 +1285,30 @@ QMaxent reads the geometry and reports the count beside the selector
 <h2 id="environmental-rasters">Environmental rasters<a class="headerlink" href="#environmental-rasters" title="Permanent link">&para;</a></h2>
 <p>Two buttons populate the raster list:</p>
 <ul>
-<li><strong>Add from project</strong> — adds every raster layer currently loaded in the
+<li><strong>Add from project</strong>: adds every raster layer currently loaded in the
   QGIS project. The fastest way to start.</li>
-<li><strong>Add from file…</strong> — opens a multi-select file dialog. Use this if you
-  want to keep the rasters off the QGIS canvas while still using them for
-  modeling.</li>
+<li><strong>Add raster files...</strong>: opens a multi-select file dialog for any
+  single-band raster GDAL can read (GeoTIFF, ESRI ASCII <code>.asc</code>, <code>.grd</code>,
+  ERDAS <code>.img</code>, VRT, NetCDF and others). The files are added to the QGIS
+  project and to the list in one step.</li>
 </ul>
+<p>The list follows the QGIS project: when a raster layer is removed from
+the project (or you open another project), its row disappears from the
+list and the status line asks you to run <strong>Check Raster Consistency</strong>
+again. Use the ▲ and ▼ buttons to change the order of the rows. The order
+matters for reproducibility, because background points are drawn from
+the first raster in the list (see <a href="#background-points">Background points</a>).</p>
+<p>QMaxent uses <strong>one band per environmental variable</strong>. A multi-band
+raster (for example a stack of all bioclimatic variables in one file) is
+refused when you click <strong>▶ Run Maxent</strong>, with the names of the affected
+files. Split it into single-band files first, for example with
+<strong>Processing &gt; GDAL &gt; Raster conversion &gt; Rearrange bands</strong> (one band per
+output), then add the single-band files.</p>
 <p>Each row in the raster list shows the file name and a <code>[continuous]</code> /
 <code>[categorical]</code> tag. <strong>Categorical detection is automatic</strong> when the file
 carries a PAM (<code>.aux.xml</code>) sidecar with the metadata key
-<code>LAYER_TYPE=thematic</code>. Without that tag, you can manually toggle a row to
-categorical by right-clicking it.</p>
+<code>LAYER_TYPE=thematic</code>. Without that tag, click the tag button of a row to
+switch it between <code>[continuous]</code> and <code>[categorical]</code>.</p>
 <div class="admonition tip">
 <p class="admonition-title">Why categorical handling matters</p>
 <p>Treating a categorical raster (e.g. biome, land-cover class) as
@@ -1264,6 +1323,8 @@ do all rasters share the <strong>same CRS, extent, and resolution</strong>?</p>
 <ul>
 <li><strong>✓ Pass</strong> (green): the stack is grid-aligned and ready to model.</li>
 <li><strong>⚠ Mismatch</strong> (amber): one or more rasters disagree.</li>
+<li><strong>Unusable CRS</strong>: one or more rasters have a coordinate reference
+  system that cannot be reprojected (see below).</li>
 </ul>
 <p>When it fails, a second button — <strong>Harmonize to Folder…</strong> — appears.
 Clicking it lets you nominate an output directory; QMaxent reprojects
@@ -1272,6 +1333,25 @@ every raster to the highest-resolution one in the stack
 re-loads the harmonised set. The
 <a href="../examples/ariolimax/">Ariolimax worked example</a> walks through this in
 detail.</p>
+<h3 id="rasters-with-an-unusable-crs">Rasters with an unusable CRS<a class="headerlink" href="#rasters-with-an-unusable-crs" title="Permanent link">&para;</a></h3>
+<p>Some rasters cannot be aligned at all because of their CRS. The check
+reports two cases and names each affected file:</p>
+<ul>
+<li>the raster has <strong>no CRS</strong>, or</li>
+<li>the CRS is a <strong>local (engineering) system without a datum</strong>. This
+  happens when a <code>.prj</code> file or GeoTIFF only carries the name of a
+  projection, for example <code>NAD83(NSRS2007) / Michigan South</code>, and no
+  datum. PROJ cannot transform such a CRS to any other CRS.</li>
+</ul>
+<p>When the name matches an EPSG definition, the message suggests the
+matching EPSG code. To fix it, in the QGIS <strong>Layers</strong> panel right-click
+the raster, choose <strong>Layer CRS &gt; Set Layer CRS...</strong>, select the correct
+CRS (for example the suggested EPSG code), and click <strong>Check Raster
+Consistency</strong> again. From then on, Check and <strong>Harmonize to Folder...</strong>
+use the CRS you set in QGIS for that raster. Alternatively, write a
+complete CRS into the file, for example with <strong>Raster &gt; Projections &gt;
+Assign Projection</strong>. Harmonize no longer stops with a raw PROJ error in
+this situation.</p>
 <p><img alt="Data tab showing a grid mismatch warning" src="../images/ui/dock-1-data-mismatch.png" />
 <img alt="Data tab after harmonization, all rasters share the grid" src="../images/ui/dock-1-data-harmonized.png" /></p>
 <h2 id="background-points">Background points<a class="headerlink" href="#background-points" title="Permanent link">&para;</a></h2>
@@ -1279,10 +1359,16 @@ detail.</p>
 (<a href="../references/">Phillips et al. 2006</a>;
 <a href="../references/">Fithian &amp; Hastie 2013</a>) — it contrasts presence locations
 against a background sample drawn from the rest of the study area. The
-default background sample is <strong>10,000 points</strong> drawn uniformly across the
-union of all raster extents, the value
+default background sample is <strong>10,000 points</strong> drawn at random from the
+valid (non-NoData) cells of the <strong>first raster in the list</strong>, the value
 <a href="../references/">Phillips &amp; Dudík 2008</a> recommend for typical continental-
 to landscape-scale studies.</p>
+<p>The draw is covered by <strong>Fix random seed</strong> on the
+<a href="../parameters-tab/">② Parameters tab</a>: with the same seed, the same
+rasters in the same order and the same presences, every run uses the
+same background sample. (In v0.1.x the background was drawn anew on
+every run, even with a fixed seed.) Keep the raster order unchanged when
+you want to reproduce a run exactly.</p>
 <p>You can override it in the <strong>Background points</strong> field. Smaller values are
 appropriate only for very small study areas (&lt;10,000 cells); larger values
 rarely help and slow the run.</p>

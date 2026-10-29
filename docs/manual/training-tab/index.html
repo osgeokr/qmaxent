@@ -815,7 +815,7 @@
         
   
   <span class="md-ellipsis">
-    ⑤ Priority Sites for Survey
+    ⑤ Survey Site Selection
   </span>
   
 
@@ -1230,7 +1230,7 @@ log:</p>
     E --&gt; F["Run spatial K-Fold CV&lt;br/&gt;(repeat fit per fold)"]
     F --&gt; G["Compute pooled CV AUC"]
     G --&gt; H["(optional) Jackknife loop:&lt;br/&gt;2N additional fits"]
-    H --&gt; I["Save .pkl + results.xlsx"]</code></pre>
+    H --&gt; I["Save .pkl, model card, coefficients&lt;br/&gt;+ results.xlsx"]</code></pre>
 <p>The fit is performed by
 <a href="https://github.com/earth-chris/elapid">elapid</a>'s <code>MaxentModel</code>, a faithful
 Python port of the original Java MaxEnt
@@ -1243,29 +1243,43 @@ close to Java MaxEnt for identical inputs and identical hyperparameters
 handles ties in the optimisation step.</p>
 <h2 id="reading-the-log">Reading the log<a class="headerlink" href="#reading-the-log" title="Permanent link">&para;</a></h2>
 <p>A typical successful run produces a log like:</p>
-<p><code>text
-→ 10,000 background points sampled
-Extracting raster covariates for presence points…
-Extracting raster covariates for background points…
-→ Presence: 116, Background: 10,104
-→ Feature types: ['linear', 'quadratic', 'product', 'hinge', 'threshold']
-Training MaxentModel…
-→ Model training complete
-→ Model saved: …/model.pkl
-Computing ROC curve…
-→ Training AUC = 0.9569
-Running cross-validation…
-  Fold 1: 22 test presences, AUC = 0.7453
-  Fold 2: 21 test presences, AUC = 0.7839
-  Fold 3: 39 test presences, AUC = 0.8097
-  Fold 4: 26 test presences, AUC = 0.8614
-  Fold 5:  8 test presences, AUC = 0.5903
-→ CV AUC = 0.7436 ± 0.0750  (n=5 fold(s))</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>→ 10,000 background points sampled
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>Extracting raster covariates for presence points…
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>Extracting raster covariates for background points…
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>→ Presence: 116, Background: 10,104
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>→ Feature types: ['linear', 'quadratic', 'product', 'hinge']
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>Training MaxentModel…
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>→ Model training complete
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>→ Model saved: …/model.pkl
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>Computing ROC curve…
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>→ Training AUC = 0.9569
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>Running cross-validation…
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>  Fold 1: 22 test presences, AUC = 0.7453
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>  Fold 2: 21 test presences, AUC = 0.7839
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>  Fold 3: 39 test presences, AUC = 0.8097
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>  Fold 4: 26 test presences, AUC = 0.8614
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>  Fold 5:  8 test presences, AUC = 0.5903
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>→ CV AUC = 0.7436 ± 0.0750  (n=5 fold(s))
+</span></code></pre></div>
 <p>A few patterns to recognise:</p>
 <ul>
-<li><strong>Background = 10,104 (background + presence-added rows)</strong> — points that fell on
+<li><strong>Presences dropped</strong> (<code>⚠ N of M presence points fall outside the
+  rasters or on NoData cells and were excluded.</code>): the log now says how
+  many presence points were lost and why. A large share usually means a
+  CRS problem or rasters that do not cover the study area.</li>
+<li>
+<p><strong>Presences sharing a raster cell</strong> (<code>ℹ N presence point(s) share a
+  raster cell with another presence.</code>): two or more records fall in the
+  same cell of the first raster. maxent.jar removes such duplicates by
+  default; QMaxent keeps them, so they count more than once in the fit.
+  If this is not intended, thin the records spatially before modeling
+  (<a href="../references/">Boria et al. 2014</a>).</p>
+</li>
+<li>
+<p><strong>Background = 10,104 (background + presence-added rows)</strong> — points that fell on
   NoData cells were dropped. Normal and not a cause for concern unless
-  the loss is large (&gt;5 %).</li>
+  the loss is large (&gt;5 %).</p>
+</li>
 <li><strong>Per-fold AUC well below the mean</strong> — for example Fold 5 above
   (AUC = 0.59 with only 8 presences). Geographic K-Fold deliberately
   produces uneven folds, and a small fold can land on an atypical region
@@ -1296,9 +1310,14 @@ restart by clicking <strong>▶ Run Maxent</strong> again.</p>
 </thead>
 <tbody>
 <tr>
-<td><code>⚠ Removed 312 presences with NoData covariate values</code></td>
-<td>Some points fell on NoData cells</td>
+<td><code>⚠ 12 of 116 presence points fall outside the rasters or on NoData cells and were excluded.</code></td>
+<td>Some points fell outside the rasters or on NoData cells</td>
 <td>Inspect the raster stack; may indicate the wrong CRS or a clipped raster</td>
+</tr>
+<tr>
+<td><code>ℹ 3 presence point(s) share a raster cell with another presence.</code></td>
+<td>Duplicate records at the raster resolution are kept</td>
+<td>Thin the presences if the duplicates are not intended</td>
 </tr>
 <tr>
 <td><code>⚠ Background points cap reduced from 10,000 to N</code></td>

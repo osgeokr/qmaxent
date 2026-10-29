@@ -110,7 +110,112 @@ def get_raster_crs(path: str):
 # values like 2.7 between class 2 and class 3).
 
 
-def check_raster_consistency(raster_paths: list) -> dict:
+class RasterCRSError(RuntimeError):
+    """A raster's CRS cannot be used for reprojection.
+
+    Raised with a user-facing message (file name, reason, fix). Workers
+    show the message as is, without a Python traceback.
+    """
+
+
+def _suggest_epsg(name: str):
+    """Return 'EPSG:xxxx' when an EPSG CRS has exactly this name."""
+    if not name:
+        return None
+    try:
+        from pyproj.database import query_crs_info
+
+        hits = [i for i in query_crs_info(auth_name="EPSG") if i.name == name]
+        if len(hits) == 1:
+            return f"EPSG:{hits[0].code}"
+    except Exception:
+        pass
+    return None
+
+
+def describe_crs_problem(crs, bounds=None):
+    """Return None when `crs` can be reprojected, else a short reason.
+
+    Catches the two cases seen in practice with v0.1.7:
+      * no CRS metadata at all, and
+      * a CRS that PROJ reads as an Engineering / LOCAL_CS system with
+        an "Unknown engineering datum". This happens when a .prj or
+        GeoTIFF key set carries only a projection *name* (for example
+        "NAD83(NSRS2007) / Michigan South") and no datum, so no
+        transformation to any other CRS exists.
+    """
+    if crs is None:
+        return "no coordinate reference system (CRS) is defined"
+    try:
+        from pyproj import CRS as _PCRS
+
+        pc = _PCRS.from_wkt(crs.to_wkt())
+        if pc.type_name.startswith("Engineering") or (
+            not pc.is_projected and not pc.is_geographic and not pc.is_compound
+        ):
+            msg = (
+                f'its CRS "{pc.name}" is a local (engineering) '
+                f"system without a datum, so it cannot be reprojected"
+            )
+            epsg = _suggest_epsg(pc.name)
+            if epsg:
+                msg += f" (the name matches {epsg})"
+            return msg
+    except Exception:
+        pass
+    if bounds is not None:
+        try:
+            from rasterio.warp import transform_bounds
+
+            transform_bounds(crs, "EPSG:4326", *bounds)
+        except Exception as e:
+            first = str(e).splitlines()[0][:160]
+            return f"its CRS cannot be transformed to WGS 84 ({first})"
+    return None
+
+
+def _apply_crs_overrides(info: list, crs_overrides: dict = None):
+    """Use a QGIS-assigned CRS for rasters whose file CRS is unusable.
+
+    `crs_overrides` maps raster index -> CRS string (e.g. "EPSG:3592"),
+    built from the QGIS layer CRS ("Set Layer CRS..."). It is only
+    applied when the file's own CRS has a problem, so working rasters
+    are never touched.
+    """
+    from rasterio.crs import CRS
+
+    for i, r in enumerate(info):
+        r["crs_override"] = False
+        ov = (crs_overrides or {}).get(i)
+        if ov and describe_crs_problem(r["crs"], r.get("bounds")):
+            try:
+                cand = CRS.from_user_input(ov)
+                if not describe_crs_problem(cand, None):
+                    r["crs"] = cand
+                    r["crs_override"] = True
+            except Exception:
+                pass
+    return info
+
+
+def crs_problem_message(problems: list) -> str:
+    """Build the user-facing text for a list of (path, reason)."""
+    lines = ["These rasters cannot be aligned because of their coordinate reference system:"]
+    for path, reason in problems:
+        lines.append(f"  - {os.path.basename(path)}: {reason}.")
+    lines.append("")
+    lines.append(
+        "How to fix: in the Layers panel, right-click the raster "
+        "> Layer CRS > Set Layer CRS..., choose the correct CRS "
+        "(e.g. the EPSG code shown above), then run the check "
+        "again. Alternatively, re-export the raster with a "
+        "complete .prj / GeoTIFF CRS (for example with "
+        "Raster > Projections > Assign Projection)."
+    )
+    return "\n".join(lines)
+
+
+def check_raster_consistency(raster_paths: list, crs_overrides: dict = None) -> dict:
     """Inspect a set of rasters and report whether they share a grid.
 
     Returns a dict with the following keys:
@@ -147,6 +252,24 @@ def check_raster_consistency(raster_paths: list) -> dict:
             "resolution_uniform": False,
             "rasters": info,
         }
+
+    if info:
+        _apply_crs_overrides(info, crs_overrides)
+        problems = []
+        for r in info:
+            reason = describe_crs_problem(r["crs"], r["bounds"])
+            if reason:
+                problems.append((r["path"], reason))
+        if problems:
+            return {
+                "is_consistent": False,
+                "error": crs_problem_message(problems),
+                "crs_problems": problems,
+                "crs_uniform": False,
+                "extent_uniform": False,
+                "resolution_uniform": False,
+                "rasters": info,
+            }
 
     if not info:
         return {
@@ -200,7 +323,15 @@ def _intersection_bounds_in_crs(infos: list, target_crs):
             # convention for asc/grd files written without projection info).
             transformed.append(r["bounds"])
         else:
-            transformed.append(transform_bounds(r["crs"], target_crs, *r["bounds"]))
+            try:
+                transformed.append(transform_bounds(r["crs"], target_crs, *r["bounds"]))
+            except Exception as e:
+                reason = (
+                    describe_crs_problem(r["crs"], r["bounds"])
+                    or f"its CRS cannot be transformed to the "
+                    f"template CRS ({str(e).splitlines()[0][:160]})"
+                )
+                raise RasterCRSError(crs_problem_message([(r["path"], reason)])) from e
     # Intersection: max of left/bottom, min of right/top
     lefts = [b[0] for b in transformed]
     bottoms = [b[1] for b in transformed]
@@ -216,6 +347,7 @@ def harmonize_rasters(
     output_dir: str = None,
     progress_callback=None,
     cancel_check=None,
+    crs_overrides: dict = None,
 ):
     """Reproject, resample, and clip every raster to a common grid.
 
@@ -255,7 +387,6 @@ def harmonize_rasters(
     from rasterio.warp import (
         Resampling,
         reproject,
-        transform_bounds,
     )
 
     if not raster_paths:
@@ -265,21 +396,23 @@ def harmonize_rasters(
 
     cat_set = set(categorical_indices or [])
 
-    # 1. Read template grid (CRS, native resolution).
-    with rasterio.open(raster_paths[template_idx]) as tmpl:
-        target_crs = tmpl.crs
-        target_res = tmpl.res
-        if target_crs is None:
-            raise RuntimeError(
-                "Template raster has no CRS metadata; cannot harmonize. "
-                "Define the CRS on the template raster first."
-            )
-
-    # 2. Compute intersection extent in target CRS.
+    # 1. Read every raster's CRS / bounds and validate them up front, so
+    #    an unusable CRS is reported by file name before any output is
+    #    written (v0.1.8; v0.1.7 surfaced a raw PROJ JSON dump here).
     info = []
     for p in raster_paths:
         with rasterio.open(p) as src:
-            info.append({"path": p, "crs": src.crs, "bounds": tuple(src.bounds)})
+            info.append({"path": p, "crs": src.crs, "bounds": tuple(src.bounds), "res": src.res})
+    _apply_crs_overrides(info, crs_overrides)
+    problems = [(r["path"], describe_crs_problem(r["crs"], r["bounds"])) for r in info]
+    problems = [(p, why) for p, why in problems if why]
+    if problems:
+        raise RasterCRSError(crs_problem_message(problems))
+
+    target_crs = info[template_idx]["crs"]
+    target_res = info[template_idx]["res"]
+
+    # 2. Compute intersection extent in target CRS.
     bounds = _intersection_bounds_in_crs(info, target_crs)
     if bounds[2] <= bounds[0] or bounds[3] <= bounds[1]:
         raise RuntimeError(
@@ -300,9 +433,9 @@ def harmonize_rasters(
     # rasters are pixel-aligned to the template (the -tap behavior of
     # gdalwarp). We anchor on the template's upper-left and walk in
     # whole-pixel increments.
-    with rasterio.open(raster_paths[template_idx]) as tmpl:
-        # Reproject template bounds into target_crs (no-op if same CRS)
-        tmpl_l, tmpl_b, tmpl_r, tmpl_t = transform_bounds(tmpl.crs, target_crs, *tmpl.bounds)
+    # Template bounds in target_crs (target_crs IS the template's CRS,
+    # possibly a QGIS override, so this is a no-op transform).
+    tmpl_l, tmpl_b, tmpl_r, tmpl_t = info[template_idx]["bounds"]
     # Find the smallest-step pixel snap from the template's upper-left
     snap_x = tmpl_l + round((bounds[0] - tmpl_l) / px_w) * px_w
     snap_y = tmpl_t - round((tmpl_t - bounds[3]) / px_h) * px_h
@@ -352,15 +485,40 @@ def harmonize_rasters(
 
             with rasterio.open(out_path, "w", **profile) as dst:
                 for band_idx in range(1, src.count + 1):
-                    reproject(
-                        source=rasterio.band(src, band_idx),
-                        destination=rasterio.band(dst, band_idx),
-                        src_transform=src.transform,
-                        src_crs=src.crs,
-                        dst_transform=dst_transform,
-                        dst_crs=target_crs,
-                        resampling=resampling,
-                    )
+                    if info[i].get("crs_override"):
+                        # A band object carries the file's own (unusable)
+                        # CRS, which reproject() would use; pass arrays so
+                        # the QGIS-assigned CRS is honoured.
+                        import numpy as _np
+
+                        nod = profile.get("nodata")
+                        out_arr = _np.full(
+                            (height, width),
+                            nod if nod is not None else 0,
+                            dtype=profile["dtype"],
+                        )
+                        reproject(
+                            source=src.read(band_idx),
+                            destination=out_arr,
+                            src_transform=src.transform,
+                            src_crs=info[i]["crs"],
+                            src_nodata=src.nodata,
+                            dst_transform=dst_transform,
+                            dst_crs=target_crs,
+                            dst_nodata=nod,
+                            resampling=resampling,
+                        )
+                        dst.write(out_arr, band_idx)
+                    else:
+                        reproject(
+                            source=rasterio.band(src, band_idx),
+                            destination=rasterio.band(dst, band_idx),
+                            src_transform=src.transform,
+                            src_crs=src.crs,
+                            dst_transform=dst_transform,
+                            dst_crs=target_crs,
+                            resampling=resampling,
+                        )
                     # Carry over the GDAL "thematic" hint and category
                     # names so QMaxent's categorical detector still
                     # recognises the harmonized copy.

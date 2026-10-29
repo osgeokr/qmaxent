@@ -20,15 +20,18 @@ formulation.*
 **Phillips, S. J., & Dudík, M. (2008).** Modeling of species
 distributions with Maxent: new extensions and a comprehensive evaluation.
 *Ecography*, 31(2), 161–175.
-*The benchmark paper that established the sample-size feature-class rule
-QMaxent's "Auto" mode follows, and the regularization-multiplier
-default of 1.0.*
+*The benchmark paper behind the maxent.jar sample-size feature-class
+rule (used by QMaxent's Auto mode up to v0.1.x) and the
+regularization-multiplier default of 1.0.*
 
 **Phillips, S. J., Anderson, R. P., Dudík, M., Schapire, R. E., &
 Blair, M. E. (2017).** Opening the black box: an open-source release of
 Maxent. *Ecography*, 40(7), 887–893.
-*The release of the open-source Maxent and the formal recommendation
-to adopt the cloglog output transform — adopted as QMaxent's default.*
+*The release of the open-source Maxent and the maxnet R package, and the
+formal recommendation to adopt the cloglog output transform, adopted as
+QMaxent's default. Since v0.2.0, QMaxent's "Auto (maxnet default rule by
+sample size)" mode follows the maxnet default feature classes
+(`maxnet.formula(classes = "default")`).*
 
 **Fithian, W., & Hastie, T. (2013).** Finite-sample equivalence in
 statistical models for presence-only data. *The Annals of Applied
@@ -143,22 +146,24 @@ to satisfy. Cited throughout this manual.*
 models of species distributions: complexity, overfitting and evaluation.
 *Journal of Biogeography*, 41(4), 629–643.
 *The empirical paper documenting how feature-class tuning without
-spatial CV inflates AUC; underlies the warning text in the
-[Parameters tab](parameters-tab.md) about the Auto rule.*
+spatial CV inflates AUC, and that the best settings depend on the data;
+underlies the advice in the [Parameters tab](parameters-tab.md) to treat
+the Auto rule as a default and compare alternatives.*
 
 ## Survey design
 
 **Williams, J. N., et al. (2009).** Using species distribution models
 to predict new occurrences for rare plants. *Diversity and
 Distributions*, 15(4), 565–576.
-*The original *Discovery*-mode survey-design paper whose workflow QMaxent
-implements in the Priority Sites tab.*
+*The original survey-design paper behind the *High-suitability search*
+mode of the [Survey Site Selection](priority-sites.md) tab.*
 
 **Rhoden, C. M., Peterman, W. E., & Taylor, C. A. (2017).** Maxent-
 directed field surveys identify new populations of narrowly endemic
 habitat specialists. *PeerJ*, 5, e3632.
 *The model-validation companion to Williams et al. 2009; QMaxent's
-*Model validation* mode reproduces this design.*
+*Gradient-stratified sampling* mode (equal numbers of sites from four
+suitability quartiles) reproduces this design.*
 
 **Stevens, D. L. Jr., & Olsen, A. R. (2004).** Spatially balanced
 sampling of natural resources. *Journal of the American Statistical
@@ -169,7 +174,7 @@ between-candidate spacing constraint.*
 **Robinson, N. M., et al. (2018).** Refining survey effort: how
 detection probability shapes the design of biodiversity surveys.
 *Methods in Ecology and Evolution*, 9(3), 575–587.
-*Cited in [Priority Sites](priority-sites.md) for typical survey-budget
+*Cited in [Survey Site Selection](priority-sites.md) for typical survey-budget
 heuristics.*
 
 ## Worked example reference

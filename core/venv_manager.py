@@ -397,8 +397,48 @@ def get_venv_site_packages(venv_dir: str = None) -> str:
     return os.path.join(venv_dir, "lib", py, "site-packages")
 
 
+def _use_target_mode() -> bool:
+    """Install packages with the QGIS Python's own pip into a plain
+    package folder (``pip install --target``) instead of a venv.
+
+    Why (v0.1.8): QGIS 3.44.15+ on Windows ships ``bin\\python3.exe`` as a
+    launcher that does not honour pyvenv.cfg. A venv created from it runs
+    as the base QGIS interpreter, so ``ensurepip`` inside the venv fails
+    ("returned non-zero exit status 1") and installation stops before any
+    package is downloaded. QMaxent only ever *imports* the packages in
+    process (``ensure_venv_packages_available`` puts site-packages on
+    sys.path), so a venv interpreter is not needed on Windows. Linux and
+    macOS keep the venv path, which works there.
+
+    Set QMAXENT_FORCE_VENV=1 to restore the old behaviour.
+    """
+    return sys.platform == "win32" and os.environ.get("QMAXENT_FORCE_VENV") != "1"
+
+
+def _get_base_python_env() -> dict:
+    """Environment for running the QGIS base Python as a child process.
+
+    Keeps PYTHONHOME (the Windows QGIS Python needs it to find its stdlib)
+    but drops PYTHONPATH (GRASS paths) and the user site, so pip and the
+    verification step only see QGIS's own packages plus our folder.
+    """
+    env = os.environ.copy()
+    for var in ("VIRTUAL_ENV", "PYTHONPATH"):
+        env.pop(var, None)
+    env["PYTHONNOUSERSITE"] = "1"
+    env["PYTHONIOENCODING"] = "utf-8"
+    proxy = _get_qgis_proxy_settings()
+    if proxy:
+        env.setdefault("HTTP_PROXY", proxy)
+        env.setdefault("HTTPS_PROXY", proxy)
+    return env
+
+
 def venv_exists(venv_dir: str = None) -> bool:
-    return os.path.isfile(get_venv_python_path(venv_dir or VENV_DIR))
+    venv_dir = venv_dir or VENV_DIR
+    if _use_target_mode():
+        return os.path.isdir(get_venv_site_packages(venv_dir))
+    return os.path.isfile(get_venv_python_path(venv_dir))
 
 
 # ---------------------------------------------------------------------------
@@ -471,6 +511,17 @@ def create_venv(
     _log(f"Creating venv at: {VENV_DIR}", Qgis.Info)
     if progress_callback:
         progress_callback(5, "Locating Python interpreter...")
+
+    if _use_target_mode():
+        # Only the package folder is needed (see _use_target_mode).
+        try:
+            os.makedirs(get_venv_site_packages(), exist_ok=True)
+        except OSError as e:
+            return False, f"Cannot create package folder: {e}"
+        _log("Package folder ready (target mode, no venv interpreter)", Qgis.Info)
+        if progress_callback:
+            progress_callback(12, "Package folder ready")
+        return True, "Package folder ready"
 
     try:
         system_python = _get_python_for_venv()
@@ -599,8 +650,17 @@ def install_dependencies(
     if not venv_exists():
         return False, "Venv does not exist"
 
-    python = get_venv_python_path()
-    env = _get_clean_env_for_pip()
+    if _use_target_mode():
+        try:
+            python = _get_python_for_venv()
+        except RuntimeError as e:
+            return False, str(e)
+        env = _get_base_python_env()
+        target_flags = ["--target", get_venv_site_packages()]
+    else:
+        python = get_venv_python_path()
+        env = _get_clean_env_for_pip()
+        target_flags = []
     kwargs = _get_subprocess_kwargs()
     specs = [f"{name}{ver}" for name, ver in REQUIRED_PACKAGES]
 
@@ -619,6 +679,7 @@ def install_dependencies(
             "--disable-pip-version-check",
             "--prefer-binary",
         ]
+        + target_flags
         + _pip_ssl_flags()
         + _pip_proxy_flags()
         + specs
@@ -748,12 +809,26 @@ def verify_venv(
     if not venv_exists():
         return False, "Venv not found"
 
-    python = get_venv_python_path()
     site_packages = get_venv_site_packages()
     # Use the verify-specific environment so native modules (rasterio,
     # pyproj, pyogrio) can locate their bundled PROJ / GDAL data even
     # though the parent QGIS process strips PROJ_DATA via clean_env.
     env = _get_env_for_verify(site_packages)
+    if _use_target_mode():
+        # Same import order as inside QGIS: our folder first, then QGIS's
+        # own site-packages.
+        try:
+            python = _get_python_for_venv()
+        except RuntimeError as e:
+            return False, str(e)
+        base_env = _get_base_python_env()
+        for k in ("PROJ_DATA", "PROJ_LIB", "GDAL_DATA"):
+            if k in env:
+                base_env[k] = env[k]
+        base_env["PYTHONPATH"] = site_packages
+        env = base_env
+    else:
+        python = get_venv_python_path()
     kwargs = _get_subprocess_kwargs()
     total = len(REQUIRED_PACKAGES)
 

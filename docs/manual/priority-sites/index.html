@@ -27,7 +27,7 @@
     
     
       
-        <title>⑤ Priority Sites for Survey - QMaxent Manual</title>
+        <title>⑤ Survey Site Selection - QMaxent Manual</title>
       
     
     
@@ -83,7 +83,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#5-priority-sites-for-survey" class="md-skip">
+        <a href="#5-survey-site-selection" class="md-skip">
           Skip to content
         </a>
       
@@ -118,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              ⑤ Priority Sites for Survey
+              ⑤ Survey Site Selection
             
           </span>
         </div>
@@ -730,7 +730,7 @@
           
   
   <span class="md-ellipsis">
-    ⑤ Priority Sites for Survey
+    ⑤ Survey Site Selection
   </span>
   
 
@@ -741,7 +741,7 @@
         
   
   <span class="md-ellipsis">
-    ⑤ Priority Sites for Survey
+    ⑤ Survey Site Selection
   </span>
   
 
@@ -772,11 +772,35 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#sampling-strategy" class="md-nav__link">
+  <a href="#mode-settings" class="md-nav__link">
     <span class="md-ellipsis">
-      Sampling strategy
+      Mode settings
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Mode settings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#high-suitability-search-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      High-suitability search settings
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gradient-stratified-sampling-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gradient-stratified sampling settings
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1169,11 +1193,35 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#sampling-strategy" class="md-nav__link">
+  <a href="#mode-settings" class="md-nav__link">
     <span class="md-ellipsis">
-      Sampling strategy
+      Mode settings
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Mode settings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#high-suitability-search-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      High-suitability search settings
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gradient-stratified-sampling-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gradient-stratified sampling settings
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1249,11 +1297,13 @@
   
 
 
-<h1 id="5-priority-sites-for-survey">⑤ Priority Sites for Survey<a class="headerlink" href="#5-priority-sites-for-survey" title="Permanent link">&para;</a></h1>
-<p>The fifth tab turns a habitat-suitability raster into a <strong>field-ready list
-of candidate survey sites</strong>. There are two distinct purposes — discovering
-new populations versus validating the model — and QMaxent supports both
-with separate sampling strategies grounded in the survey-design literature.</p>
+<h1 id="5-survey-site-selection">⑤ Survey Site Selection<a class="headerlink" href="#5-survey-site-selection" title="Permanent link">&para;</a></h1>
+<p>The fifth tab, <strong>⑤ Survey Site Selection</strong> (called <em>Priority Sites for
+Survey</em> before v0.2.0), turns a habitat-suitability raster into a
+<strong>field-ready list of candidate survey sites</strong>. Field surveys usually
+have one of two purposes: looking for new populations, or checking the
+model in the field. QMaxent supports both with separate sampling
+designs grounded in the survey-design literature.</p>
 <h2 id="survey-purpose">Survey purpose<a class="headerlink" href="#survey-purpose" title="Permanent link">&para;</a></h2>
 <p>Pick one:</p>
 <table>
@@ -1266,120 +1316,208 @@ with separate sampling strategies grounded in the survey-design literature.</p>
 </thead>
 <tbody>
 <tr>
-<td><strong>Discovery</strong></td>
-<td>Find new populations in unsurveyed high-suitability areas</td>
+<td><strong>High-suitability search</strong></td>
+<td>Look for new populations in unsurveyed high-suitability areas</td>
 <td><a href="../references/">Williams et al. 2009</a></td>
 </tr>
 <tr>
-<td><strong>Model validation</strong></td>
-<td>Test whether the suitability gradient predicts presence/absence</td>
+<td><strong>Gradient-stratified sampling</strong></td>
+<td>Check the model along its suitability gradient: does observed occurrence follow the predicted suitability?</td>
 <td><a href="../references/">Rhoden, Peterman &amp; Taylor 2017</a></td>
 </tr>
 </tbody>
 </table>
-<p>The two modes ask very different questions of the same map, so they sample
-it differently:</p>
+<p>The two modes ask very different questions of the same map, so they
+sample it differently:</p>
 <ul>
-<li><strong>Discovery</strong> preferentially picks the highest-suitability cells far
-  from any known occurrence — the most informative locations for finding
-  the species where it has not been recorded yet.</li>
-<li><strong>Model validation</strong> stratifies the suitability gradient and samples
-  proportionally within strata — the design needed for an unbiased
-  presence/absence test of the model's calibration.</li>
+<li><strong>High-suitability search</strong> (formerly <em>Discovery mode</em>) samples
+  sites only from a band of high suitability, away from known
+  occurrences. These are the most promising places to find the species
+  where it has not been recorded yet.</li>
+<li><strong>Gradient-stratified sampling</strong> (formerly <em>Validation mode</em>) splits
+  the cells above a threshold into four suitability quartiles and draws
+  the same number of sites from each. Lower-suitability sites are
+  included on purpose, so the field results can show whether the
+  species is found more often where the model predicts higher
+  suitability.</li>
 </ul>
-<p><img alt="Priority Sites tab in Discovery mode after extraction" src="../images/ui/dock-5-priority-sites-discovery.png" /></p>
-<h2 id="sampling-strategy">Sampling strategy<a class="headerlink" href="#sampling-strategy" title="Permanent link">&para;</a></h2>
-<p>A second drop-down picks the within-mode sampling strategy:</p>
+<p><img alt="Survey Site Selection tab in High-suitability search mode after selection" src="../images/ui/dock-5-priority-sites-discovery.png" /></p>
+<h2 id="mode-settings">Mode settings<a class="headerlink" href="#mode-settings" title="Permanent link">&para;</a></h2>
+<p>Only the settings group of the selected mode is shown.</p>
+<h3 id="high-suitability-search-settings">High-suitability search settings<a class="headerlink" href="#high-suitability-search-settings" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>Strategy</th>
+<th>Control</th>
 <th>What it does</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>Top-N (highest first)</strong></td>
-<td>Take the top-N cells by suitability, subject to spacing constraints</td>
+<td><strong>Minimum suitability</strong></td>
+<td>Cells with suitability at or above this value form the candidate pool. It is filled in automatically as 0.9 × the maximum of the prediction raster when the raster is selected; you can type another value.</td>
 </tr>
 <tr>
-<td><strong>Threshold-stratified</strong></td>
-<td>Divide cells above the minimum suitability into N quantile bins and sample equally from each</td>
+<td><strong>Sampling order: Random</strong> (default)</td>
+<td>Draws sites at random from the candidate pool. This gives an unbiased sample within the high-suitability band.</td>
 </tr>
 <tr>
-<td><strong>Random above threshold</strong></td>
-<td>Random draw from cells above the minimum suitability</td>
+<td><strong>Sampling order: Top-N (highest first)</strong></td>
+<td>Takes the cells with the highest suitability first. Use it when you want to maximise the expected hit rate.</td>
 </tr>
 </tbody>
 </table>
-<p>Top-N is the right choice when you want to maximise hit-rate (the
-classical <em>Discovery</em> design of <a href="../references/">Williams et al. 2009</a>).
-Threshold-stratified is what
-<a href="../references/">Rhoden, Peterman &amp; Taylor 2017</a> recommend for model
-validation because it gives the test the statistical power to detect a
-declining presence-rate across the suitability gradient.</p>
+<h3 id="gradient-stratified-sampling-settings">Gradient-stratified sampling settings<a class="headerlink" href="#gradient-stratified-sampling-settings" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Threshold method</strong></td>
+<td>Sets the lower bound of the sampling frame: <strong>10<sup>th</sup> percentile training presence (T10; Pearson 2007)</strong> (default), <strong>Minimum training presence (MTP; Pearson 2007)</strong>, <strong>Maximum sum of sensitivity + specificity (MaxSSS; Liu 2013)</strong>, or <strong>Custom value...</strong></td>
+</tr>
+<tr>
+<td><strong>Computed threshold value</strong></td>
+<td>The threshold computed from the training data for the chosen method (editable only for <strong>Custom value...</strong>)</td>
+</tr>
+</tbody>
+</table>
+<p>The threshold <strong>only defines the sampling frame</strong>. The cells above it
+are split into four quartiles of suitability, and the same number of
+sites is drawn from each quartile
+(<a href="../references/">Rhoden, Peterman &amp; Taylor 2017</a>). No binary
+suitable/unsuitable map is produced, and the threshold is not a claim
+that cells below it are unsuitable. Each site carries its quartile in
+the <code>quartile</code> field (0 = lowest band above the threshold, 3 = highest),
+and the layer is styled by quartile. In High-suitability search the field
+is always 0.</p>
 <h2 id="spacing-constraints">Spacing constraints<a class="headerlink" href="#spacing-constraints" title="Permanent link">&para;</a></h2>
-<p>Two distance fields define the spatial structure of the sampled set:</p>
+<p>The <strong>Sampling strategy</strong> group is shared by both modes. Besides the
+<strong>Number of survey sites</strong> (default 20), two distance fields define the
+spatial structure of the sampled set:</p>
 <ul>
-<li><strong>Minimum distance from existing presences</strong> — keeps candidates away
-  from known occurrences. Set to the species' detection radius
-  (e.g. 1 km for a calling fairy pitta, 200 m for a sessile slug). This
-  prevents the algorithm from re-sampling territory already covered by
-  earlier surveys.</li>
-<li><strong>Minimum distance between candidates</strong> — keeps the candidate set
-  spatially independent. A typical value is half the <em>minimum distance
-  from existing presences</em>. Whittaker-style <strong>spatially balanced</strong>
-  sampling, in the sense of <a href="../references/">Stevens &amp; Olsen 2004</a>, is
-  approximated by setting this value to the median nearest-neighbour
-  distance you want in the final set.</li>
+<li><strong>Min. distance from existing presences (m)</strong> (default 1,000) keeps
+  candidates away from known occurrences. Set it to the species'
+  detection radius (e.g. 1 km for a calling fairy pitta, 200 m for a
+  slug). This prevents the algorithm from re-sampling territory
+  already covered by earlier surveys.</li>
+<li><strong>Min. distance between sites (m)</strong> (default 500) keeps the
+  candidate set spatially independent. A typical value is half the
+  distance from existing presences. <strong>Spatially balanced</strong> sampling, in
+  the sense of <a href="../references/">Stevens &amp; Olsen 2004</a>, is approximated by
+  setting this value to the nearest-neighbour distance you want in the
+  final set.</li>
 </ul>
-<p>QMaxent enforces both constraints exactly — candidates are dropped, not
+<p>QMaxent enforces both constraints exactly: candidates are dropped, not
 moved, when a constraint is violated, so the surviving set is always
-within-spec.</p>
+within the specification. If the candidate pool cannot supply the
+requested number of sites under these constraints, QMaxent returns the
+sites it found and reports the actual count.</p>
 <h2 id="reverse-geocoding">Reverse geocoding<a class="headerlink" href="#reverse-geocoding" title="Permanent link">&para;</a></h2>
-<p>When the <strong>Reverse-geocode addresses</strong> checkbox is on, QMaxent calls the
-<a href="https://nominatim.org">Nominatim</a> API for each candidate point and adds
-columns for <code>country</code>, <code>province</code>, <code>city_county</code>, <code>district</code>, and a
-human-readable <code>display_name</code>. This makes the resulting GeoPackage
-directly usable for permit applications and field-team coordination —
-particularly valuable in jurisdictions where survey access requires
-prior administrative notification.</p>
-<p>The geocoder is rate-limited to one request per second to comply with
-Nominatim's public-server fair-use policy; for large candidate sets
-(&gt;1,000 points) consider running the extractor in batches or pointing
-QMaxent at a self-hosted Nominatim instance via the <strong>Advanced</strong> options.</p>
-<p><img alt="Priority Sites GeoPackage attribute table with reverse-geocoded addresses" src="../images/results/attribute-table-priority-sites.png" /></p>
-<h2 id="outputs">Outputs<a class="headerlink" href="#outputs" title="Permanent link">&para;</a></h2>
-<p>After clicking <strong>▶ Extract Priority Sites</strong>, two outputs are produced:</p>
+<p>When <strong>Add administrative address (OpenStreetMap)</strong> is ticked, QMaxent
+calls the <a href="https://nominatim.org">Nominatim</a> service of OpenStreetMap
+for each site. No API key is needed. Reverse geocoding works worldwide.
+It adds four generic OpenStreetMap address levels and the full address:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Address level</th>
+<th>Examples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>country</code></td>
+<td>Country</td>
+<td>Dominican Republic, South Korea</td>
+</tr>
+<tr>
+<td><code>province</code></td>
+<td>First-level administrative division</td>
+<td>a Dominican <em>provincia</em>, a Korean province, a US state</td>
+</tr>
+<tr>
+<td><code>city_county</code></td>
+<td>Municipality</td>
+<td>a Dominican <em>municipio</em>, a Korean city or county</td>
+</tr>
+<tr>
+<td><code>district</code></td>
+<td>Locality</td>
+<td>a suburb, village, neighbourhood or hamlet</td>
+</tr>
+<tr>
+<td><code>display_name</code></td>
+<td>Full address text returned by Nominatim</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>A level that OpenStreetMap does not hold for a location is left blank.</p>
+<p><strong>Address language</strong> sets the language of the names:</p>
 <ul>
-<li><strong><code>priority_sites.gpkg</code></strong> — a GeoPackage layer auto-loaded into QGIS
-  and styled with red point symbols.</li>
-<li><strong>A <code>Priority sites</code> sheet</strong> appended to the existing <code>results.xlsx</code>
-  workbook, with the same columns as the GeoPackage attribute table.</li>
+<li><strong>Local names</strong> (default): each country's own names, for example
+  Spanish names in the Dominican Republic and Korean names in Korea.</li>
+<li><strong>QGIS interface language</strong>: the language of your QGIS interface,
+  with English as a fallback.</li>
+<li><strong>English</strong>: English names where OpenStreetMap has them.</li>
 </ul>
-<p><img alt="Priority Sites tab after extraction with the candidates rendered on the QGIS canvas" src="../images/ui/dock-5-priority-sites-extracted.png" /></p>
-<p>The candidates are immediately ready for export to mobile-GIS apps such
+<p>The resulting GeoPackage is directly usable for permit applications and
+field-team coordination, which matters in jurisdictions where survey
+access requires prior notice to the local administration.</p>
+<p>Requests are limited to one per second to comply with Nominatim's
+fair-use policy, so 20 sites take about 20 seconds. For 30 or more
+sites QMaxent first shows the expected time; for large sets, untick
+the option or select the sites in smaller batches. Results carry the
+attribution © OpenStreetMap contributors.</p>
+<p><img alt="Survey sites GeoPackage attribute table with reverse-geocoded addresses" src="../images/results/attribute-table-priority-sites.png" /></p>
+<h2 id="outputs">Outputs<a class="headerlink" href="#outputs" title="Permanent link">&para;</a></h2>
+<p>After clicking <strong>▶ Select Survey Sites</strong>, QMaxent writes:</p>
+<ul>
+<li><strong><code>survey_sites.gpkg</code></strong> (default name, in the QMaxent output folder):
+  a GeoPackage point layer with the fields <code>id</code>, <code>lat</code>, <code>lon</code>,
+  <code>suitability</code>, <code>quartile</code> and the address fields above. With <strong>Auto-add
+  to QGIS project</strong> ticked, it is added to the map as the layer
+  <strong>Survey sites</strong>.</li>
+</ul>
+<p>If the output GeoPackage already exists, it is replaced, and any layer
+of the current project that reads it is removed first. If another
+program holds the file open, QMaxent writes to the next free name
+instead, such as <code>survey_sites_1.gpkg</code>, and reports the name it used.</p>
+<p>The training thresholds (MTP, T10, MaxSSS) that Gradient-stratified
+sampling can use are also recorded in the model card
+(<code>&lt;model&gt;_model_card.json</code>, see <a href="../saving-models/">Saving and reusing models</a>).</p>
+<p><img alt="Survey Site Selection tab after selection with the sites rendered on the QGIS canvas" src="../images/ui/dock-5-priority-sites-extracted.png" /></p>
+<p>The sites are immediately ready for export to mobile-GIS apps such
 as <strong>QField</strong>, <strong>Mergin Maps</strong>, or <strong>Locus Map</strong> for offline field use.</p>
 <h2 id="choosing-parameter-values">Choosing parameter values<a class="headerlink" href="#choosing-parameter-values" title="Permanent link">&para;</a></h2>
-<p>Some practical defaults from the literature:</p>
+<p>Some practical starting points:</p>
 <ul>
-<li><strong>Number of candidates</strong>: 20–30 per species per season is a typical
+<li><strong>Number of survey sites</strong>: 20–30 per species per season is a typical
   field-survey budget for a single team
   (<a href="../references/">Robinson et al. 2018</a>).</li>
-<li><strong>Minimum distance from existing presences</strong>: the species' typical
+<li><strong>Min. distance from existing presences</strong>: the species' typical
   home-range diameter is a good starting point. Too small and you
   re-sample known sites; too large and you push candidates into
   marginal habitat.</li>
-<li><strong>Minimum suitability</strong>: 0.5 for a balanced search; 0.7+ for a
-  focused high-confidence survey; lower (0.2–0.3) for <em>negative
-  controls</em> in a model-validation study.</li>
+<li><strong>Minimum suitability</strong> (High-suitability search): the automatic
+  value (0.9 × raster maximum) gives a focused search; lower it to widen
+  the candidate pool when too few sites satisfy the spacing rules.</li>
+<li><strong>Threshold method</strong> (Gradient-stratified sampling): T10 or MTP give a
+  wide frame that includes lower-suitability cells; MaxSSS gives a
+  narrower one.</li>
 </ul>
 <h2 id="worked-applications">Worked applications<a class="headerlink" href="#worked-applications" title="Permanent link">&para;</a></h2>
 <ul>
-<li>The <a href="../examples/bradypus/">Bradypus example</a> walks through a Discovery
-  extraction at landscape scale.</li>
-<li>The <a href="../examples/pitta-nympha/">Pitta nympha example</a> shows the same
-  workflow at municipality scale, with reverse-geocoded Korean
+<li>The <a href="../examples/bradypus/">Bradypus example</a> walks through both modes
+  at continental scale.</li>
+<li>The <a href="../examples/pitta-nympha/">Pitta nympha example</a> shows a
+  High-suitability search at municipality scale, with reverse-geocoded
   administrative addresses ready for field permits.</li>
 </ul>
 <h2 id="next">Next<a class="headerlink" href="#next" title="Permanent link">&para;</a></h2>

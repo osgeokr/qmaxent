@@ -716,7 +716,7 @@
         
   
   <span class="md-ellipsis">
-    ⑤ Priority Sites for Survey
+    ⑤ Survey Site Selection
   </span>
   
 
@@ -1013,9 +1013,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-maxnet-auto-rule-for-feature-selection" class="md-nav__link">
+  <a href="#the-maxnet-default-rule-for-feature-selection" class="md-nav__link">
     <span class="md-ellipsis">
-      The maxnet auto-rule for feature selection
+      The maxnet default rule for feature selection
     </span>
   </a>
   
@@ -1043,6 +1043,15 @@
   <a href="#jackknife-variable-importance" class="md-nav__link">
     <span class="md-ellipsis">
       Jackknife variable importance
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#permutation-importance-and-its-evaluation-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Permutation importance and its evaluation data
     </span>
   </a>
   
@@ -1187,9 +1196,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-maxnet-auto-rule-for-feature-selection" class="md-nav__link">
+  <a href="#the-maxnet-default-rule-for-feature-selection" class="md-nav__link">
     <span class="md-ellipsis">
-      The maxnet auto-rule for feature selection
+      The maxnet default rule for feature selection
     </span>
   </a>
   
@@ -1217,6 +1226,15 @@
   <a href="#jackknife-variable-importance" class="md-nav__link">
     <span class="md-ellipsis">
       Jackknife variable importance
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#permutation-importance-and-its-evaluation-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Permutation importance and its evaluation data
     </span>
   </a>
   
@@ -1305,43 +1323,56 @@ elapid's implementation exploits to delegate the optimisation to
 scikit-learn's logistic-regression routines
 (<a href="../references/">Anderson 2023</a>;
 <a href="../references/">Pedregosa et al. 2011</a>).</p>
-<h2 id="the-maxnet-auto-rule-for-feature-selection">The maxnet auto-rule for feature selection<a class="headerlink" href="#the-maxnet-auto-rule-for-feature-selection" title="Permanent link">&para;</a></h2>
+<h2 id="the-maxnet-default-rule-for-feature-selection">The maxnet default rule for feature selection<a class="headerlink" href="#the-maxnet-default-rule-for-feature-selection" title="Permanent link">&para;</a></h2>
 <p>The Maxent feature classes (Linear, Quadratic, Product, Hinge, Threshold)
-trade off <strong>flexibility</strong> against <strong>over-fit risk</strong>. The
-<a href="../references/">Phillips &amp; Dudík 2008</a> benchmark on hundreds of species
-established a sample-size-based rule that has held up across
-benchmarks since:</p>
+trade off <strong>flexibility</strong> against <strong>over-fit risk</strong>. maxent.jar and its
+R counterpart maxnet both choose default feature classes from the number
+of presence points. QMaxent's <strong>Auto (maxnet default rule by sample size)</strong>
+mode applies the maxnet default
+(<a href="../references/">Phillips et al. 2017</a>;
+<code>maxnet.formula(classes = "default")</code>):</p>
 <table>
 <thead>
 <tr>
-<th>Sample size</th>
-<th>Allowed features</th>
+<th>Presences</th>
+<th>Feature classes</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>≤ 10</td>
+<td>fewer than 10</td>
 <td>L</td>
 </tr>
 <tr>
-<td>≤ 30</td>
+<td>10 to 14</td>
 <td>L, Q</td>
 </tr>
 <tr>
-<td>≤ 80</td>
+<td>15 to 79</td>
 <td>L, Q, H</td>
 </tr>
 <tr>
-<td>&gt; 80</td>
-<td>L, Q, P, H, T</td>
+<td>80 or more</td>
+<td>L, Q, P, H</td>
 </tr>
 </tbody>
 </table>
-<p>QMaxent's <strong>Auto</strong> mode applies this rule directly. The benchmark
-underlying the rule is the most extensively replicated tuning
-recommendation in the Maxent literature; deviating from it without an
-ENMeval-style (<a href="../references/">Muscarella et al. 2014</a>) hyperparameter
-search is hard to defend in a publication.</p>
+<p>Unlike the maxent.jar rule, which QMaxent used up to v0.1.x, the maxnet
+default never adds threshold features. This matters for QMaxent's
+engine: elapid fits the model with scikit-learn, which applies one
+regularization strength to all features, whereas maxent.jar regularizes
+each feature class separately. Under a single penalty the many
+step-shaped threshold features overfit. On the Bradypus benchmark
+(random 10-fold CV), the test AUC was 0.873 with LQPHT and 0.890 with
+LQPH, against 0.895 for maxent.jar with LQPHT. Threshold features are
+still available under <strong>Manual selection</strong>.</p>
+<p>The rule is a default, not a guarantee of the best model. The most
+suitable feature classes and regularization depend on the data
+(<a href="../references/">Merow, Smith &amp; Silander 2013</a>;
+<a href="../references/">Radosavljevic &amp; Anderson 2014</a>). For a publication,
+compare alternatives with <strong>Manual selection</strong> and spatial
+cross-validation, or with a model-selection tool such as ENMeval
+(<a href="../references/">Muscarella et al. 2014</a>).</p>
 <h2 id="why-spatial-cross-validation-matters">Why spatial cross-validation matters<a class="headerlink" href="#why-spatial-cross-validation-matters" title="Permanent link">&para;</a></h2>
 <p>Random K-Fold CV gives over-optimistic AUCs on spatial data because
 random folds are likely to contain points geographically <em>adjacent to</em>
@@ -1379,6 +1410,22 @@ without-train, without-test) plus the test-side drop column, sorted by
 descending drop so the most uniquely-informative variables are at the
 top. This is the format used in the published Maxent literature since
 Phillips et al. 2006.</p>
+<h2 id="permutation-importance-and-its-evaluation-data">Permutation importance and its evaluation data<a class="headerlink" href="#permutation-importance-and-its-evaluation-data" title="Permanent link">&para;</a></h2>
+<p>Permutation importance shuffles one variable at a time and measures the
+drop in AUC. The result depends on the data the AUC is computed on, so
+QMaxent lets you choose it (<strong>Evaluate on</strong> on the ② Parameters tab):</p>
+<ul>
+<li><strong>Training data (maxent.jar convention)</strong> (default): the full model on
+  all training presences and background points. This is how maxent.jar
+  computes permutation importance, so rankings can be compared directly
+  with maxent.jar studies.</li>
+<li><strong>Held-out CV test folds (all folds pooled)</strong>: each fold model on its
+  own test fold, with the results of all folds pooled. This measures how
+  much predictive performance at new locations depends on each variable.
+  It needs K-Fold or Checkerboard cross-validation.</li>
+</ul>
+<p>Up to v0.1.x QMaxent used the test data of the first CV fold only,
+which made rankings unstable and not comparable with maxent.jar.</p>
 <h2 id="threshold-methods-mtp-t10-maxsss">Threshold methods (MTP / T10 / MaxSSS)<a class="headerlink" href="#threshold-methods-mtp-t10-maxsss" title="Permanent link">&para;</a></h2>
 <p>When you need a binary suitable/unsuitable map (e.g. for reserve-design
 applications), you must choose a threshold of the cloglog output. The
@@ -1439,7 +1486,10 @@ codes the model has not seen during training:</p>
 <li><strong>Java MaxEnt</strong> silently maps unseen codes to a random class,
   producing arbitrary suitability values at affected cells.</li>
 <li><strong>QMaxent</strong> detects unseen codes via the unified preflight dialog
-  and <strong>auto-masks them to NoData</strong> rather than extrapolating.</li>
+  and <strong>auto-masks them to NoData</strong> rather than extrapolating. If an
+  unseen class still reaches the model, the projection does not fail
+  (since v0.2.0): those cells get no categorical contribution, as in
+  maxent.jar.</li>
 </ul>
 <p>This is the recommended practice
 (<a href="../references/">Elith, Kearney &amp; Phillips 2010</a>) — extrapolation

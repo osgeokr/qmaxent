@@ -10,15 +10,17 @@ QMaxent 학습 실행은 매번 `.pkl` 모델 옆에 **다중 시트 XLSX 워크
 학습 + 공간 투영 + `Save analysis charts as PNG` 체크박스가 켜진 실행
 직후 출력 폴더는 다음과 같습니다:
 
-![QMaxent 출력 폴더 — model.pkl, prediction.tif, results.xlsx, priority_sites.gpkg, 그리고 PNG로 저장된 세 분석 차트](images/results/output-folder.png)
+![QMaxent 출력 폴더: model.pkl, prediction.tif, results.xlsx, survey_sites.gpkg, 그리고 PNG로 저장된 분석 차트](images/results/output-folder.png)
 
 | 파일 | 생성자 | 용도 |
 |---|---|---|
 | `model.pkl` | 학습 | *Load existing model (.pkl)…* 로 나중에 재로드 |
+| `model_model_card.json` | 학습 | 설정, 자료 요약, 성능, 임계값, 변수 중요도를 담은 모델 카드 ([모델 저장 및 재사용](saving-models.md)) |
+| `model_coefficients.csv` | 학습 | 모든 Maxent 피처의 유형, 변수, 기준값(knot), 계수 |
 | `prediction.tif` | 공간 투영 | 서식 적합도 래스터 |
 | `prediction.tif.aux` | 공간 투영 | QGIS 보조 메타데이터 |
 | `results.xlsx` | 학습 | 다중 시트 보충 표 |
-| `priority_sites.gpkg` | Priority Sites 탭 | 현장 가능 후보 지점 |
+| `survey_sites.gpkg` | 조사지점 선정 탭 | 현장 조사지점 |
 | `prediction_roc.png` | 공간 투영 | ROC 곡선 (300 dpi) |
 | `prediction_jackknife.png` | 공간 투영 | Jackknife 막대 (300 dpi) |
 | `prediction_response_curves.png` | 공간 투영 | 모든 반응 곡선 (300 dpi) |
@@ -71,15 +73,19 @@ without-test), 그리고 기여 크기를 스캔하기 쉽게 만드는 "Train A
 *Drop = full-model AUC − without-variable AUC; 큰 drop은 변수의 고유한
 기여가 다른 변수에서 회복하기 어려움을 가리킵니다.*
 
-### 선택 — Table 5 — 우선조사 후보지
+### 조사지점 선정 임계값과 조사지점 목록
 
-**Priority Sites for Survey** 탭을 실행했다면 같은 워크북에 다섯 번째
-시트가 추가되며 후보 위치당 한 행을 가집니다. 컬럼은 `lat`, `lon`,
-`suitability`, 그리고 — 역지오코딩이 활성화됐을 때 — `country`,
-`province`, `city_county`, `district`, 사람이 읽을 수 있는 `display_name`.
-형식은 QMaxent가 GeoPackage 안에서 사용하는 것과 동일:
+워크북의 `Survey Sites` 시트는 **⑤ 조사지점 선정** 탭의 적합도 구간별 층화 표집에
+쓰는 임계값(MTP, T10, MaxSSS)을 학습 자료에서 계산해 기록합니다.
 
-![Priority Sites 속성 테이블 — 한국어 역지오코딩된 행정 주소를 가진 20개 후보](images/results/attribute-table-priority-sites.png)
+조사지점 목록 자체는 `survey_sites.gpkg` 에 저장됩니다. 조사지점당 한 행이며
+컬럼은 `id`, `lat`, `lon`, `suitability`, `quartile`, 그리고 역지오코딩을 켰을 때
+`country`, `province`, `city_county`, `district`, 사람이 읽을 수 있는
+`display_name` 입니다. 주소 필드는 OpenStreetMap의 일반 행정 단위이며, 기본으로
+현지 이름(각 나라의 언어)으로 기록됩니다
+([⑤ 조사지점 선정](priority-sites.md) 참고):
+
+![조사지점 속성 테이블: 역지오코딩된 행정 주소를 가진 20개 조사지점](images/results/attribute-table-priority-sites.png)
 
 ## 내보내기 커스터마이즈
 

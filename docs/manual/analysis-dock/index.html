@@ -815,7 +815,7 @@
         
   
   <span class="md-ellipsis">
-    ⑤ Priority Sites for Survey
+    ⑤ Survey Site Selection
   </span>
   
 
@@ -1237,7 +1237,7 @@ re-docked using the standard QGIS panel handles.</p>
 <tr>
 <td>①</td>
 <td><strong>Data</strong></td>
-<td>Pick presence layer; register environmental rasters; pre-flight raster grid check</td>
+<td>Pick or load presence points (point file or CSV); register environmental rasters; pre-flight raster grid and CRS check</td>
 <td><a href="../data-tab/">① Data tab</a></td>
 </tr>
 <tr>
@@ -1260,9 +1260,9 @@ re-docked using the standard QGIS panel handles.</p>
 </tr>
 <tr>
 <td>⑤</td>
-<td><strong>Priority Sites for Survey</strong></td>
-<td>Turn the prediction into field-ready candidate points</td>
-<td><a href="../priority-sites/">⑤ Priority Sites</a></td>
+<td><strong>Survey Site Selection</strong></td>
+<td>Turn the prediction into field-ready candidate survey sites</td>
+<td><a href="../priority-sites/">⑤ Survey Site Selection</a></td>
 </tr>
 </tbody>
 </table>
@@ -1284,12 +1284,12 @@ re-pick layers each time.</p>
 <ul>
 <li><strong>▶ Run Maxent</strong> — start a training run</li>
 <li><strong>▶ Run Spatial Projection</strong> — apply the trained model across all rasters</li>
-<li><strong>▶ Extract Priority Sites</strong> — sample candidate survey locations from
-  the prediction</li>
+<li><strong>▶ Select Survey Sites</strong>: sample candidate survey sites from the
+  prediction</li>
 </ul>
 <p>These buttons are <strong>enabled only when their prerequisites are met</strong>: e.g.
-projection becomes available only after a model has been trained, and the
-priority-sites extractor requires a projection raster on disk.</p>
+projection becomes available only after a model has been trained, and
+survey site selection requires a projection raster on disk.</p>
 <h2 id="what-this-means-for-your-workflow">What this means for your workflow<a class="headerlink" href="#what-this-means-for-your-workflow" title="Permanent link">&para;</a></h2>
 <p>The dock's design encodes the canonical Maxent workflow described in
 <a href="../references/">Elith et al. 2011</a>: assemble inputs → choose

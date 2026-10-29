@@ -736,6 +736,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#permutation-importance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Permutation importance
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#output-paths" class="md-nav__link">
     <span class="md-ellipsis">
       Output paths
@@ -824,7 +833,7 @@
         
   
   <span class="md-ellipsis">
-    ⑤ Priority Sites for Survey
+    ⑤ Survey Site Selection
   </span>
   
 
@@ -1187,6 +1196,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#permutation-importance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Permutation importance
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#output-paths" class="md-nav__link">
     <span class="md-ellipsis">
       Output paths
@@ -1281,22 +1299,69 @@ of suitability to each environmental variable
 </table>
 <p>QMaxent offers two modes:</p>
 <ul>
-<li><strong>Auto</strong> (default) — applies the
-  <a href="../references/">Phillips &amp; Dudík 2008</a> sample-size rule used by maxnet:
-  <em>L only</em> for ≤10 presences, <em>L+Q</em> for ≤30, <em>L+Q+H</em> for ≤80, and <em>L+Q+P+H+T</em>
-  above 80. This is the <strong>single most extensively benchmarked rule in the
-  Maxent literature</strong> and is the safe default.</li>
-<li><strong>Manual</strong> — pick any subset of LQPHT explicitly. Useful only when you
-  are reproducing a published study that fixed a particular feature
-  combination (e.g. the <a href="../examples/pitta-nympha/">Pitta nympha example</a>
-  fixes feature classes to <strong>LQH</strong> to match Lee et al. 2025).</li>
+<li>
+<p><strong>Auto (maxnet default rule by sample size)</strong> (default): uses the
+  default feature classes of maxnet, the R implementation of Maxent by
+  its authors (<a href="../references/">Phillips et al. 2017</a>;
+  <code>maxnet.formula(classes = "default")</code>), based on the number of
+  presence points:</p>
+<table>
+<thead>
+<tr>
+<th>Presences</th>
+<th>Feature classes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>fewer than 10</td>
+<td>L</td>
+</tr>
+<tr>
+<td>10 to 14</td>
+<td>LQ</td>
+</tr>
+<tr>
+<td>15 to 79</td>
+<td>LQH</td>
+</tr>
+<tr>
+<td>80 or more</td>
+<td>LQPH</td>
+</tr>
+</tbody>
+</table>
+<p>Threshold features are not added automatically.
+- <strong>Manual selection</strong>: tick any subset of LQPHT. The boxes start with
+  L, Q, P and H ticked and Threshold unticked. Use this to compare
+  alternatives or to reproduce a published study that fixed a particular
+  feature combination (e.g. the <a href="../examples/pitta-nympha/">Pitta nympha example</a>
+  fixes feature classes to <strong>LQH</strong> to match Lee et al. 2025).</p>
+</li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Why Auto no longer adds threshold features</p>
+<p>Up to v0.1.x, Auto followed the maxent.jar rule and added threshold
+features (LQPHT) for 80 or more presences. With elapid's scikit-learn
+backend, every feature gets the same regularization strength, while
+maxent.jar regularizes each feature class separately. Threshold
+features then overfit. On the Bradypus benchmark (random 10-fold CV),
+the test AUC was 0.873 with LQPHT and 0.890 with LQPH; maxent.jar with
+LQPHT reached 0.895. v0.2.0 therefore follows the maxnet default,
+which does not use threshold features. They remain available under
+<strong>Manual selection</strong>.</p>
+</div>
 <div class="admonition tip">
-<p class="admonition-title">When in doubt, leave it on Auto</p>
-<p>Repeatedly tuning feature classes without spatially-blocked CV is the
-primary source of optimistic AUCs flagged by
-<a href="../references/">Roberts et al. 2017</a>. The auto rule sidesteps that
-failure mode entirely.</p>
+<p class="admonition-title">Auto is a default, not the best model</p>
+<p>The rule gives a reasonable starting point, but the most suitable
+feature classes depend on the data
+(<a href="../references/">Merow, Smith &amp; Silander 2013</a>;
+<a href="../references/">Radosavljevic &amp; Anderson 2014</a>). To choose them,
+compare alternatives with <strong>Manual selection</strong> and spatial
+cross-validation, or use a model-selection tool such as ENMeval
+(<a href="../references/">Muscarella et al. 2014</a>). Be aware that repeatedly
+tuning settings against random (non-spatial) CV gives optimistic AUCs
+(<a href="../references/">Roberts et al. 2017</a>).</p>
 </div>
 <h2 id="regularization-multiplier">Regularization multiplier<a class="headerlink" href="#regularization-multiplier" title="Permanent link">&para;</a></h2>
 <p>Maxent fits a <em>regularized</em> maximum-entropy distribution — the regularization
@@ -1365,12 +1430,50 @@ Bradypus dataset (9 variables, 116 presences) this adds about 30 seconds.</p>
 <a href="../references/">Phillips, Anderson &amp; Schapire 2006</a> reading: "with-only"
 bars show univariate signal; "without" bars show how dependent the full
 model is on each variable.</p>
+<h2 id="permutation-importance">Permutation importance<a class="headerlink" href="#permutation-importance" title="Permanent link">&para;</a></h2>
+<p>When <strong>Permutation importance</strong> is ticked, QMaxent shuffles the values of
+each variable in turn and measures the drop in AUC (scikit-learn
+<code>permutation_importance</code>, <strong>Repeats</strong> shuffles per variable, default 10).
+The drops are reported as a percentage of the total, the convention of
+maxent.jar. The <strong>Evaluate on</strong> drop-down sets which data the AUC drop is
+measured on:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>What is evaluated</th>
+<th>Use it to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Training data (maxent.jar convention)</strong> (default)</td>
+<td>The full model on all training presences and background points, as maxent.jar does</td>
+<td>Compare variable rankings with maxent.jar studies</td>
+</tr>
+<tr>
+<td><strong>Held-out CV test folds (all folds pooled)</strong></td>
+<td>Each cross-validation fold model on its own test fold; the results of all folds are pooled</td>
+<td>See how much predictive performance at new locations depends on each variable</td>
+</tr>
+</tbody>
+</table>
+<p>The held-out option needs <strong>Geographic K-Fold</strong>, <strong>Random K-Fold</strong> or
+<strong>Checkerboard</strong> cross-validation. With no CV or with Buffered LOO, QMaxent
+falls back to the training data and says so in the log. (v0.1.x used only
+the first CV fold, which made rankings unstable.) The training log and
+the model card record which option was used.</p>
+<p>Permutation importance is fast (no refitting), but it can underestimate
+the importance of variables that are correlated with others. Read it
+together with the jackknife.</p>
 <h2 id="output-paths">Output paths<a class="headerlink" href="#output-paths" title="Permanent link">&para;</a></h2>
 <p>Two file paths default to a <code>qmaxent_output/</code> subdirectory of the current
 QGIS project:</p>
 <ul>
 <li><strong>Model file (.pkl)</strong> — the serialised trained model, reloadable from
-  the Data tab. See <a href="../saving-models/">Saving and reusing models</a> for the
+  the Data tab. QMaxent also writes <code>&lt;model&gt;_model_card.json</code> and
+  <code>&lt;model&gt;_coefficients.csv</code> next to it. See
+  <a href="../saving-models/">Saving and reusing models</a> for these files and the
   security note on Python pickle files.</li>
 <li><strong>Results workbook (.xlsx)</strong> — multi-sheet supplementary table. See
   <a href="../exporting-results/">Exporting results</a> for the sheet-by-sheet layout.</li>
@@ -1380,9 +1483,13 @@ in memory for the rest of the session even when not saved to disk.</p>
 <h2 id="advanced-options">Advanced options<a class="headerlink" href="#advanced-options" title="Permanent link">&para;</a></h2>
 <p>A collapsible <strong>Advanced</strong> section exposes:</p>
 <ul>
-<li><strong>Background sample seed</strong> — separate from the CV seed, this fixes the
-  pseudo-random draw of background points so the same study is reproducible
-  even when the user changes the CV scheme.</li>
+<li><strong>Fix random seed</strong> (default on, value 42): one seed for every random
+  step of a run, that is CV fold partitions, hold-out splits, permutation
+  shuffles, survey-site shuffling and, since v0.2.0, the background-point
+  draw (v0.1.x drew a different background on every run). Background
+  points are drawn from the first raster in the ① Data list, so keep the
+  raster order the same to reproduce a run exactly. The seed value is
+  written to the Overview sheet of <code>results.xlsx</code> and to the model card.</li>
 <li><strong>Down-weight spatially clustered points</strong> — applies the
   <a href="../references/">Phillips et al. 2009</a> sample-bias correction by giving
   duplicates and very-near-duplicate occurrences less weight in the

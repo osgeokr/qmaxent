@@ -820,13 +820,22 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      학습에 없던 범주 코드
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       메모리와 성능
     </span>
@@ -854,7 +863,7 @@
         
   
   <span class="md-ellipsis">
-    ⑤ 우선조사 후보지
+    ⑤ 조사지점 선정
   </span>
   
 
@@ -1259,13 +1268,22 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      학습에 없던 범주 코드
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       메모리와 성능
     </span>
@@ -1292,7 +1310,7 @@
 
 
 <h1 id="4">④ 결과 탭<a class="headerlink" href="#4" title="Permanent link">&para;</a></h1>
-<p>성공적인 실행 후 결과 탭의 세 하위 탭이 활성화됩니다:</p>
+<p>성공적인 실행 후 결과 탭의 하위 탭이 활성화됩니다:</p>
 <table>
 <thead>
 <tr>
@@ -1308,6 +1326,10 @@
 <tr>
 <td><strong>Jackknife Importance</strong></td>
 <td>어떤 변수가 가장 중요한지, ROC와 함께</td>
+</tr>
+<tr>
+<td><strong>Permutation Importance</strong></td>
+<td>변수 값을 섞었을 때의 AUC 하락 (평가 자료는 <a href="../parameters-tab/">② 파라미터 탭</a>에서 선택)</td>
 </tr>
 <tr>
 <td><strong>Spatial Projection</strong></td>
@@ -1400,7 +1422,14 @@
 <p>체크하면 QMaxent가 Response Curves, ROC, Jackknife 그래프의 고해상도 PNG 사본도
 GeoTIFF 옆에 작성합니다. 이 그림들은 발표 가능한 수준이며 본 탭에 보이는 것과
 일치합니다 — 원고 그림 직접 붙여넣기용 크기(300 dpi)로 저장됩니다.</p>
-<h2 id="_2">메모리와 성능<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<h3 id="_2">학습에 없던 범주 코드<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
+<p>범주형 래스터에 학습 자료(출현점과 배경점)에 없던 범주 코드가 있어도 공간 예측은
+멈추지 않습니다. 예측 전 사전 점검이 그런 코드를 찾으면 안내창으로 알리고 해당
+셀을 NoData(투명)로 표시합니다. 사전 점검에서 걸러지지 않은 경우에도 예측은
+계속되며, 그 셀은 범주 기여가 없는 것으로 계산됩니다. maxent.jar가 학습 자료가
+없는 범주를 다루는 방식과 같습니다. v0.1.x에서는 이런 코드 때문에 예측 전체가
+실패할 수 있었습니다.</p>
+<h2 id="_3">메모리와 성능<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
 <p>공간 투영은 각 래스터 셀을 셀 단위로 읽어 모델을 적용합니다. 매우 큰 래스터(30 m
 해상도의 대륙 규모)는 투영 단계가 실행 시간을 지배합니다. 두 가지 팁:</p>
 <ul>
@@ -1462,13 +1491,13 @@ GeoTIFF 옆에 작성합니다. 이 그림들은 발표 가능한 수준이며 �
         
         
           
-          <a href="../priority-sites/" class="md-footer__link md-footer__link--next" aria-label="다음: ⑤ 우선조사 후보지">
+          <a href="../priority-sites/" class="md-footer__link md-footer__link--next" aria-label="다음: ⑤ 조사지점 선정">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 다음
               </span>
               <div class="md-ellipsis">
-                ⑤ 우선조사 후보지
+                ⑤ 조사지점 선정
               </div>
             </div>
             <div class="md-footer__button md-icon">

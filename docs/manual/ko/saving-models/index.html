@@ -721,7 +721,7 @@
         
   
   <span class="md-ellipsis">
-    ⑤ 우선조사 후보지
+    ⑤ 조사지점 선정
   </span>
   
 
@@ -787,6 +787,15 @@
   <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       학습된 모델 저장
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v020" class="md-nav__link">
+    <span class="md-ellipsis">
+      모델 카드와 계수표 (v0.2.0)
     </span>
   </a>
   
@@ -1151,6 +1160,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#v020" class="md-nav__link">
+    <span class="md-ellipsis">
+      모델 카드와 계수표 (v0.2.0)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       저장된 모델 재로드
@@ -1234,6 +1252,31 @@ QMaxent로 발표한 결과의 장기적 재현성에 필수적입니다.</p>
 공유하거나 보충자료로 발표할 때 <code>results.xlsx</code>와 함께 배포합니다 —
 <a href="../references/">Araújo et al. 2019</a>가 발표된 SDM의 최소 재현성
 단위로 인용한 파일 쌍입니다.</p>
+<h2 id="v020">모델 카드와 계수표 (v0.2.0)<a class="headerlink" href="#v020" title="Permanent link">&para;</a></h2>
+<p><code>.pkl</code> 은 Python에서만 열 수 있고 신뢰할 수 있는 파일만 열어야 하므로, QMaxent는
+같은 폴더에 사람이 읽을 수 있는 두 파일을 함께 저장합니다. 파일 이름은 모델 파일
+이름을 따릅니다(<code>model.pkl</code> 이면 <code>model_model_card.json</code>, <code>model_coefficients.csv</code>).</p>
+<table>
+<thead>
+<tr>
+<th>파일</th>
+<th>내용</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&lt;모델&gt;_model_card.json</code></td>
+<td>소프트웨어 버전(QMaxent, elapid 등), 설정(피처 유형, 정규화 배수, 교차검증 방식, 시드 등), 자료 요약(출현점과 배경점 수, 변수 목록), 성능(학습 AUC, CV AUC), 임계값(MTP, T10, MaxSSS), 변수 중요도, 모델 상수</td>
+</tr>
+<tr>
+<td><code>&lt;모델&gt;_coefficients.csv</code></td>
+<td>모든 Maxent 피처의 유형, 변수, 기준값(knot), 계수</td>
+</tr>
+</tbody>
+</table>
+<p>모델 카드는 논문 Methods 작성, 보충자료 배포, 다른 도구와의 비교에 쓸 수 있고,
+계수표로 모델이 어떤 피처를 얼마나 썼는지 직접 확인할 수 있습니다. 학습 로그에도
+<code>→ Model card saved: …</code>, <code>→ Coefficients saved: …</code> 줄로 저장 위치가 표시됩니다.</p>
 <h2 id="_3">저장된 모델 재로드<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
 <p><strong>① Data</strong> 탭에서 <strong>Load existing model (.pkl)…</strong> 버튼을 클릭하고
 저장된 파일을 선택. QMaxent는 pickle에서 변수 목록을 읽고 <strong>변수
@@ -1261,8 +1304,8 @@ QMaxent로 발표한 결과의 장기적 재현성에 필수적입니다.</p>
 업데이트됩니다. <strong>OK</strong> 버튼은 모든 행이 매핑되었을 때만 활성화됩니다.</p>
 <p>확인 후 QMaxent는 모델을 방금 새로 학습한 것처럼 도크를 다시
 연결합니다 — <strong>③ Training</strong> 탭은 건너뛰고 <strong>④ Results</strong>가 바로
-활성화됩니다. 새 래스터 스택에서 즉시 공간 투영이나 우선조사
-후보지 추출을 실행할 수 있습니다.</p>
+활성화됩니다. 새 래스터 스택에서 즉시 공간 투영이나 조사지점
+선정을 실행할 수 있습니다.</p>
 <h2 id="_5">갱신된 래스터 스택으로 재투영<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
 <p>모델을 다시 로드하는 가장 흔한 이유는 <strong>재학습 없이 더 최근이거나
 고해상도의 동일 환경 변수에 적용</strong>하는 것입니다. 다른 래스터에서
@@ -1291,6 +1334,9 @@ QMaxent로 발표한 결과의 장기적 재현성에 필수적입니다.</p>
 <li>결정적 시드, hyperparameter, 입력이 갖춰져 있어 검토자가 pickle 로드를
   선호하지 않을 경우 <strong>처음부터 동등한 모델을 재학습</strong>할 수 있도록
   <code>model.pkl</code>을 <code>results.xlsx</code>와 함께 배포.</li>
+<li>검토자나 협업자에게는 <code>.pkl</code> 대신 <code>&lt;모델&gt;_model_card.json</code> 과
+  <code>&lt;모델&gt;_coefficients.csv</code> 를 먼저 공유. 일반 텍스트 파일이라 열어도 코드가
+  실행되지 않으므로 공유해도 안전합니다.</li>
 <li>보충자료에 SHA-256 해시로 <code>.pkl</code>에 서명.</li>
 </ul>
 <h2 id="_6">다음<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
@@ -1333,7 +1379,7 @@ QMaxent로 발표한 결과의 장기적 재현성에 필수적입니다.</p>
       <nav class="md-footer__inner md-grid" aria-label="하단/푸터" >
         
           
-          <a href="../priority-sites/" class="md-footer__link md-footer__link--prev" aria-label="이전: ⑤ 우선조사 후보지">
+          <a href="../priority-sites/" class="md-footer__link md-footer__link--prev" aria-label="이전: ⑤ 조사지점 선정">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1343,7 +1389,7 @@ QMaxent로 발표한 결과의 장기적 재현성에 필수적입니다.</p>
                 이전
               </span>
               <div class="md-ellipsis">
-                ⑤ 우선조사 후보지
+                ⑤ 조사지점 선정
               </div>
             </div>
           </a>

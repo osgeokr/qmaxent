@@ -721,7 +721,7 @@
         
   
   <span class="md-ellipsis">
-    ⑤ Priority Sites for Survey
+    ⑤ Survey Site Selection
   </span>
   
 
@@ -860,9 +860,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#optional-table-5-priority-sites" class="md-nav__link">
+  <a href="#survey-sites" class="md-nav__link">
     <span class="md-ellipsis">
-      Optional Table 5 — Priority sites
+      Survey sites
     </span>
   </a>
   
@@ -1230,9 +1230,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#optional-table-5-priority-sites" class="md-nav__link">
+  <a href="#survey-sites" class="md-nav__link">
     <span class="md-ellipsis">
-      Optional Table 5 — Priority sites
+      Survey sites
     </span>
   </a>
   
@@ -1289,7 +1289,7 @@ computed. You can paste sheets directly into a paper's appendix.</p>
 <p>After a training run that also produced a spatial projection and the
 <code>Save analysis charts as PNG</code> checkbox was on, the output folder looks
 like this:</p>
-<p><img alt="QMaxent output folder showing model.pkl, prediction.tif, results.xlsx, priority_sites.gpkg, and the three saved analysis charts as PNG" src="../images/results/output-folder.png" /></p>
+<p><img alt="QMaxent output folder showing model.pkl, prediction.tif, results.xlsx, survey_sites.gpkg, and the three saved analysis charts as PNG" src="../images/results/output-folder.png" /></p>
 <table>
 <thead>
 <tr>
@@ -1302,7 +1302,22 @@ like this:</p>
 <tr>
 <td><code>model.pkl</code></td>
 <td>Training</td>
-<td>Reload later via <em>Load existing model (.pkl)…</em></td>
+<td>Reload later via <em>Load existing model (.pkl)…</em> (Python pickle: open only trusted files)</td>
+</tr>
+<tr>
+<td><code>model_model_card.json</code></td>
+<td>Training</td>
+<td>Settings, data, performance, thresholds, importance and software versions; safe to share (see <a href="../saving-models/#model-card-and-coefficient-table">Saving and reusing models</a>)</td>
+</tr>
+<tr>
+<td><code>model_coefficients.csv</code></td>
+<td>Training</td>
+<td>Every Maxent feature with feature type, variable, knot and coefficient; safe to share</td>
+</tr>
+<tr>
+<td><code>training_log.txt</code></td>
+<td>Training</td>
+<td>Copy of the training log</td>
 </tr>
 <tr>
 <td><code>prediction.tif</code></td>
@@ -1320,9 +1335,9 @@ like this:</p>
 <td>Multi-sheet supplementary table</td>
 </tr>
 <tr>
-<td><code>priority_sites.gpkg</code></td>
-<td>Priority Sites tab</td>
-<td>Field-ready candidate points</td>
+<td><code>survey_sites.gpkg</code></td>
+<td>Survey Site Selection tab</td>
+<td>Field-ready candidate survey sites</td>
 </tr>
 <tr>
 <td><code>prediction_roc.png</code></td>
@@ -1385,14 +1400,17 @@ are at the top.</p>
 variables whose unique contribution is harder to recover from the others.</em>
 This is the metric <a href="../references/">Phillips, Anderson &amp; Schapire 2006</a>
 recommend as the most robust indicator of <em>unique</em> contribution.</p>
-<h3 id="optional-table-5-priority-sites">Optional Table 5 — Priority sites<a class="headerlink" href="#optional-table-5-priority-sites" title="Permanent link">&para;</a></h3>
-<p>If you ran the <strong>Priority Sites for Survey</strong> tab, the same workbook
-gains a fifth sheet with one row per candidate location. The columns
-include <code>lat</code>, <code>lon</code>, <code>suitability</code>, and — when reverse geocoding was
-enabled — <code>country</code>, <code>province</code>, <code>city_county</code>, <code>district</code>, and the
-human-readable <code>display_name</code>. The format is the same one QMaxent uses
-inside the GeoPackage:</p>
-<p><img alt="Priority Sites attribute table — 20 candidates with Korean reverse-geocoded administrative addresses" src="../images/results/attribute-table-priority-sites.png" /></p>
+<h3 id="survey-sites">Survey sites<a class="headerlink" href="#survey-sites" title="Permanent link">&para;</a></h3>
+<p>The candidate sites from the <strong>⑤ Survey Site Selection</strong> tab are
+written to their own GeoPackage (<code>survey_sites.gpkg</code> by default), not to
+the workbook. Its attribute table has one row per site with <code>id</code>, <code>lat</code>,
+<code>lon</code>, <code>suitability</code>, <code>quartile</code> and, when reverse geocoding was enabled,
+the OpenStreetMap address fields <code>country</code>, <code>province</code>, <code>city_county</code>,
+<code>district</code> and <code>display_name</code>. Open the attribute table in QGIS, or
+export it to a spreadsheet with <strong>Export &gt; Save Features As...</strong>, if you
+need it as a supplementary table. See
+<a href="../priority-sites/">⑤ Survey Site Selection</a> for the field definitions.</p>
+<p><img alt="Survey sites attribute table with 20 sites and reverse-geocoded administrative addresses" src="../images/results/attribute-table-priority-sites.png" /></p>
 <h2 id="customizing-the-export">Customizing the export<a class="headerlink" href="#customizing-the-export" title="Permanent link">&para;</a></h2>
 <p>The default file path on the <strong>② Parameters</strong> tab is
 <code>&lt;home&gt;/qmaxent_output/results.xlsx</code>. Change it to anywhere writable;

@@ -1,11 +1,12 @@
 # ④ Results tab
 
-After a successful run, the Results tab unlocks three sub-tabs:
+After a successful run, the Results tab unlocks four sub-tabs:
 
 | Sub-tab | What it shows |
 |---|---|
 | **Response Curves** | How each variable shapes predicted suitability across its data range |
 | **Jackknife Importance** | Which variables matter most, with ROC plotted alongside |
+| **Permutation Importance** | AUC drop when each variable is shuffled, as % of the total; the data it is evaluated on is set by **Evaluate on** in [② Parameters](parameters-tab.md#permutation-importance) |
 | **Spatial Projection** | Write the prediction to a GeoTIFF and load it as a styled QGIS layer |
 
 ## Response Curves
@@ -97,6 +98,11 @@ single combined dialog:
 1. **Categorical-code coverage** — any class code present in the
    projection rasters but unseen during training is auto-masked to NoData
    (rather than silently extrapolated to a random class probability).
+   As a further safeguard, since v0.2.0 the projection no longer fails
+   if such a class still reaches the model (for example a class the
+   preflight could not detect): those cells get no categorical
+   contribution, which is how maxent.jar treats a class without training
+   data.
 2. **Continuous-variable extrapolation** — if any continuous variable's
    projection range exceeds its training range
    ([Elith, Kearney & Phillips 2010](references.md)), the dialog reports
@@ -118,7 +124,7 @@ to the cloglog 0–1 range, ready to compose into a publication map.
 
 ## Next
 
-Move to the [⑤ Priority Sites for Survey tab](priority-sites.md) to turn
-the suitability raster into a field-ready candidate point layer, or skip
+Move to the [⑤ Survey Site Selection tab](priority-sites.md) to turn
+the suitability raster into a field-ready layer of candidate survey sites, or skip
 ahead to [Exporting results](exporting-results.md) to learn what is in
 the output workbook.

@@ -116,6 +116,44 @@ class QMaxentMainDock(QDockWidget):
 
         self._build_ui()
 
+        # v0.1.8: keep the ① Data raster list in sync with the project.
+        # v0.1.7 kept rows for layers that had left the project (new
+        # project, layer removed, Harmonize "Replace"), so the list
+        # looked ready while training silently had no rasters.
+        QgsProject.instance().layersWillBeRemoved.connect(self._on_project_layers_removed)
+
+    def shutdown(self):
+        """Disconnect project signals; called by the plugin on unload."""
+        try:
+            QgsProject.instance().layersWillBeRemoved.disconnect(self._on_project_layers_removed)
+        except (TypeError, RuntimeError):
+            pass
+
+    def _on_project_layers_removed(self, layer_ids):
+        ids = set(layer_ids)
+        removed = []
+        for i in reversed(range(self._raster_list.count())):
+            item = self._raster_list.item(i)
+            if item.data(self._ROLE_LAYER_ID) in ids:
+                row_w = self._raster_list.itemWidget(item)
+                lyr = QgsProject.instance().mapLayer(item.data(self._ROLE_LAYER_ID))
+                removed.append(lyr.name() if lyr else "?")
+                if row_w is not None:
+                    self._raster_list.removeItemWidget(item)
+                    row_w.deleteLater()
+                self._raster_list.takeItem(i)
+        if removed:
+            self._consistency_lbl.setText(
+                tr(
+                    "Status: {n} raster(s) left the QGIS project and were "
+                    "removed from this list. Click Check Raster Consistency "
+                    "again."
+                ).format(n=len(removed))
+            )
+            self._consistency_lbl.setStyleSheet("color: gray;")
+            self._consistency_lbl.setToolTip("")
+            self._harmonize_btn.setVisible(False)
+
     def sizeHint(self):
         """Suggest a starting size that fits common laptop screens.
 
@@ -172,7 +210,7 @@ class QMaxentMainDock(QDockWidget):
         self.tabs.addTab(self._build_params_tab(), tr("② Parameters"))
         self.tabs.addTab(_scrolled(self._build_train_tab()), tr("③ Training"))
         self.tabs.addTab(_scrolled(self._build_results_tab()), tr("④ Results"))
-        self.tabs.addTab(_scrolled(self._build_priority_tab()), tr("⑤ Priority Sites for Survey"))
+        self.tabs.addTab(_scrolled(self._build_priority_tab()), tr("⑤ Survey Site Selection"))
         vbox.addWidget(self.tabs, stretch=1)
 
         bot = QHBoxLayout()
@@ -247,6 +285,25 @@ class QMaxentMainDock(QDockWidget):
         self._pres_info = QLabel(tr("Select a layer to see point count."))
         self._pres_info.setStyleSheet("color: gray; font-size: 11px;")
         pg.addWidget(self._pres_info)
+        # v0.2.0: load inputs without visiting the QGIS menus first.
+        pres_btn_row = QHBoxLayout()
+        open_pts_btn = QPushButton(tr("Open point file..."))
+        open_pts_btn.setToolTip(
+            tr(
+                "Any point format QGIS can read: GeoPackage, Shapefile, "
+                "GeoJSON, KML, GML, FlatGeobuf, ..."
+            )
+        )
+        open_pts_btn.clicked.connect(self._open_presence_file)
+        csv_btn = QPushButton(tr("Load CSV (X/Y columns)..."))
+        csv_btn.setToolTip(
+            tr("A table with longitude / latitude or X / Y columns, e.g. a GBIF download.")
+        )
+        csv_btn.clicked.connect(self._open_presence_csv)
+        pres_btn_row.addWidget(open_pts_btn)
+        pres_btn_row.addWidget(csv_btn)
+        pres_btn_row.addStretch()
+        pg.addLayout(pres_btn_row)
         v.addWidget(pres_grp)
 
         rast_grp = QGroupBox(tr("Environmental Rasters"))
@@ -260,6 +317,16 @@ class QMaxentMainDock(QDockWidget):
         add_btn = QPushButton(tr("Add from project"))
         add_btn.clicked.connect(self._add_raster_from_project)
         btn_row.addWidget(add_btn)
+        add_files_btn = QPushButton(tr("Add raster files..."))
+        add_files_btn.setToolTip(
+            tr(
+                "Any single-band raster GDAL can read: GeoTIFF, ESRI ASCII "
+                "(.asc), raster .grd, ERDAS .img, VRT, NetCDF subdatasets, "
+                "..."
+            )
+        )
+        add_files_btn.clicked.connect(self._add_raster_files)
+        btn_row.addWidget(add_files_btn)
         rm_btn = QPushButton(tr("Remove selected"))
         rm_btn.clicked.connect(self._remove_selected_rasters)
         btn_row.addWidget(rm_btn)
@@ -547,7 +614,26 @@ class QMaxentMainDock(QDockWidget):
         # Feature Types
         ft_grp = QGroupBox(tr("Feature Types"))
         ftv = QVBoxLayout(ft_grp)
-        self._ft_auto_radio = QRadioButton(tr("Auto (sample-size based, Phillips et al. 2017)"))
+        # v0.2.0: the rule is the maxnet default (Phillips et al.
+        # 2017), not a recommendation of optimal feature classes.
+        self._ft_auto_radio = QRadioButton(tr("Auto (maxnet default rule by sample size)"))
+        self._ft_auto_radio.setToolTip(
+            tooltip(
+                tr(
+                    "Uses the default feature classes of maxnet, the R "
+                    "implementation of Maxent by its authors (Phillips et al. "
+                    "2017), based on the number of presence points: fewer than "
+                    "10 = linear; 10 to 14 = + quadratic; 15 to 79 = + hinge; "
+                    "80 or more = + product. Threshold features are not used "
+                    "automatically (as in maxnet); select them under Manual "
+                    "selection if needed.\n"
+                    "This is a default, not a guarantee of the best model: the "
+                    "most suitable feature classes depend on the data. Compare "
+                    "alternatives with Manual selection and cross-validation, "
+                    "or with a model-selection tool such as ENMeval."
+                )
+            )
+        )
         self._ft_manual_radio = QRadioButton(tr("Manual selection"))
         self._ft_auto_radio.setChecked(True)
         ftv.addWidget(self._ft_auto_radio)
@@ -562,9 +648,9 @@ class QMaxentMainDock(QDockWidget):
             ("threshold", "Threshold"),
         ]:
             cb = QCheckBox(label)
-            # Default: all five checked (LQPHT) — consistent with the
-            # maxnet auto rule for n >= 80 (Phillips et al. 2017).
-            cb.setChecked(True)
+            # Default: LQPH checked, threshold unchecked (the maxnet
+            # rule for n >= 80, Phillips et al. 2017).
+            cb.setChecked(code != "threshold")
             cb.setEnabled(False)
             self._ft_checks[code] = cb
             ft_row.addWidget(cb)
@@ -889,10 +975,39 @@ class QMaxentMainDock(QDockWidget):
         )
         pi_row.addWidget(self._permutation_repeats_spin)
         pi_row.addStretch()
+        # v0.2.0: which data the AUC drop is measured on.
+        pi_eval_row = QHBoxLayout()
+        pi_eval_row.addSpacing(20)
+        pi_eval_row.addWidget(QLabel(tr("Evaluate on:")))
+        self._permutation_eval_combo = QComboBox()
+        self._permutation_eval_combo.addItem(
+            tr("Training data (maxent.jar convention)"), "training"
+        )
+        self._permutation_eval_combo.addItem(
+            tr("Held-out CV test folds (all folds pooled)"), "heldout"
+        )
+        self._permutation_eval_combo.setToolTip(
+            tooltip(
+                tr(
+                    "Training data: the full model is evaluated on all training "
+                    "presences and background points, as maxent.jar does. Use "
+                    "this to compare variable rankings with maxent.jar studies.\n"
+                    "Held-out CV test folds: each cross-validation fold model is "
+                    "evaluated on its own test fold and the results of all folds "
+                    "are pooled. This shows how much predictive performance on "
+                    "new locations depends on each variable. Requires K-Fold or "
+                    "Checkerboard cross-validation."
+                )
+            )
+        )
+        pi_eval_row.addWidget(self._permutation_eval_combo)
+        pi_eval_row.addStretch()
+        self._permutation_chk.toggled.connect(self._permutation_eval_combo.setEnabled)
         # Enable/disable the spin box alongside the checkbox so the UI
         # state never lies about what will actually be computed.
         self._permutation_chk.toggled.connect(self._permutation_repeats_spin.setEnabled)
         v.addLayout(pi_row)
+        v.addLayout(pi_eval_row)
 
         # Output Files
         out_grp = QGroupBox(tr("Output Files"))
@@ -1295,9 +1410,8 @@ class QMaxentMainDock(QDockWidget):
     # Results are reverse-geocoded via OpenStreetMap Nominatim and
     # added to QGIS as a styled vector layer.
     #
-    # All academic decisions exposed here are referenced in the
-    # accompanying manuscript's "Software description" section,
-    # sub-section 2.3.
+    # All academic decisions exposed here are referenced in the accompanying
+    # paper's "Software description" section, sub-section 2.3.
 
     def _build_priority_tab(self) -> QWidget:
         w = QWidget()
@@ -1321,10 +1435,10 @@ class QMaxentMainDock(QDockWidget):
         purpose_grp = QGroupBox(tr("Survey purpose"))
         pg = QVBoxLayout(purpose_grp)
         self._priority_mode_discovery = QRadioButton(
-            tr("Discovery mode — find new populations in unsurveyed areas")
+            tr("High-suitability search: look for new populations in unsurveyed areas")
         )
         self._priority_mode_validation = QRadioButton(
-            tr("Validation mode — test the suitability gradient")
+            tr("Gradient-stratified sampling: check the model along its suitability gradient")
         )
         self._priority_mode_discovery.setChecked(True)
         self._priority_mode_discovery.setToolTip(
@@ -1335,9 +1449,12 @@ class QMaxentMainDock(QDockWidget):
         )
         self._priority_mode_validation.setToolTip(
             tr(
-                "Sample equal numbers from four suitability quartiles "
-                "(Rhoden 2017). Will include lower-suitability sites by "
-                "design — useful for evaluating the model gradient."
+                "Divide the cells above a threshold into four suitability "
+                "quartiles and sample the same number of sites from each "
+                "(Rhoden et al. 2017). Lower-suitability sites are included "
+                "on purpose, so field results can show whether observed "
+                "occurrence follows the predicted gradient. The threshold "
+                "only sets the sampling frame; no binary map is produced."
             )
         )
         self._priority_mode_discovery.toggled.connect(self._on_priority_mode_changed)
@@ -1354,7 +1471,7 @@ class QMaxentMainDock(QDockWidget):
         #      1.0. The user can override.
         #   2. Sampling order — Random (statistically unbiased within
         #      the band) or Top-N (greedy on suitability).
-        self._priority_discovery_grp = QGroupBox(tr("Discovery settings"))
+        self._priority_discovery_grp = QGroupBox(tr("High-suitability search settings"))
         dg = QVBoxLayout(self._priority_discovery_grp)
 
         sf_row = QHBoxLayout()
@@ -1392,7 +1509,7 @@ class QMaxentMainDock(QDockWidget):
         # Pearson 2007 / Liu 2013 threshold options because they
         # legitimately define the lower bound of Q1 (the lowest
         # suitability quartile sampled).
-        self._priority_validation_grp = QGroupBox(tr("Validation settings"))
+        self._priority_validation_grp = QGroupBox(tr("Gradient-stratified sampling settings"))
         vg = QVBoxLayout(self._priority_validation_grp)
 
         tr_row = QHBoxLayout()
@@ -1434,7 +1551,7 @@ class QMaxentMainDock(QDockWidget):
         sm = QVBoxLayout(sm_grp)
 
         n_row = QHBoxLayout()
-        n_row.addWidget(QLabel(tr("Number of priority sites:")))
+        n_row.addWidget(QLabel(tr("Number of survey sites:")))
         self._priority_n = QLineEdit("20")
         self._priority_n.setValidator(QIntValidator(1, 500))
         self._priority_n.setMaximumWidth(80)
@@ -1464,9 +1581,7 @@ class QMaxentMainDock(QDockWidget):
         # ── Reverse geocoding ─────────────────────────────────────────────
         gc_grp = QGroupBox(tr("Reverse geocoding"))
         gc = QVBoxLayout(gc_grp)
-        self._priority_geocode = QCheckBox(
-            tr("Add administrative address (province/city/district)")
-        )
+        self._priority_geocode = QCheckBox(tr("Add administrative address (OpenStreetMap)"))
         self._priority_geocode.setChecked(True)
         self._priority_geocode.setToolTip(
             tr(
@@ -1476,6 +1591,24 @@ class QMaxentMainDock(QDockWidget):
             )
         )
         gc.addWidget(self._priority_geocode)
+        # v0.2.0: address language (was fixed to "ko,en").
+        lang_row = QHBoxLayout()
+        lang_row.addWidget(QLabel(tr("Address language:")))
+        self._priority_geocode_lang = QComboBox()
+        self._priority_geocode_lang.addItem(tr("Local names"), "local")
+        self._priority_geocode_lang.addItem(tr("QGIS interface language"), "ui")
+        self._priority_geocode_lang.addItem(tr("English"), "en")
+        self._priority_geocode_lang.setToolTip(
+            tr(
+                "Language of the administrative names returned by "
+                "OpenStreetMap. Local names use each country's own "
+                "language (e.g. Spanish in the Dominican Republic)."
+            )
+        )
+        lang_row.addWidget(self._priority_geocode_lang)
+        lang_row.addStretch()
+        gc.addLayout(lang_row)
+        self._priority_geocode.toggled.connect(self._priority_geocode_lang.setEnabled)
         v.addWidget(gc_grp)
 
         # ── Output ────────────────────────────────────────────────────────
@@ -1488,7 +1621,7 @@ class QMaxentMainDock(QDockWidget):
         # Absolute path under the unified output folder for the same
         # reason as the other Output fields — make the destination
         # visible on screen instead of leaving it implicit.
-        self._priority_path.setText(os.path.join(_default_output_dir(), "priority_sites.gpkg"))
+        self._priority_path.setText(os.path.join(_default_output_dir(), "survey_sites.gpkg"))
         self._priority_path.setToolTip(self._priority_path.text())
         self._priority_path.textChanged.connect(self._priority_path.setToolTip)
         out_row.addWidget(self._priority_path, stretch=1)
@@ -1505,7 +1638,7 @@ class QMaxentMainDock(QDockWidget):
         v.addWidget(out_grp)
 
         # Run button + status + progress
-        self._priority_btn = QPushButton(tr("▶  Extract Priority Sites"))
+        self._priority_btn = QPushButton(tr("▶  Select Survey Sites"))
         self._priority_btn.clicked.connect(self._run_priority_extraction)
         self._priority_btn.setEnabled(False)
         v.addWidget(self._priority_btn)
@@ -1621,16 +1754,16 @@ class QMaxentMainDock(QDockWidget):
 
             tb = traceback.format_exc()
             QgsMessageLog.logMessage(
-                f"Priority Sites extraction failed:\n{tb}",
+                f"Survey site selection failed:\n{tb}",
                 "QMaxent",
                 Qgis.Critical,
             )
             try:
                 QMessageBox.critical(
                     self,
-                    tr("Priority Sites"),
+                    tr("Survey Site Selection"),
                     tr(
-                        "Priority site extraction failed:\n{e}\n\n"
+                        "Survey site selection failed:\n{e}\n\n"
                         "Full traceback in: View → Panels → Log "
                         "Messages → QMaxent."
                     ).format(e=str(e)[:500]),
@@ -1652,7 +1785,9 @@ class QMaxentMainDock(QDockWidget):
         # 1. We need a trained model with metadata.
         if not getattr(self, "_model", None):
             QMessageBox.warning(
-                self, tr("Priority Sites"), tr("Train a model first (or load an existing .pkl).")
+                self,
+                tr("Survey Site Selection"),
+                tr("Train a model first (or load an existing .pkl)."),
             )
             return
         # 2. We need a prediction raster — the Spatial Projection tab
@@ -1663,10 +1798,10 @@ class QMaxentMainDock(QDockWidget):
         if not proj_path or not os.path.isfile(proj_path):
             QMessageBox.warning(
                 self,
-                tr("Priority Sites"),
+                tr("Survey Site Selection"),
                 tr(
-                    "Run a spatial projection first — the priority "
-                    "sampling needs a prediction raster.\n\n"
+                    "Run a spatial projection first — survey site "
+                    "selection needs a prediction raster.\n\n"
                     "Tip: ④ Results → Spatial Projection → ▶ Run Spatial Projection."
                 ),
             )
@@ -1677,15 +1812,20 @@ class QMaxentMainDock(QDockWidget):
         )
         if pres_layer is None:
             QMessageBox.warning(
-                self, tr("Priority Sites"), tr("No presence layer selected (① Data tab).")
+                self, tr("Survey Site Selection"), tr("No presence layer selected (① Data tab).")
             )
             return
         # Convert presence layer to a list of (lon, lat) — the layer's
         # geometry is reprojected to EPSG:4326 to match the lat/lon
         # convention used inside priority_sites.py.
         try:
-            from qgis.core import QgsCoordinateReferenceSystem, QgsCoordinateTransform
-            from qgis.core import QgsProject as _QP
+            from qgis.core import (
+                QgsCoordinateReferenceSystem,
+                QgsCoordinateTransform,
+            )
+            from qgis.core import (
+                QgsProject as _QP,
+            )
 
             wgs = QgsCoordinateReferenceSystem("EPSG:4326")
             xform = QgsCoordinateTransform(pres_layer.crs(), wgs, _QP.instance())
@@ -1712,12 +1852,14 @@ class QMaxentMainDock(QDockWidget):
                 presence_xy.append((float(p.x()), float(p.y())))
         except Exception as e:
             QMessageBox.critical(
-                self, tr("Priority Sites"), tr("Could not read presence layer:\n{e}").format(e=e)
+                self,
+                tr("Survey Site Selection"),
+                tr("Could not read presence layer:\n{e}").format(e=e),
             )
             return
         if not presence_xy:
             QMessageBox.warning(
-                self, tr("Priority Sites"), tr("Presence layer has no point features.")
+                self, tr("Survey Site Selection"), tr("Presence layer has no point features.")
             )
             return
 
@@ -1758,7 +1900,7 @@ class QMaxentMainDock(QDockWidget):
         if threshold <= 0.0:
             QMessageBox.warning(
                 self,
-                tr("Priority Sites"),
+                tr("Survey Site Selection"),
                 tr(
                     "Threshold value is 0 or unset. Enter a value > 0 "
                     "or pick a different threshold method."
@@ -1778,7 +1920,7 @@ class QMaxentMainDock(QDockWidget):
             rem = int(secs - mins * 60)
             QMessageBox.information(
                 self,
-                tr("Priority Sites"),
+                tr("Survey Site Selection"),
                 tr(
                     "Reverse geocoding {n} sites at 1 request/second "
                     "will take about {mins}m {rem}s. The progress bar "
@@ -1826,8 +1968,8 @@ class QMaxentMainDock(QDockWidget):
             self._priority_status.setText(tr("Failed."))
             QMessageBox.critical(
                 self,
-                tr("Priority Sites"),
-                tr("Priority site extraction failed:\n{msg}").format(msg=msg),
+                tr("Survey Site Selection"),
+                tr("Survey site selection failed:\n{msg}").format(msg=msg),
             )
             return
 
@@ -1899,7 +2041,7 @@ class QMaxentMainDock(QDockWidget):
         try:
             from ..bridge.priority_sites import reverse_geocode_one
 
-            addr = reverse_geocode_one(site["lat"], site["lon"])
+            addr = reverse_geocode_one(site["lat"], site["lon"], language=self._geocode_language())
         except Exception:
             # Best-effort; never fatal. The site row is kept with
             # empty address fields so the GeoPackage schema is intact.
@@ -1933,14 +2075,15 @@ class QMaxentMainDock(QDockWidget):
 
     def _save_and_finalise_priority(self, rows: list, method: str, threshold: float):
         """Write GeoPackage, optionally add to project, update status."""
-        out_path = self._priority_path.text().strip() or "priority_sites.gpkg"
+        out_path = self._priority_path.text().strip() or "survey_sites.gpkg"
         if not os.path.isabs(out_path):
             out_path = os.path.join(_default_output_dir(), out_path)
         try:
+            out_path = self._free_output_path(out_path)
             self._save_priority_sites_gpkg(rows, out_path)
         except Exception as e:
             QMessageBox.critical(
-                self, tr("Priority Sites"), tr("Could not write output:\n{e}").format(e=e)
+                self, tr("Survey Site Selection"), tr("Could not write output:\n{e}").format(e=e)
             )
             return
 
@@ -1949,16 +2092,49 @@ class QMaxentMainDock(QDockWidget):
             try:
                 self._load_priority_sites_layer(out_path)
             except Exception as e:
-                self._log_append(tr("Could not auto-load priority sites layer: {e}").format(e=e))
+                self._log_append(tr("Could not auto-load survey sites layer: {e}").format(e=e))
 
         n_geocoded = sum(1 for r in rows if r.get("display_name"))
         self._priority_status.setText(
-            tr(
-                "✓ {n} priority sites extracted ({m} = {t:.4f}); {g}/{n} geocoded. Output: {p}"
-            ).format(n=len(rows), m=method, t=threshold, g=n_geocoded, p=out_path)
+            tr("✓ {n} survey sites selected ({m} = {t:.4f}); {g}/{n} geocoded. Output: {p}").format(
+                n=len(rows), m=method, t=threshold, g=n_geocoded, p=out_path
+            )
         )
 
     # ── Output writing ───────────────────────────────────────────────────
+    @staticmethod
+    def _free_output_path(out_path: str) -> str:
+        """Make ``out_path`` writable for a new GeoPackage (v0.2.0 fix).
+
+        v0.1.x failed on the second run with "A file system object
+        called ... already exists" and the geocoded sites were lost.
+        Now: remove layers of this project that read the file, delete
+        the old file, and if another program still holds it, write to
+        the next free name (survey_sites_1.gpkg, ...) instead.
+        """
+        norm = os.path.normcase(os.path.abspath(out_path))
+        proj = QgsProject.instance()
+        for lyr in list(proj.mapLayers().values()):
+            try:
+                src = lyr.source().split("|")[0]
+                if os.path.normcase(os.path.abspath(src)) == norm:
+                    proj.removeMapLayer(lyr.id())
+            except Exception:
+                pass
+        if not os.path.exists(out_path):
+            return out_path
+        try:
+            for suffix in ("", "-wal", "-shm", "-journal"):
+                if os.path.exists(out_path + suffix):
+                    os.remove(out_path + suffix)
+            return out_path
+        except OSError:
+            base, ext = os.path.splitext(out_path)
+            i = 1
+            while os.path.exists(f"{base}_{i}{ext}"):
+                i += 1
+            return f"{base}_{i}{ext}"
+
     def _save_priority_sites_gpkg(self, rows: list, out_path: str):
         """Write the result table to a GeoPackage point layer.
 
@@ -2059,7 +2235,7 @@ class QMaxentMainDock(QDockWidget):
         if n_written < len(rows):
             self._log_append(
                 tr(
-                    "⚠ {dropped} of {total} priority sites could not be "
+                    "⚠ {dropped} of {total} survey sites could not be "
                     "written to the GeoPackage and were dropped."
                 ).format(dropped=len(rows) - n_written, total=len(rows))
             )
@@ -2091,7 +2267,7 @@ class QMaxentMainDock(QDockWidget):
         )
         from qgis.PyQt.QtGui import QColor
 
-        layer = QgsVectorLayer(gpkg_path, "Priority Sites for Survey", "ogr")
+        layer = QgsVectorLayer(gpkg_path, "Survey sites", "ogr")
         if not layer.isValid():
             raise RuntimeError(f"Invalid layer: {gpkg_path}")
 
@@ -2185,13 +2361,112 @@ class QMaxentMainDock(QDockWidget):
         except Exception:
             self._pres_info.setText(tr("Cannot read layer info."))
 
+    def _set_presence_layer(self, lyr):
+        try:
+            self._pres_combo.setLayer(lyr)
+        except Exception:
+            pass
+        self._on_presence_changed(lyr)
+
+    def _open_presence_file(self):
+        from qgis.core import QgsVectorLayer, QgsWkbTypes
+
+        path, _ = QFileDialog.getOpenFileName(
+            self,
+            tr("Select presence point file"),
+            "",
+            tr(
+                "Vector files (*.gpkg *.shp *.geojson *.json *.kml *.kmz "
+                "*.gml *.fgb *.sqlite);;All files (*)"
+            ),
+        )
+        if not path:
+            return
+        if path.lower().endswith((".csv", ".txt", ".tsv")):
+            self._open_presence_csv(path)
+            return
+        lyr = QgsVectorLayer(path, os.path.splitext(os.path.basename(path))[0], "ogr")
+        if not lyr.isValid():
+            QMessageBox.warning(self, tr("Open point file"), tr("QGIS could not open this file."))
+            return
+        if lyr.geometryType() != QgsWkbTypes.PointGeometry:
+            QMessageBox.warning(
+                self,
+                tr("Open point file"),
+                tr(
+                    "This layer does not contain points. QMaxent needs "
+                    "presence records as points (one point per record)."
+                ),
+            )
+            return
+        QgsProject.instance().addMapLayer(lyr)
+        self._set_presence_layer(lyr)
+
+    def _open_presence_csv(self, path=None):
+        from .csv_presence_dialog import CsvPresenceDialog, sniff_table
+
+        dlg = CsvPresenceDialog(self)
+        if path:
+            dlg._path.setText(path)
+            delim, _ = sniff_table(path)
+            idx = dlg._delim.findData(delim)
+            if idx >= 0:
+                dlg._delim.setCurrentIndex(idx)
+            dlg._reload_header()
+        if dlg.exec_() and dlg.layer is not None:
+            self._set_presence_layer(dlg.layer)
+
+    def _add_raster_files(self):
+        from ..bridge.raster_bridge import detect_categorical_hint
+
+        paths, _ = QFileDialog.getOpenFileNames(
+            self,
+            tr("Select environmental rasters"),
+            "",
+            tr(
+                "Rasters (*.tif *.tiff *.asc *.grd *.img *.vrt *.nc *.bil "
+                "*.sdat *.rst);;All files (*)"
+            ),
+        )
+        if not paths:
+            return
+        bad = []
+        for p in paths:
+            lyr = QgsRasterLayer(p, os.path.splitext(os.path.basename(p))[0])
+            if not lyr.isValid():
+                bad.append(os.path.basename(p))
+                continue
+            QgsProject.instance().addMapLayer(lyr)
+            try:
+                is_cat = detect_categorical_hint(p)
+            except Exception:
+                is_cat = False
+            self._add_raster_item(layer_name=lyr.name(), layer_id=lyr.id(), is_categorical=is_cat)
+        if bad:
+            QMessageBox.warning(
+                self,
+                tr("Add raster files"),
+                tr("These files could not be opened as rasters:\n{f}").format(f="\n".join(bad)),
+            )
+        self._consistency_lbl.setText(tr("Status: rasters added. Click Check Raster Consistency."))
+        self._consistency_lbl.setStyleSheet("color: gray;")
+
     def _add_raster_from_project(self):
         from ..bridge.raster_bridge import detect_categorical_hint
 
         layers = QgsProject.instance().mapLayers().values()
         rasters = [l for l in layers if isinstance(l, QgsRasterLayer)]
         if not rasters:
-            self._log_append(tr("No raster layers in project."))
+            QMessageBox.information(
+                self,
+                tr("Add from project"),
+                tr(
+                    "The current QGIS project has no raster layers.\n\n"
+                    "Load your environmental rasters first (Layer > Add "
+                    "Layer > Add Raster Layer..., or drag the files onto "
+                    'the map), then click "Add from project" again.'
+                ),
+            )
             return
         existing = {
             self._raster_list.item(i).data(self._ROLE_LAYER_ID)
@@ -2218,7 +2493,10 @@ class QMaxentMainDock(QDockWidget):
             )
             added += 1
         if added == 0:
-            self._log_append(tr("No new raster layers to add."))
+            self._consistency_lbl.setText(
+                tr("Status: all project rasters are already in the list.")
+            )
+            self._consistency_lbl.setStyleSheet("color: gray;")
 
     def _remove_selected_rasters(self):
         # Iterate over a snapshot of the selected items because removing
@@ -2425,6 +2703,58 @@ class QMaxentMainDock(QDockWidget):
     # folder, and replaces the raster list with the harmonized copies
     # so the next press of "Run Maxent" trains on aligned data.
 
+    def _geocode_language(self):
+        """Accept-Language for Nominatim, or None for local names."""
+        mode = self._priority_geocode_lang.currentData()
+        if mode == "en":
+            return "en"
+        if mode == "ui":
+            from ..i18n.translator import current_locale
+
+            loc = current_locale() or "en"
+            return "en" if loc == "en" else f"{loc},en"
+        return None
+
+    @staticmethod
+    def _short_crs_label(crs) -> str:
+        """'EPSG:3592' or the CRS name, never a full WKT string."""
+        if crs is None:
+            return "—"
+        try:
+            epsg = crs.to_epsg()
+            if epsg:
+                return f"EPSG:{epsg}"
+        except Exception:
+            pass
+        try:
+            from pyproj import CRS as _PCRS
+
+            pc = _PCRS.from_wkt(crs.to_wkt())
+            name = pc.name if pc.name and pc.name != "unknown" else ""
+            if not name and pc.coordinate_operation is not None:
+                name = f"custom {pc.coordinate_operation.method_name}"
+            return name or "custom CRS"
+        except Exception:
+            return str(crs)[:60]
+
+    @staticmethod
+    def _crs_overrides_for(layers) -> dict:
+        """Index -> CRS string for layers whose CRS the user set in QGIS.
+
+        Only layers with an authority code (e.g. after Layer CRS > Set
+        Layer CRS...) are included; the bridge applies an override only
+        when the file's own CRS is unusable.
+        """
+        out = {}
+        for i, lyr in enumerate(layers):
+            try:
+                qcrs = lyr.crs()
+                if qcrs.isValid() and qcrs.authid():
+                    out[i] = qcrs.authid()
+            except Exception:
+                pass
+        return out
+
     def _on_check_consistency(self):
         """Inspect the current rasters and update the status label.
 
@@ -2447,7 +2777,22 @@ class QMaxentMainDock(QDockWidget):
             return
 
         paths = [layer_to_path(lyr) for lyr in layers]
-        result = check_raster_consistency(paths)
+        result = check_raster_consistency(paths, crs_overrides=self._crs_overrides_for(layers))
+
+        if result.get("crs_problems"):
+            names = ", ".join(os.path.basename(p) for p, _ in result["crs_problems"])
+            self._consistency_lbl.setText(
+                tr(
+                    "Status: ⚠ CRS problem in {n} raster(s): {names}. "
+                    "See the message for how to fix it."
+                ).format(n=len(result["crs_problems"]), names=names)
+            )
+            self._consistency_lbl.setToolTip(result["error"])
+            self._consistency_lbl.setStyleSheet("color: #B23A2A;")
+            self._harmonize_btn.setVisible(False)
+            QMessageBox.warning(self, tr("Check Raster Consistency"), result["error"])
+            return
+        self._consistency_lbl.setToolTip("")
 
         if result.get("error"):
             self._consistency_lbl.setText(
@@ -2462,7 +2807,7 @@ class QMaxentMainDock(QDockWidget):
             self._consistency_lbl.setText(
                 tr("Status: ✓ All {n} rasters share grid (CRS: {crs}, resolution: {res}).").format(
                     n=len(paths),
-                    crs=str(first["crs"]) if first["crs"] else "—",
+                    crs=self._short_crs_label(first["crs"]),
                     res=f"{first['res'][0]:g} × {first['res'][1]:g}",
                 )
             )
@@ -2560,6 +2905,7 @@ class QMaxentMainDock(QDockWidget):
             output_dir=chosen,
             categorical_indices=cat_idx,
             template_idx=0,
+            crs_overrides=self._crs_overrides_for(layers),
             parent=self,
         )
         # Hold a reference so the worker is not GC'd mid-run.
@@ -2733,11 +3079,41 @@ class QMaxentMainDock(QDockWidget):
             presence_layer = self._get_presence_layer()
         except ValueError as e:
             self._set_status(f"⚠ {e}")
+            QMessageBox.warning(self, tr("Run Maxent"), str(e))
+            self.tabs.setCurrentIndex(0)
             return
 
         raster_layers = self._get_raster_layers()
+        multi = [f"{l.name()} ({l.bandCount()} bands)" for l in raster_layers if l.bandCount() > 1]
+        if multi:
+            QMessageBox.warning(
+                self,
+                tr("Run Maxent"),
+                tr(
+                    "QMaxent uses one raster band per environmental "
+                    "variable, but these rasters have several bands:\n"
+                    "{names}\n\nSplit them into single-band files first, "
+                    "e.g. Processing > GDAL > Raster conversion > "
+                    "Rearrange bands (one band per output), then add "
+                    "the single-band files."
+                ).format(names="\n".join(multi)),
+            )
+            self.tabs.setCurrentIndex(0)
+            return
         if not raster_layers:
-            self._set_status(f"⚠ {tr('Add environmental raster layers.')}")
+            msg = tr("Add environmental raster layers.")
+            self._set_status(f"⚠ {msg}")
+            QMessageBox.warning(
+                self,
+                tr("Run Maxent"),
+                msg
+                + "\n\n"
+                + tr(
+                    "In the ① Data tab, load rasters into the QGIS "
+                    'project and click "Add from project".'
+                ),
+            )
+            self.tabs.setCurrentIndex(0)
             return
 
         try:
@@ -2781,6 +3157,7 @@ class QMaxentMainDock(QDockWidget):
             "do_jackknife": self._jackknife_chk.isChecked(),
             "do_permutation": self._permutation_chk.isChecked(),
             "permutation_repeats": self._permutation_repeats_spin.value(),
+            "permutation_eval": self._permutation_eval_combo.currentData(),
             "output_model": self._model_path.text().strip() or None,
             "output_xlsx": self._xlsx_path.text().strip() or None,
         }
