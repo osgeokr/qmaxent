@@ -3,7 +3,7 @@
 [![CI](https://github.com/osgeokr/qmaxent/actions/workflows/ci.yml/badge.svg)](https://github.com/osgeokr/qmaxent/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![QGIS plugin](https://img.shields.io/badge/QGIS-3.44%2B-green.svg)](https://plugins.qgis.org/plugins/qmaxent/)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20259146.svg)](https://doi.org/10.5281/zenodo.20259146)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20259145.svg)](https://doi.org/10.5281/zenodo.20259145)
 
 **Species Distribution Modeling with Maxent in QGIS.**
 
@@ -136,7 +136,7 @@ the metadata below.
 
 > Yu, B.-H. (2026). *QMaxent: A QGIS plugin for Maxent species
 > distribution modeling* (Version 0.2.0) [Computer software].
-> Zenodo. https://doi.org/10.5281/zenodo.20259146
+> Zenodo. https://doi.org/10.5281/zenodo.23771737
 
 **BibTeX**
 
@@ -147,7 +147,7 @@ the metadata below.
   version = {0.2.0},
   date    = {2026-10-29},
   url     = {https://github.com/osgeokr/qmaxent},
-  doi     = {10.5281/zenodo.20259146},
+  doi     = {10.5281/zenodo.23771737},
   license = {MIT}
 }
 ```

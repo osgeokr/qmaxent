@@ -27,13 +27,13 @@ identifiers:
   # Zenodo, so this is the right DOI for "cite this software" references
   # that should track future releases.
   - type: doi
-    value: 10.5281/zenodo.20259146
-    description: "Concept DOI (all versions) — Zenodo archive of the QMaxent source code."
-  # Version-specific DOI for v0.1.7. Use this for citations that must
+    value: 10.5281/zenodo.20259145
+    description: "Concept DOI (all versions): Zenodo archive of the QMaxent source code."
+  # Version-specific DOI for v0.2.0. Use this for citations that must
   # pin a specific, immutable archive state.
   - type: doi
-    value: 10.5281/zenodo.20259146
-    description: "Version DOI for v0.1.7."
+    value: 10.5281/zenodo.23771737
+    description: "Version DOI for v0.2.0."
 abstract: >
   QMaxent integrates the elapid Python library into QGIS to provide
   Maxent-style species distribution modeling (SDM) without leaving the
