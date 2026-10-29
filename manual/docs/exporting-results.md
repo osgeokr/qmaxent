@@ -12,15 +12,18 @@ After a training run that also produced a spatial projection and the
 `Save analysis charts as PNG` checkbox was on, the output folder looks
 like this:
 
-![QMaxent output folder showing model.pkl, prediction.tif, results.xlsx, priority_sites.gpkg, and the three saved analysis charts as PNG](images/results/output-folder.png)
+![QMaxent output folder showing model.pkl, prediction.tif, results.xlsx, survey_sites.gpkg, and the three saved analysis charts as PNG](images/results/output-folder.png)
 
 | File | Produced by | Use |
 |---|---|---|
-| `model.pkl` | Training | Reload later via *Load existing model (.pkl)…* |
+| `model.pkl` | Training | Reload later via *Load existing model (.pkl)…* (Python pickle: open only trusted files) |
+| `model_model_card.json` | Training | Settings, data, performance, thresholds, importance and software versions; safe to share (see [Saving and reusing models](saving-models.md#model-card-and-coefficient-table)) |
+| `model_coefficients.csv` | Training | Every Maxent feature with feature type, variable, knot and coefficient; safe to share |
+| `training_log.txt` | Training | Copy of the training log |
 | `prediction.tif` | Spatial projection | Habitat-suitability raster |
 | `prediction.tif.aux` | Spatial projection | QGIS auxiliary metadata |
 | `results.xlsx` | Training | Multi-sheet supplementary table |
-| `priority_sites.gpkg` | Priority Sites tab | Field-ready candidate points |
+| `survey_sites.gpkg` | Survey Site Selection tab | Field-ready candidate survey sites |
 | `prediction_roc.png` | Spatial projection | ROC curve (300 dpi) |
 | `prediction_jackknife.png` | Spatial projection | Jackknife bars (300 dpi) |
 | `prediction_response_curves.png` | Spatial projection | All response curves (300 dpi) |
@@ -87,16 +90,19 @@ variables whose unique contribution is harder to recover from the others.*
 This is the metric [Phillips, Anderson & Schapire 2006](references.md)
 recommend as the most robust indicator of *unique* contribution.
 
-### Optional Table 5 — Priority sites
+### Survey sites
 
-If you ran the **Priority Sites for Survey** tab, the same workbook
-gains a fifth sheet with one row per candidate location. The columns
-include `lat`, `lon`, `suitability`, and — when reverse geocoding was
-enabled — `country`, `province`, `city_county`, `district`, and the
-human-readable `display_name`. The format is the same one QMaxent uses
-inside the GeoPackage:
+The candidate sites from the **⑤ Survey Site Selection** tab are
+written to their own GeoPackage (`survey_sites.gpkg` by default), not to
+the workbook. Its attribute table has one row per site with `id`, `lat`,
+`lon`, `suitability`, `quartile` and, when reverse geocoding was enabled,
+the OpenStreetMap address fields `country`, `province`, `city_county`,
+`district` and `display_name`. Open the attribute table in QGIS, or
+export it to a spreadsheet with **Export > Save Features As...**, if you
+need it as a supplementary table. See
+[⑤ Survey Site Selection](priority-sites.md) for the field definitions.
 
-![Priority Sites attribute table — 20 candidates with Korean reverse-geocoded administrative addresses](images/results/attribute-table-priority-sites.png)
+![Survey sites attribute table with 20 sites and reverse-geocoded administrative addresses](images/results/attribute-table-priority-sites.png)
 
 ## Customizing the export
 

@@ -89,6 +89,12 @@ With the stack harmonized, the rest of the workflow is identical to
 [Bradypus](bradypus.md). Accept the defaults on **② Parameters**,
 click **▶ Run Maxent**, and let the training complete:
 
+!!! note "Numbers from an earlier version"
+    The values in this section were recorded with QMaxent v0.1.x, which
+    used LQPHT under Auto and drew a new background sample on every run.
+    v0.2.0 uses LQPH for these 3,000+ presences and a seeded background,
+    so your values will differ slightly.
+
 ![Training log for the harmonized Ariolimax stack](../images/examples/ariolimax/training-log.png)
 
 The status bar at the bottom summarises:
@@ -160,19 +166,19 @@ cross-validation gap (training vs. CV AUC) widens correspondingly.
 
 **Always run Check Raster Consistency before drawing conclusions.**
 
-## 7. Priority sites for survey
+## 7. Survey site selection
 
-After projection, switch to **⑤ Priority Sites for Survey**, choose
-**Discovery** mode, and extract candidates. The defaults work well
-for Ariolimax's smaller study area:
+After projection, switch to **⑤ Survey Site Selection**, choose
+**High-suitability search** mode, and click **▶ Select Survey Sites**.
+The defaults work well for Ariolimax's smaller study area:
 
-![Priority Sites tab in Discovery mode for Ariolimax — form filled in](../images/examples/ariolimax/priority-sites-discovery.png)
+![Survey Site Selection tab in High-suitability search mode for Ariolimax, form filled in](../images/examples/ariolimax/priority-sites-discovery.png)
 
 The sites land on the coastal mountain ranges that the suitability
 map highlighted, and survey teams can take the resulting GeoPackage
 straight to the field:
 
-![Priority sites for Ariolimax overlaid on the suitability map](../images/examples/ariolimax/priority-sites.png)
+![Survey sites for Ariolimax overlaid on the suitability map](../images/examples/ariolimax/priority-sites.png)
 
 ## What this example demonstrates
 

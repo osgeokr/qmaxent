@@ -21,7 +21,7 @@ flowchart TD
     E --> F["Run spatial K-Fold CV<br/>(repeat fit per fold)"]
     F --> G["Compute pooled CV AUC"]
     G --> H["(optional) Jackknife loop:<br/>2N additional fits"]
-    H --> I["Save .pkl + results.xlsx"]
+    H --> I["Save .pkl, model card, coefficients<br/>+ results.xlsx"]
 ```
 
 The fit is performed by
@@ -44,7 +44,7 @@ A typical successful run produces a log like:
 Extracting raster covariates for presence points…
 Extracting raster covariates for background points…
 → Presence: 116, Background: 10,104
-→ Feature types: ['linear', 'quadratic', 'product', 'hinge', 'threshold']
+→ Feature types: ['linear', 'quadratic', 'product', 'hinge']
 Training MaxentModel…
 → Model training complete
 → Model saved: …/model.pkl
@@ -60,6 +60,17 @@ Running cross-validation…
 ```
 
 A few patterns to recognise:
+
+- **Presences dropped** (`⚠ N of M presence points fall outside the
+  rasters or on NoData cells and were excluded.`): the log now says how
+  many presence points were lost and why. A large share usually means a
+  CRS problem or rasters that do not cover the study area.
+- **Presences sharing a raster cell** (`ℹ N presence point(s) share a
+  raster cell with another presence.`): two or more records fall in the
+  same cell of the first raster. maxent.jar removes such duplicates by
+  default; QMaxent keeps them, so they count more than once in the fit.
+  If this is not intended, thin the records spatially before modeling
+  ([Boria et al. 2014](references.md)).
 
 - **Background = 10,104 (background + presence-added rows)** — points that fell on
   NoData cells were dropped. Normal and not a cause for concern unless
@@ -93,7 +104,8 @@ restart by clicking **▶ Run Maxent** again.
 
 | Message | Meaning | Action |
 |---|---|---|
-| `⚠ Removed 312 presences with NoData covariate values` | Some points fell on NoData cells | Inspect the raster stack; may indicate the wrong CRS or a clipped raster |
+| `⚠ 12 of 116 presence points fall outside the rasters or on NoData cells and were excluded.` | Some points fell outside the rasters or on NoData cells | Inspect the raster stack; may indicate the wrong CRS or a clipped raster |
+| `ℹ 3 presence point(s) share a raster cell with another presence.` | Duplicate records at the raster resolution are kept | Thin the presences if the duplicates are not intended |
 | `⚠ Background points cap reduced from 10,000 to N` | Study area too small for the requested background size | Reduce the background-points field on Data tab |
 | `⚠ Convergence not reached after 500 iterations` | Hard-to-fit model (often very few presences) | Increase the regularization multiplier or simplify the feature set |
 

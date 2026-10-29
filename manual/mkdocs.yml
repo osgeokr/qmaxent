@@ -95,7 +95,7 @@ plugins:
             "② Parameters tab": "② 파라미터 탭"
             "③ Training tab": "③ 학습 탭"
             "④ Results tab": "④ 결과 탭"
-            "⑤ Priority Sites for Survey": "⑤ 우선조사 후보지"
+            "⑤ Survey Site Selection": "⑤ 조사지점 선정"
             Saving and reusing models: 모델 저장 및 재사용
             Exporting results: 결과 내보내기
             Examples: 실전 예제
@@ -158,7 +158,7 @@ nav:
       - "② Parameters tab": parameters-tab.md
       - "③ Training tab": training-tab.md
       - "④ Results tab": results-tab.md
-      - "⑤ Priority Sites for Survey": priority-sites.md
+      - "⑤ Survey Site Selection": priority-sites.md
       - Saving and reusing models: saving-models.md
       - Exporting results: exporting-results.md
   - Examples:

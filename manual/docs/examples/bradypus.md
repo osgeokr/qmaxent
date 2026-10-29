@@ -14,7 +14,10 @@ academically — a complete Bradypus habitat-suitability model.
 
 QMaxent installs its third-party Python libraries (elapid, rasterio,
 geopandas, scikit-learn, scipy, numpy, matplotlib) into an isolated
-virtual environment so they cannot conflict with QGIS's own Python.
+package folder so they cannot conflict with QGIS's own Python (a
+virtual environment on Linux and macOS; on Windows, a package folder
+filled by the QGIS Python's own pip, see
+[Dependencies](../dependencies.md)).
 The first time you open the plugin, you are invited to perform a
 one-time install:
 
@@ -27,13 +30,15 @@ every QMaxent feature is ready to run.
 
 ![QMaxent — Dependencies dialog, environment ready](../images/ui/dialog-dependencies-installed.png)
 
-If you ever need to recreate the venv (e.g. after a major QGIS
-upgrade), the **Remove Environment** button on the same dialog is the
-clean way to start over.
+If you ever need to recreate the package folder (e.g. after a major
+QGIS upgrade), the **Remove Environment** button on the same dialog is
+the clean way to start over.
 
 ## 1. Dataset
 
-The Phillips et al. (2006) dataset contains:
+The Phillips et al. (2006) dataset, as distributed with the R package
+dismo, contains 116 presences, 8 bioclimatic variables and one
+categorical biome raster (9 rasters in total):
 
 | Layer | Type | Description |
 |---|---|---|
@@ -84,17 +89,21 @@ lets us inspect what those choices produce:
 
 ![Parameters tab with all defaults accepted](../images/ui/dock-2-parameters-defaults.png)
 
-- **Feature Types**: Auto (the maxnet rule of
-  [Phillips & Dudík 2008](../references.md) selects all of LQPHT for
-  116 presences).
+- **Feature Types**: **Auto (maxnet default rule by sample size)**. The
+  maxnet default ([Phillips et al. 2017](../references.md)) gives LQPH
+  (linear, quadratic, product, hinge) for 80 or more presences, so LQPH
+  for 116 presences. Threshold features are not added automatically
+  (see [② Parameters tab](../parameters-tab.md#feature-types)).
 - **Regularization multiplier**: 1.0
   ([Phillips & Dudík 2008](../references.md) recommendation).
 - **Spatial evaluation**: Geographic K-Fold
   ([Anderson 2023](../references.md)), 5 folds, grid 50,000 m,
-  buffer 50,000 m, fixed random seed = 42
-  ([Roberts et al. 2017](../references.md) default).
+  buffer 50,000 m, **Fix random seed** = 42
+  ([Roberts et al. 2017](../references.md) default). Since v0.2.0 the
+  seed also fixes the background sample.
 - **Jackknife variable importance**: enabled.
-- **Permutation importance**: enabled, 10 repeats.
+- **Permutation importance**: enabled, 10 repeats, **Evaluate on:
+  Training data (maxent.jar convention)**.
 - **Output files**: `qmaxent_output/model.pkl` and
   `qmaxent_output/results.xlsx`.
 
@@ -106,6 +115,12 @@ bit-identical results** — central to computational reproducibility
 
 Click **▶ Run Maxent**. The **③ Training** tab takes over and finishes
 in about 30 seconds:
+
+!!! note "Numbers from an earlier version"
+    The AUC values and fold sizes in this section were recorded with
+    QMaxent v0.1.x, which used LQPHT under Auto and drew a new background
+    sample on every run. With v0.2.0 (LQPH, seeded background) your
+    values will differ slightly; the interpretation is unchanged.
 
 ![Training tab at 100% with the full log](../images/ui/dock-3-training-completed.png)
 
@@ -131,11 +146,13 @@ Reading the log section by section:
   5 folds in three modes (full-model reference, *only this variable*,
   and *without this variable*). The numbers feed the Jackknife plot
   below.
-- **Permutation importance** — sklearn `permutation_importance` with
-  `n_repeats=10`, evaluated on the held-out test set. Results feed the
-  Permutation Importance sub-tab.
-- **Save results** — `results.xlsx` and `training_log.txt` are
-  persisted next to the `.pkl`.
+- **Permutation importance**: sklearn `permutation_importance` with
+  `n_repeats=10`, evaluated on the training data (presences and
+  background), as maxent.jar does. Results feed the Permutation
+  Importance sub-tab.
+- **Save results**: `results.xlsx`, `training_log.txt`, the model card
+  (`model_model_card.json`) and the coefficient table
+  (`model_coefficients.csv`) are persisted next to the `.pkl`.
 
 **Train AUC = 0.957** while **CV AUC = 0.744 ± 0.075**. That gap is
 the cost of holding out spatially-distinct validation sets — and a
@@ -167,8 +184,9 @@ The model assigns highest suitability to the 1,500–3,500 mm/year band
 — the climatology of South American rainforest — with a sharp drop-off
 below ~800 mm. The shape combines hinge and quadratic features. Try
 other variables in the drop-down: smooth U- or peak-shaped curves
-indicate quadratic terms; sharp angular discontinuities come from
-hinge or threshold features.
+indicate quadratic terms; angular kinks come from hinge features.
+(Step-shaped jumps would come from threshold features, which Auto no
+longer uses.)
 
 ### Jackknife importance
 
@@ -193,14 +211,19 @@ For Bradypus:
 
 The **Permutation Importance** sub-tab reports the same idea from a
 different lens: scikit-learn's `permutation_importance` shuffles each
-variable's values on the held-out test set, measures the AUC drop,
-repeats 10 times, and normalises to 100% of the total:
+variable's values, measures the AUC drop, repeats 10 times, and
+normalises to 100% of the total. With the default **Evaluate on:
+Training data (maxent.jar convention)**, the AUC drop is measured on the
+training presences and background, as in maxent.jar. Choose **Held-out
+CV test folds (all folds pooled)** to measure it on the CV test folds
+instead:
 
 ![Permutation importance bars](../images/examples/bradypus/permutation.png)
 
 `bio7` and `bio12` again dominate; the permutation view distributes
-the total importance across all variables and is therefore directly
-comparable to maxent.jar's per-variable percentage table.
+the total importance across all variables and, evaluated on the training
+data, is directly comparable to maxent.jar's per-variable percentage
+table.
 
 ## 6. Spatial projection
 
@@ -224,12 +247,17 @@ the very dry Brazilian Northeast (Caatinga).
 
 ## 7. Saving outputs
 
-Two files are written automatically:
+These files are written automatically:
 
 - `qmaxent_output/model.pkl` — the serialised trained model. Reload it
   later from the Data tab's **Load existing model (.pkl)…** button or
-  share it with collaborators. Security note in
+  share it with trusted collaborators. Security note in
   [Saving and reusing models](../saving-models.md).
+- `qmaxent_output/model_model_card.json` and
+  `qmaxent_output/model_coefficients.csv`: a plain-text record of the
+  run (software versions, settings, data, performance, thresholds,
+  variable importance) and every Maxent feature with its coefficient.
+  Unlike the `.pkl`, both are safe to share.
 - `qmaxent_output/results.xlsx` — the multi-sheet supplementary table
   containing experimental setup, variable list, CV results, jackknife,
   permutation, response-curve breakpoints, and threshold tables. See
@@ -241,53 +269,62 @@ additional 300-dpi PNGs of the response curves, ROC, jackknife, and
 permutation panels are written next to the GeoTIFF — sized for direct
 paste into a single-column manuscript figure.
 
-## 8. Priority sites for survey
+## 8. Survey site selection
 
 A natural next step is to use the trained model to plan follow-up
-surveys. **⑤ Priority Sites for Survey** offers two distinct modes —
-**Discovery** (looking for *new* populations) and **Validation**
-(stratified field-checks across the suitability gradient).
+surveys. **⑤ Survey Site Selection** offers two modes:
+**High-suitability search** (looking for *new* populations) and
+**Gradient-stratified sampling** (field checks across the suitability
+gradient). See [⑤ Survey Site Selection](../priority-sites.md) for all
+settings.
 
-### 8.1 Discovery mode
+### 8.1 High-suitability search
 
-Discovery picks candidates from a high-suitability band. Open the
-tab, keep **Discovery** as the mode, leave the auto-set minimum
-suitability of ~0.81, set `n_sites = 20`, leave the 1 km / 500 m
-spacing defaults, and click **▶ Extract Priority Sites**:
+High-suitability search samples sites from a high-suitability band.
+Open the tab, keep **High-suitability search** as the mode, leave the
+automatic **Minimum suitability** (0.9 × the raster maximum) and
+**Sampling order: Random**, keep 20 sites and the 1,000 m / 500 m
+spacing defaults, and click **▶ Select Survey Sites**:
 
-![Priority Sites tab in Discovery mode — form filled in](../images/ui/dock-5-priority-sites-discovery.png)
+![Survey Site Selection tab in High-suitability search mode, form filled in](../images/ui/dock-5-priority-sites-discovery.png)
 
-20 candidate locations (red dots) appear on the suitability map, with
-their attribute table populated by Nominatim reverse geocoding:
+20 sites (red dots) appear on the suitability map as the layer
+**Survey sites** (`survey_sites.gpkg`), with their attribute table
+populated by OpenStreetMap reverse geocoding. With the default **Address
+language: Local names**, the addresses are in the local language of
+each country (Spanish or Portuguese across most of the Bradypus range):
 
-![Discovery-mode candidates on the canvas with attribute table](../images/ui/dock-5-priority-sites-extracted.png)
+![High-suitability search sites on the canvas with attribute table](../images/ui/dock-5-priority-sites-extracted.png)
 
-Each candidate is at least 1 km from any known occurrence and at least
-500 m from any other candidate, so a single field trip can plausibly
-cover several at once. Discovery is the right mode when the question
-is *"where could the species be that we have not yet looked?"* — the
-[Rhoden et al. 2017](../references.md) "Maxent-directed surveys"
-paradigm.
+Each site is at least 1 km from any known occurrence and at least
+500 m from any other site, so a single field trip can plausibly
+cover several at once. High-suitability search is the right mode when
+the question is *"where could the species be that we have not yet
+looked?"*
 
-### 8.2 Validation mode
+### 8.2 Gradient-stratified sampling
 
-Switching the **Survey purpose** to **Validation** draws a different
-kind of sample: candidates are stratified into four quartiles of
-suitability (above a configurable threshold), so a field trip can test
-the model's calibration across the full predicted gradient rather than
-only its high-suitability core:
+Switching the **Survey purpose** to **Gradient-stratified sampling**
+draws a different kind of sample. A threshold (T10 by default; MTP,
+MaxSSS or a custom value are also offered) only defines the sampling
+frame. The cells above it are split into four suitability quartiles,
+and the same number of sites is drawn from each
+([Rhoden et al. 2017](../references.md)). No binary map is produced.
+A field trip can then test whether the species is found more often
+where the model predicts higher suitability, rather than visiting only
+the high-suitability core:
 
-![Priority Sites tab in Validation mode — quartile stratification settings](../images/ui/dialog-priority-validation.png)
+![Survey Site Selection tab in Gradient-stratified sampling mode, quartile stratification settings](../images/ui/dialog-priority-validation.png)
 
 The resulting sites span low- through high-suitability cells in
 roughly equal numbers, each tagged with its quartile in the attribute
 table:
 
-![Validation-mode candidates with quartile-coloured stratification](../images/maps/priority-sites-validation-canvas.png)
+![Gradient-stratified sites with quartile-coloured stratification](../images/maps/priority-sites-validation-canvas.png)
 
-Validation is the right mode for model verification rather than
-discovery — it is the field-side complement of the cross-validation
-AUC we computed in § 4.
+Gradient-stratified sampling is the right mode for checking the model
+in the field rather than for discovery: it is the field-side complement
+of the cross-validation AUC we computed in § 4.
 
 ## Next steps
 

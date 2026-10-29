@@ -17,11 +17,11 @@ re-docked using the standard QGIS panel handles.
 
 | # | Tab | Purpose | Detailed chapter |
 |---|---|---|---|
-| ① | **Data** | Pick presence layer; register environmental rasters; pre-flight raster grid check | [① Data tab](data-tab.md) |
+| ① | **Data** | Pick or load presence points (point file or CSV); register environmental rasters; pre-flight raster grid and CRS check | [① Data tab](data-tab.md) |
 | ② | **Parameters** | Choose feature classes, regularization, spatial CV scheme, output paths | [② Parameters tab](parameters-tab.md) |
 | ③ | **Training** | Live progress bar and log while the model fits | [③ Training tab](training-tab.md) |
 | ④ | **Results** | Response curves, Jackknife importance, spatial projection | [④ Results tab](results-tab.md) |
-| ⑤ | **Priority Sites for Survey** | Turn the prediction into field-ready candidate points | [⑤ Priority Sites](priority-sites.md) |
+| ⑤ | **Survey Site Selection** | Turn the prediction into field-ready candidate survey sites | [⑤ Survey Site Selection](priority-sites.md) |
 
 The numbered glyphs are deliberate: even when QGIS is configured in a
 language other than English, the order is unambiguous.
@@ -47,12 +47,12 @@ The footer of the dock has three persistent buttons:
 
 - **▶ Run Maxent** — start a training run
 - **▶ Run Spatial Projection** — apply the trained model across all rasters
-- **▶ Extract Priority Sites** — sample candidate survey locations from
-  the prediction
+- **▶ Select Survey Sites**: sample candidate survey sites from the
+  prediction
 
 These buttons are **enabled only when their prerequisites are met**: e.g.
-projection becomes available only after a model has been trained, and the
-priority-sites extractor requires a projection raster on disk.
+projection becomes available only after a model has been trained, and
+survey site selection requires a projection raster on disk.
 
 ## What this means for your workflow
 

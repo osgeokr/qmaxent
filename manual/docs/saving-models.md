@@ -26,6 +26,22 @@ collaborators or publishing supplementary material — that is the pair
 of files [Araújo et al. 2019](references.md) cite as the minimum
 reproducibility unit for a published SDM.
 
+## Model card and coefficient table
+
+Since v0.2.0, QMaxent writes two plain-text files next to the `.pkl`,
+named after it (for `model.pkl`: `model_model_card.json` and
+`model_coefficients.csv`):
+
+| File | Contents |
+|---|---|
+| `<model>_model_card.json` | Software versions (QMaxent, elapid); settings (feature classes and whether Auto or Manual selection chose them, regularization multiplier, output transform, hinge and threshold knots, CV method and folds, random seed, permutation-importance evaluation data); data summary (presence and background counts, each variable with its type, training range and raster file); performance (training AUC, per-fold and mean CV AUC); thresholds (MTP, T10, MaxSSS); variable importance (permutation and jackknife); model constants |
+| `<model>_coefficients.csv` | One row per Maxent feature: index, feature type (linear, quadratic, product, threshold, hinge, categorical), variable, a short description, the knot value for hinge and threshold features, the fitted coefficient, and whether it is non-zero |
+
+Use the model card to report the run in a methods section or a
+supplement, and the coefficient table to see which features the
+regularization kept. Unlike the `.pkl`, both files are **safe to open and
+share**: they contain only text and numbers, no executable code.
+
 ## Reloading a saved model
 
 On the **① Data** tab, click **Load existing model (.pkl)…** and select
@@ -64,7 +80,7 @@ are mapped.
 After confirmation, QMaxent rewires the dock as if you had just trained
 the model fresh — the **③ Training** tab is skipped and **④ Results**
 is enabled directly. You can immediately run a spatial projection or
-extract priority sites against the new raster stack.
+select survey sites against the new raster stack.
 
 ## Re-projecting onto an updated raster stack
 
@@ -89,18 +105,22 @@ training range.
 
 ## Security note on Python pickle files
 
-`.pkl` files are **executable Python bytecode**. Loading a malicious
-`.pkl` can run arbitrary code on your machine. Only load `.pkl` files
-that you produced yourself or that come from trusted collaborators.
+`.pkl` files are **Python pickles**, which can contain executable code.
+Loading a malicious `.pkl` can run arbitrary code on your machine. Only
+open `.pkl` files that you produced yourself or that come from trusted
+collaborators. The model card (`.json`) and the coefficient table
+(`.csv`) are safe to share and open.
 
 QMaxent has no way to verify the provenance of a third-party `.pkl`
 beyond what Python's `pickle` module itself does (which is nothing).
 For published QMaxent results, the safe pattern is:
 
-- Distribute the `model.pkl` alongside the `results.xlsx` workbook so
-  reviewers have the deterministic seed, hyperparameters, and inputs
-  needed to **re-train an equivalent model from scratch** if they
-  prefer not to load the pickle.
+- Distribute the `model.pkl` alongside the `results.xlsx` workbook and
+  the model card so reviewers have the deterministic seed,
+  hyperparameters, and inputs needed to **re-train an equivalent model
+  from scratch** if they prefer not to load the pickle. The model card
+  and coefficient table let them inspect the model without opening the
+  pickle at all.
 - Sign the `.pkl` with a SHA-256 hash in your supplementary materials.
 
 ## Next

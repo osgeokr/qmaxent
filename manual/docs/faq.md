@@ -17,6 +17,15 @@ On Windows, run **OSGeo4W Shell → `python -m ensurepip --upgrade`**;
 on macOS/Linux, install QGIS via the OSGeo4W or Conda channel that ships
 with `pip` enabled.
 
+### Windows: "ensurepip ... returned non-zero exit status 1"
+
+This error comes from QMaxent 0.1.x with QGIS 3.44.15 or later on
+Windows, where creating a Python virtual environment fails. QMaxent
+0.2.0 installs the packages with the QGIS Python's own pip into the
+QMaxent package folder instead, without a virtual environment. Upgrade
+the plugin and click **Install / Update Dependencies** again. See
+[Dependencies](dependencies.md#where-the-packages-are-installed).
+
 ### "Could not find a version that satisfies the requirement elapid"
 
 This usually means the QGIS Python is older than 3.9. QMaxent requires
@@ -57,6 +66,23 @@ Three common causes:
 - **Categorical variable with very rare classes**. Re-bin the rare
   classes into an `Other` category before modeling.
 
+### "These rasters cannot be aligned because of their coordinate reference system"
+
+**Check Raster Consistency** found a raster with no CRS, or with a local
+(engineering) CRS without a datum, which PROJ cannot reproject. This is
+typical of a `.prj` file that only names a projection, such as
+`NAD83(NSRS2007) / Michigan South`. The message names the file and, when
+possible, the matching EPSG code. In the **Layers** panel, right-click
+the raster, choose **Layer CRS > Set Layer CRS...**, pick the correct
+CRS, and run the check again; Check and **Harmonize to Folder...** then
+use that CRS. See [① Data tab](data-tab.md#rasters-with-an-unusable-crs).
+
+### "QMaxent uses one raster band per environmental variable"
+
+A raster in the list has several bands. Split it into single-band files,
+for example with **Processing > GDAL > Raster conversion > Rearrange
+bands** (one band per output), and add the single-band files instead.
+
 ### "Grid mismatch — CRS, extent, resolution differ across rasters"
 
 This is the **Check Raster Consistency** failure mode. Click
@@ -91,7 +117,9 @@ training resolution is methodologically defensible
 
 ### "Why are some cells in my projection NoData when the rasters cover them?"
 
-The unified preflight dialog auto-masks two cell categories to NoData:
+The unified preflight dialog auto-masks two cell categories to NoData
+(a categorical class missing from the training data no longer makes the
+projection fail; see [④ Results tab](results-tab.md#the-unified-preflight-dialog)):
 
 1. Categorical class codes that did not appear during training.
 2. Cells where any continuous variable lies outside its training

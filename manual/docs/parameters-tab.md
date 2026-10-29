@@ -25,21 +25,47 @@ of suitability to each environmental variable
 
 QMaxent offers two modes:
 
-- **Auto** (default) — applies the
-  [Phillips & Dudík 2008](references.md) sample-size rule used by maxnet:
-  *L only* for ≤10 presences, *L+Q* for ≤30, *L+Q+H* for ≤80, and *L+Q+P+H+T*
-  above 80. This is the **single most extensively benchmarked rule in the
-  Maxent literature** and is the safe default.
-- **Manual** — pick any subset of LQPHT explicitly. Useful only when you
-  are reproducing a published study that fixed a particular feature
-  combination (e.g. the [Pitta nympha example](examples/pitta-nympha.md)
+- **Auto (maxnet default rule by sample size)** (default): uses the
+  default feature classes of maxnet, the R implementation of Maxent by
+  its authors ([Phillips et al. 2017](references.md);
+  `maxnet.formula(classes = "default")`), based on the number of
+  presence points:
+
+    | Presences | Feature classes |
+    |---|---|
+    | fewer than 10 | L |
+    | 10 to 14 | LQ |
+    | 15 to 79 | LQH |
+    | 80 or more | LQPH |
+
+    Threshold features are not added automatically.
+- **Manual selection**: tick any subset of LQPHT. The boxes start with
+  L, Q, P and H ticked and Threshold unticked. Use this to compare
+  alternatives or to reproduce a published study that fixed a particular
+  feature combination (e.g. the [Pitta nympha example](examples/pitta-nympha.md)
   fixes feature classes to **LQH** to match Lee et al. 2025).
 
-!!! tip "When in doubt, leave it on Auto"
-    Repeatedly tuning feature classes without spatially-blocked CV is the
-    primary source of optimistic AUCs flagged by
-    [Roberts et al. 2017](references.md). The auto rule sidesteps that
-    failure mode entirely.
+!!! note "Why Auto no longer adds threshold features"
+    Up to v0.1.x, Auto followed the maxent.jar rule and added threshold
+    features (LQPHT) for 80 or more presences. With elapid's scikit-learn
+    backend, every feature gets the same regularization strength, while
+    maxent.jar regularizes each feature class separately. Threshold
+    features then overfit. On the Bradypus benchmark (random 10-fold CV),
+    the test AUC was 0.873 with LQPHT and 0.890 with LQPH; maxent.jar with
+    LQPHT reached 0.895. v0.2.0 therefore follows the maxnet default,
+    which does not use threshold features. They remain available under
+    **Manual selection**.
+
+!!! tip "Auto is a default, not the best model"
+    The rule gives a reasonable starting point, but the most suitable
+    feature classes depend on the data
+    ([Merow, Smith & Silander 2013](references.md);
+    [Radosavljevic & Anderson 2014](references.md)). To choose them,
+    compare alternatives with **Manual selection** and spatial
+    cross-validation, or use a model-selection tool such as ENMeval
+    ([Muscarella et al. 2014](references.md)). Be aware that repeatedly
+    tuning settings against random (non-spatial) CV gives optimistic AUCs
+    ([Roberts et al. 2017](references.md)).
 
 ## Regularization multiplier
 
@@ -95,13 +121,39 @@ The interpretation follows the original
 bars show univariate signal; "without" bars show how dependent the full
 model is on each variable.
 
+## Permutation importance
+
+When **Permutation importance** is ticked, QMaxent shuffles the values of
+each variable in turn and measures the drop in AUC (scikit-learn
+`permutation_importance`, **Repeats** shuffles per variable, default 10).
+The drops are reported as a percentage of the total, the convention of
+maxent.jar. The **Evaluate on** drop-down sets which data the AUC drop is
+measured on:
+
+| Option | What is evaluated | Use it to |
+|---|---|---|
+| **Training data (maxent.jar convention)** (default) | The full model on all training presences and background points, as maxent.jar does | Compare variable rankings with maxent.jar studies |
+| **Held-out CV test folds (all folds pooled)** | Each cross-validation fold model on its own test fold; the results of all folds are pooled | See how much predictive performance at new locations depends on each variable |
+
+The held-out option needs **Geographic K-Fold**, **Random K-Fold** or
+**Checkerboard** cross-validation. With no CV or with Buffered LOO, QMaxent
+falls back to the training data and says so in the log. (v0.1.x used only
+the first CV fold, which made rankings unstable.) The training log and
+the model card record which option was used.
+
+Permutation importance is fast (no refitting), but it can underestimate
+the importance of variables that are correlated with others. Read it
+together with the jackknife.
+
 ## Output paths
 
 Two file paths default to a `qmaxent_output/` subdirectory of the current
 QGIS project:
 
 - **Model file (.pkl)** — the serialised trained model, reloadable from
-  the Data tab. See [Saving and reusing models](saving-models.md) for the
+  the Data tab. QMaxent also writes `<model>_model_card.json` and
+  `<model>_coefficients.csv` next to it. See
+  [Saving and reusing models](saving-models.md) for these files and the
   security note on Python pickle files.
 - **Results workbook (.xlsx)** — multi-sheet supplementary table. See
   [Exporting results](exporting-results.md) for the sheet-by-sheet layout.
@@ -113,9 +165,13 @@ in memory for the rest of the session even when not saved to disk.
 
 A collapsible **Advanced** section exposes:
 
-- **Background sample seed** — separate from the CV seed, this fixes the
-  pseudo-random draw of background points so the same study is reproducible
-  even when the user changes the CV scheme.
+- **Fix random seed** (default on, value 42): one seed for every random
+  step of a run, that is CV fold partitions, hold-out splits, permutation
+  shuffles, survey-site shuffling and, since v0.2.0, the background-point
+  draw (v0.1.x drew a different background on every run). Background
+  points are drawn from the first raster in the ① Data list, so keep the
+  raster order the same to reproduce a run exactly. The seed value is
+  written to the Overview sheet of `results.xlsx` and to the model card.
 - **Down-weight spatially clustered points** — applies the
   [Phillips et al. 2009](references.md) sample-bias correction by giving
   duplicates and very-near-duplicate occurrences less weight in the
