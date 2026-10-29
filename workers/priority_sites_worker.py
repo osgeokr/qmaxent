@@ -93,7 +93,7 @@ class PrioritySitesWorker(QThread):
             except Exception:
                 pass
 
-            self.progress.emit(0, "Extracting priority sites…")
+            self.progress.emit(0, "Selecting survey sites…")
             from ..bridge.priority_sites import extract_priority_sites
 
             sites = extract_priority_sites(

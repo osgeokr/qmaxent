@@ -63,8 +63,8 @@ def make_maxent_model(**kwargs):
 
     The plugin's call sites set the following defaults, each backed by
     an explicit reference:
-        feature_types         maxnet auto rule (Phillips & Dudik 2008;
-                              Phillips et al. 2017; Merow et al. 2013).
+        feature_types         maxnet default feature classes
+                              (Phillips et al. 2017).
                               See core.maxent_rules.auto_feature_types.
         beta_multiplier=1.0   Tunable regularization strength
                               (Phillips & Dudik 2008;
@@ -178,6 +178,28 @@ def make_buffered_loo(distance: float):
 # ---------------------------------------------------------------------------
 
 
+def tolerate_unknown_categories(model) -> int:
+    """Let categorical one-hot encoders accept classes unseen in training.
+
+    v0.2.0 fix: a class that occurs in a categorical raster but not among
+    the training presences/background (e.g. a rare forest-type code) made
+    elapid's OneHotEncoder raise "Found unknown categories" and the whole
+    spatial projection failed. With handle_unknown="ignore" such cells
+    get all class indicators = 0, i.e. no categorical contribution, which
+    is how maxent.jar treats a class without training data. Returns the
+    number of encoders changed. Safe to call on any model.
+    """
+    tr_ = getattr(model, "transformer", None)
+    ests = getattr(tr_, "estimators_", None) or {}
+    cat = ests.get("categorical") if isinstance(ests, dict) else None
+    n = 0
+    for enc in getattr(cat, "estimators_", None) or []:
+        if getattr(enc, "handle_unknown", "ignore") != "ignore":
+            enc.handle_unknown = "ignore"
+            n += 1
+    return n
+
+
 def apply_model_to_rasters(model, raster_paths, output_path, **kwargs):
     """Apply a fitted model to a stack of rasters (elapid.apply_model_to_rasters).
 
@@ -187,6 +209,7 @@ def apply_model_to_rasters(model, raster_paths, output_path, **kwargs):
     that requires direct access to the elapid.geo module (see
     workers.projection_worker for the documented exception).
     """
+    tolerate_unknown_categories(model)
     import elapid
 
     return elapid.apply_model_to_rasters(

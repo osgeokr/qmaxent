@@ -92,6 +92,38 @@ def _install_qgis_stubs() -> None:
     sys.modules["qgis.core"] = qgis_core
     qgis.core = qgis_core  # so `import qgis; qgis.core.Qgis` works too
 
+    # Any other qgis / Qt symbol (QgsRasterLayer, QThread, pyqtSignal,
+    # QDialog, ...) resolves to an inert placeholder class. This lets
+    # the v0.2.0 regression tests import workers/ and dialogs/ modules
+    # for their pure-Python helpers without a QGIS host. Code that
+    # really needs Qt behaviour is still validated inside QGIS.
+    class _Inert:
+        def __init__(self, *_a, **_k):
+            pass
+
+        def __call__(self, *_a, **_k):
+            return _Inert()
+
+        def __getattr__(self, _name):
+            return _Inert()
+
+    def _inert_module(name):
+        mod = sys.modules.get(name) or types.ModuleType(name)
+        mod.__getattr__ = lambda attr: type(attr, (_Inert,), {})
+        sys.modules[name] = mod
+        return mod
+
+    qgis_core.__getattr__ = lambda attr: type(attr, (_Inert,), {})
+    for _name in (
+        "qgis.gui",
+        "qgis.utils",
+        "qgis.PyQt",
+        "qgis.PyQt.QtCore",
+        "qgis.PyQt.QtGui",
+        "qgis.PyQt.QtWidgets",
+    ):
+        _inert_module(_name)
+
 
 _install_qgis_stubs()
 

@@ -3,7 +3,7 @@ name=QMaxent
 qgisMinimumVersion=3.44
 qgisMaximumVersion=3.99
 description=Maxent species distribution modeling (SDM) in QGIS via the elapid Python library — full workflow from data preparation through post-prediction survey planning.
-version=0.1.7
+version=0.2.0
 author=Byeong-Hyeok Yu
 email=bhyu@knps.or.kr
 about=QMaxent runs the full Maxent SDM workflow inside QGIS, integrating
@@ -22,8 +22,8 @@ about=QMaxent runs the full Maxent SDM workflow inside QGIS, integrating
       generic maxent.jar command-line README
 
     ② Parameters:
-    - Feature types (LQPHT) — Auto (Phillips et al. 2017 sample-size
-      rule) or Manual
+    - Feature types (LQPHT): Auto (maxnet default rule by sample
+      size, Phillips et al. 2017) or Manual
     - Beta multiplier
     - Categorical variable support via one-hot encoding
     - Optional distance-weight bias correction (Phillips 2009)
@@ -53,12 +53,12 @@ about=QMaxent runs the full Maxent SDM workflow inside QGIS, integrating
       analysis charts (response curves, ROC, jackknife, permutation)
       as PNG alongside the prediction raster
 
-    ⑤ Priority Sites for Survey:
-    - Discovery mode: random or top-N sampling within a high-
+    ⑤ Survey Site Selection:
+    - High-suitability search: random or top-N sampling within a high-
       suitability band (auto-set to raster max × 0.9), with spacing
       constraints relative to existing presences and between
       candidate sites
-    - Validation mode: stratified sampling across four suitability
+    - Gradient-stratified sampling: equal sampling across four suitability
       quartiles (Rhoden et al. 2017), with MTP / T10 / MaxSSS /
       Custom threshold methods defining the lower bound
     - OpenStreetMap Nominatim reverse geocoding (no API key)
@@ -70,15 +70,61 @@ about=QMaxent runs the full Maxent SDM workflow inside QGIS, integrating
     Results export: multi-sheet styled XLSX (Times New Roman,
     academic-paper Supplementary Table convention) covering
     experimental setup, variable inventory, cross-validation,
-    jackknife importance, permutation importance, and Priority Sites
-    thresholds — ready to paste into a manuscript supplement.
+    jackknife importance, permutation importance, and survey site
+    selection thresholds — ready to paste into a manuscript supplement.
 
     Bilingual UI (English / Korean). Dependencies install into a
     plugin-private virtual environment that does not affect QGIS
     (~590 MB on disk).
+changelog=0.2.0
+    Installation and robustness
+    - Fix: dependency installation failed on QGIS 3.44.15+ for Windows
+      ("ensurepip ... returned non-zero exit status 1"). Packages are now
+      installed with the QGIS Python's own pip into the QMaxent package
+      folder (no venv interpreter needed on Windows).
+    - Fix: Harmonize stopped with a raw PROJ error for rasters whose CRS
+      is a local/engineering system without a datum. Check Raster
+      Consistency now names the raster, explains the problem, suggests
+      the matching EPSG code and how to fix it; a CRS set in QGIS
+      (Layer CRS > Set Layer CRS...) is used for such rasters.
+    - Fix: the Data-tab raster list now follows the QGIS project (no
+      stale rows after a new project or removed layers); missing inputs
+      are reported in a dialog instead of the Training log.
+    - Checks before training: multi-band rasters are rejected with
+      instructions; the log reports presences dropped (outside rasters
+      or NoData) and presences sharing a raster cell.
+    Inputs and outputs
+    - New: Open point file... (any QGIS point format) and Load CSV (X/Y
+      columns)... with delimiter, column and CRS detection.
+    - New: Add raster files... (any GDAL single-band raster).
+    - New: <model>_model_card.json (settings, data, performance,
+      thresholds, variable importance, software versions) and
+      <model>_coefficients.csv (all Maxent features and coefficients)
+      are written next to model.pkl.
+    Methods and wording
+    - Permutation importance: choose the evaluation data, Training data
+      (maxent.jar convention, default) or Held-out CV test folds (all
+      folds pooled; v0.1.x used the first fold only).
+    - Auto feature types follow the maxnet default rule (Phillips et al.
+      2017): 80 or more presences now give LQPH instead of LQPHT, because
+      threshold features overfit with the elapid scikit-learn backend
+      (Bradypus random 10-fold test AUC 0.873 with T, 0.890 without).
+      Threshold features remain available under Manual selection.
+    - Fix: projection no longer fails when a categorical raster contains
+      a class that was absent from the training data.
+    - Fix: running survey site selection again no longer fails when the
+      output GeoPackage already exists (it is replaced, or a new file
+      name is used if another program has it open).
+    - Survey tab renamed Survey Site Selection; modes renamed
+      High-suitability search and Gradient-stratified sampling.
+    - Reverse geocoding works worldwide with a choice of address
+      language (local names, QGIS language, English).
+    - Shorter CRS labels in the status line and training log.
+    - Fix random seed now also covers background sampling (v0.1.x drew a
+      different background on every run).
 tracker=https://github.com/osgeokr/qmaxent/issues
 repository=https://github.com/osgeokr/qmaxent
-tags=species distribution model,maxent,sdm,ecology,biogeography,habitat suitability,spatial cross-validation,jackknife,priority sites,conservation,raster,vector,korean
+tags=species distribution model,maxent,sdm,ecology,biogeography,habitat suitability,spatial cross-validation,jackknife,survey design,conservation,raster,vector,korean
 homepage=https://osgeokr.github.io/qmaxent/
 category=Analysis
 icon=icons/icon.png

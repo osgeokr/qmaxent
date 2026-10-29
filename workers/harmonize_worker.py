@@ -38,6 +38,7 @@ class HarmonizeWorker(QThread):
         output_dir: str,
         categorical_indices: list = None,
         template_idx: int = 0,
+        crs_overrides: dict = None,
         parent=None,
     ):
         super().__init__(parent)
@@ -45,6 +46,7 @@ class HarmonizeWorker(QThread):
         self._output_dir = output_dir
         self._categorical_indices = list(categorical_indices or [])
         self._template_idx = int(template_idx)
+        self._crs_overrides = dict(crs_overrides or {})
         self._cancelled = False
 
     def cancel(self):
@@ -62,6 +64,7 @@ class HarmonizeWorker(QThread):
                 output_dir=self._output_dir,
                 progress_callback=self._on_progress,
                 cancel_check=lambda: self._cancelled,
+                crs_overrides=self._crs_overrides,
             )
             if self._cancelled:
                 # cancel_check inside harmonize_rasters raises
@@ -75,6 +78,12 @@ class HarmonizeWorker(QThread):
                 new_paths,
             )
         except RuntimeError as e:
+            from ..bridge.raster_bridge import RasterCRSError
+
+            if isinstance(e, RasterCRSError):
+                # Expected, user-fixable input problem: no traceback.
+                self.finished.emit(False, str(e), [])
+                return
             # Distinguish user-cancel from a genuine error so the
             # dialog can show a friendlier message.
             if str(e) == "Cancelled":

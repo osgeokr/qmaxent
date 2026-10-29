@@ -12,16 +12,21 @@ library into QGIS to provide Maxent-style species distribution modelling
 (SDM) directly inside the GIS desktop. Train a model on presence points and
 environmental rasters, evaluate it with spatial cross-validation, inspect
 variable importance via jackknife and permutation, project the model to a
-habitat suitability map, and design field surveys with the integrated
-priority-sites tool — all without leaving QGIS.
+habitat suitability map, and select field survey sites with the integrated
+survey-site tool, all without leaving QGIS.
 
 ## Features
 
 - **Modelling**: Maxent via the elapid library (linear, quadratic, hinge,
-  product, threshold features; auto-selection by sample size following the
-  documented maxnet rule).
-- **Data preparation**: Check + Harmonize raster workflow (CRS, extent,
-  resolution); one-click example datasets — Bradypus and Ariolimax.
+  product, threshold features). The Auto option follows the maxnet default
+  rule by sample size (fewer than 10 presences: L; 10 to 14: LQ; 15 to 79:
+  LQH; 80 or more: LQPH). Threshold features are available under Manual
+  selection.
+- **Data preparation**: open point files or CSV tables (X/Y or GBIF
+  longitude/latitude columns) and add raster files from the Data tab;
+  Check + Harmonize raster workflow (CRS, extent, resolution) that names
+  rasters with an unusable CRS and suggests the EPSG code to set in QGIS;
+  one-click example datasets (Bradypus and Ariolimax).
 - **Export for external Maxent**: Export QGIS-resident data to
   maxent.jar-compatible formats — either Samples-With-Data (SWD) CSV pairs
   (`presence.csv` + `background.csv`) or a samples CSV plus an ESRI ASCII
@@ -35,16 +40,23 @@ priority-sites tool — all without leaving QGIS.
 - **Variable importance**: Jackknife with both training and held-out test
   AUC, mirroring the original Maxent output (Phillips et al. 2006, 2017);
   permutation importance via `sklearn.inspection.permutation_importance`
-  normalized to 100 % to match maxent.jar's permutation importance scale.
+  normalized to 100 % to match maxent.jar's permutation importance scale,
+  evaluated on the training data (maxent.jar convention) or on the pooled
+  held-out cross-validation folds.
 - **Spatial projection**: Apply trained models to raster stacks and load
   the result as a styled QGIS layer (`cloglog` / `logistic` / `raw`).
-- **Priority Sites for Survey**: Discovery mode (random / top-N within a
-  high-suitability band, with spacing constraints) and Validation mode
-  (stratified four-quartile sampling above MTP / T10 / MaxSSS / custom
-  threshold) for post-prediction field survey planning.
+- **Survey Site Selection**: High-suitability search (random or top-N
+  sites within a high-suitability band, with spacing constraints) and
+  Gradient-stratified sampling (equal numbers of sites from four
+  suitability quartiles above an MTP, T10, MaxSSS or custom threshold),
+  with optional worldwide reverse geocoding in local, interface or
+  English address language.
 - **Model reuse**: Save trained models as `.pkl` and reload them later via
   a guided variable-mapping dialog that protects against the silent failure
   mode where mismatched raster ordering would yield wrong predictions.
+  Each saved model is accompanied by a model card (`_model_card.json`:
+  versions, settings, data summary, performance, thresholds, importance)
+  and a coefficient table (`_coefficients.csv`) that are safe to share.
 - **Results export**: Multi-sheet styled XLSX (Times New Roman, academic
   supplementary-table convention) covering experimental setup, variable
   inventory, cross-validation, jackknife, permutation importance, and
@@ -57,8 +69,8 @@ priority-sites tool — all without leaving QGIS.
 - Python **3.10+** (QGIS 3.44 bundles Python **3.12** on Windows
   and macOS; Linux distribution installs vary but ship 3.10 or
   newer for QGIS 3.44).
-- Internet access on first run to install dependencies into an isolated
-  virtual environment (~590 MB after full install).
+- Internet access on first run to install dependencies (~590 MB after
+  full install).
 
 ## Installation
 
@@ -68,8 +80,10 @@ priority-sites tool — all without leaving QGIS.
 3. After installation, open **Plugins → QMaxent → QMaxent Dependencies**
    and click **Install / Update Dependencies**. This step downloads
    `elapid`, `rasterio`, `geopandas`, `scikit-learn`, and other Python
-   packages into a per-plugin virtual environment that does not affect
-   your system Python or QGIS.
+   packages into a QMaxent package folder (`~/.qgis_qmaxent`) that does
+   not change your system Python or QGIS. On Windows the packages are
+   installed with the QGIS Python's own pip; on Linux and macOS a virtual
+   environment is used. Set `QMAXENT_CACHE_DIR` to use another location.
 
 > The dependency-installation pattern is adapted from the
 > [GeoAI](https://github.com/opengeos/geoai) QGIS plugin (Wu, 2026).
@@ -77,11 +91,13 @@ priority-sites tool — all without leaving QGIS.
 ## Quick start
 
 1. Open **Plugins → QMaxent → QMaxent Analysis**.
-2. **① Data**: select a presence-point layer and add environmental rasters.
+2. **① Data**: select a presence-point layer (or open a point file or CSV)
+   and add environmental rasters.
    Use **Check Raster Consistency** / **Harmonize to Folder…** to align
    grids if needed. Optionally **Export for external Maxent** to obtain a
    ready-to-run maxent.jar input directory.
-3. **② Parameters**: choose feature types (Auto recommended), regularization
+3. **② Parameters**: choose feature types (Auto applies the maxnet default
+   rule; use Manual selection to compare alternatives), regularization
    strength, spatial evaluation method (Geographic K-Fold is the default),
    and output paths.
 4. Click **▶ Run Maxent**. Progress is reported in the **③ Training** tab.
@@ -89,9 +105,9 @@ priority-sites tool — all without leaving QGIS.
    importance, and ROC. Set the output transform (`cloglog` recommended)
    and click **Run Spatial Projection** to write a habitat suitability
    raster.
-6. **⑤ Priority Sites for Survey**: use the projected raster to draw
-   Discovery or Validation candidate sites with the threshold and
-   spacing rules described above.
+6. **⑤ Survey Site Selection**: use the projected raster to draw
+   candidate sites by High-suitability search or Gradient-stratified
+   sampling with the threshold and spacing rules described above.
 
 To reload a previously saved `.pkl`, use the **Load existing model
 (.pkl)…** button at the top of the **① Data** tab. The plugin will ask
@@ -119,7 +135,7 @@ the metadata below.
 **Software (CITATION.cff is the canonical source)**
 
 > Yu, B.-H. (2026). *QMaxent: A QGIS plugin for Maxent species
-> distribution modeling* (Version 0.1.7) [Computer software].
+> distribution modeling* (Version 0.2.0) [Computer software].
 > Zenodo. https://doi.org/10.5281/zenodo.20259146
 
 **BibTeX**
@@ -128,8 +144,8 @@ the metadata below.
 @software{Yu_QMaxent_2026,
   author  = {Yu, Byeong-Hyeok},
   title   = {{QMaxent: A QGIS plugin for Maxent species distribution modeling}},
-  version = {0.1.7},
-  date    = {2026-05-16},
+  version = {0.2.0},
+  date    = {2026-10-29},
   url     = {https://github.com/osgeokr/qmaxent},
   doi     = {10.5281/zenodo.20259146},
   license = {MIT}
