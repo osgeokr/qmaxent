@@ -30,16 +30,17 @@
 **Check Raster Consistency** 를 클릭. 예제 데이터는 이미 정렬되어 있어 초록 ✓ 가
 표시됩니다:
 
-![Bradypus 출현 레이어(116점)와 7개 환경 래스터, biome이 categorical로 표시되고, Check Raster Consistency 결과 모든 래스터가 그리드 일치](images/ui/dock-1-data-with-bradypus.png)
+![Bradypus 출현 레이어(116점)와 9개 환경 래스터, biome이 categorical로 표시되고, Check Raster Consistency 결과 모든 래스터가 그리드 일치](images/ui/dock-1-data-with-bradypus.png)
 
 도크 하단 상태바에 `presence=116 background=10,104` 이 표시됩니다.
 
 ## 3단계 · 기본 파라미터 사용
 
-**② Parameters** 로 이동합니다. 기본값은 거의 모든 첫 실행에 발표 가능한 수준이
-되도록 의도적으로 설정되어 있습니다: **Auto** 피처 선택(maxnet 규칙),
+**② Parameters** 로 이동합니다. 기본값은 첫 실행의 출발점으로 쓰기 좋게 설정되어
+있습니다: **자동 (출현점 수에 따른 maxnet 기본 규칙)** 피처 선택,
 **정규화 배수 1.0**, **Geographic K-Fold(k=5)** 공간 교차검증, **Jackknife 변수 중요도**
-활성화.
+활성화. 자동 피처 규칙은 기본값일 뿐 최적 모델을 보장하지 않으므로, 본 분석에서는
+[② 파라미터 탭](parameters-tab.md)의 안내대로 다른 조합과 비교해 보세요.
 
 ![기본 설정의 Parameters 탭](images/ui/dock-2-parameters-defaults.png)
 
@@ -58,12 +59,18 @@ Output Files 섹션에는 학습된 모델용 `.pkl` 과 발표용 보충 표용
 로그를 위에서 아래로 읽으면 모델의 전체 이야기를 알 수 있습니다:
 
 - 배경 표본 추출과 공변량 추출 완료
-- 자동 규칙이 선택한 피처 유형: linear, quadratic, product, hinge, threshold
+- 자동 규칙이 선택한 피처 유형: linear, quadratic, product, hinge (출현점 116개이므로
+    LQPH, threshold는 자동으로 추가되지 않음)
 - **Training AUC = 0.9569**(표본 내 적합)
 - **CV AUC = 0.7436 ± 0.0750**(5개 공간 폴드의 보류 검증 성능)
 - 9개 변수 각각의 Jackknife 결과
 
 도크 하단 상태바에 핵심 수치가 표시됩니다: `train AUC=0.9569 · CV AUC=0.7436`.
+
+!!! note "화면의 수치"
+    이 장의 화면과 AUC 값은 v0.1.x(LQPHT)에서 얻은 것입니다. v0.2.0에서는 자동
+    규칙이 LQPH를 선택하고 배경점 추출에도 시드가 적용되므로 수치가 조금 다르게
+    나옵니다.
 
 ## 5단계 · 결과 확인
 
@@ -101,20 +108,22 @@ Spatial Projection 하위 탭은 학습된 모델을 전체 환경 변수 래스
 
 ![중남미 전역의 Bradypus 서식적합도 지도, 흰색=낮음, 초록=높음](images/maps/quickstart-final-suitability.png)
 
-## 6단계 · 우선조사 후보지 생성 *(선택)*
+## 6단계 · 조사지점 선정 *(선택)*
 
-**⑤ Priority Sites for Survey** 로 이동합니다. **Discovery** 모드(새 개체군 발견)를
-선택하고 `Minimum suitability` 임계값을 높게(예: 0.9), **Number of priority sites** 를
-20으로, 역지오코딩을 활성화한 뒤 **▶ Extract Priority Sites** 클릭:
+**⑤ 조사지점 선정** 탭으로 이동합니다. **고적합도 탐색** 모드(새 개체군 찾기)를
+선택하고 **최소 적합도** 를 높게(예: 0.9), **조사지점 수** 를 20으로, 역지오코딩을
+켠 뒤 **▶  조사지점 선정** 클릭:
 
-![추출 후 Discovery 모드 Priority Sites 탭 — 20개 추출, 19/20 지오코딩됨](images/ui/dock-5-priority-sites-extracted.png)
+![선정 후 고적합도 탐색 모드의 조사지점 선정 탭: 20개 선정, 19/20 지오코딩됨](images/ui/dock-5-priority-sites-extracted.png)
 
-후보 위치가 적합도 지도 위에 빨간 점으로 표시됩니다:
+조사지점이 적합도 지도 위에 빨간 점(`Survey sites` 레이어)으로 표시됩니다:
 
-![Bradypus 적합도 지도 위에 빨간 점으로 표시된 우선조사 후보지](images/maps/priority-sites-on-canvas.png)
+![Bradypus 적합도 지도 위에 빨간 점으로 표시된 조사지점](images/maps/priority-sites-on-canvas.png)
 
-출력 GeoPackage의 속성 테이블에는 각 후보지의 좌표, 적합도 점수, (Nominatim이
-해결할 수 있던 경우) 행정 주소가 포함되어 있어 현장 조사에 즉시 사용할 수 있습니다.
+출력 GeoPackage(`survey_sites.gpkg`)의 속성 테이블에는 각 조사지점의 좌표,
+적합도 점수, (Nominatim이 찾을 수 있던 경우) 행정 주소가 포함되어 있어 현장 조사에
+즉시 사용할 수 있습니다. 주소는 기본으로 현지 이름(이 예제에서는 각 나라의 언어)으로
+기록됩니다.
 
 ## 다음 단계
 

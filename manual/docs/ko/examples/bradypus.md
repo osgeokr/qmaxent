@@ -78,13 +78,16 @@ variegatus (Phillips et al, 2006 standard)**을 선택하고 저장 폴더를
 ## 3. 모델 설정
 
 **② Parameters**로 이동합니다. 이 가이드 투어에서는 모든 기본값을
-그대로 받아 사용합니다. 각 기본값이 학술적 권장치이므로 그 선택이 어떤
-결과를 만드는지 확인하는 데 가장 적합한 출발점입니다.
+그대로 받아 사용합니다. 기본값이 어떤 결과를 만드는지 확인하는 출발점으로
+알맞기 때문입니다. 다만 자동 피처 규칙은 기본값일 뿐 최적 모델을 보장하지
+않으므로, 실제 연구에서는 수동 선택과 교차검증으로 다른 조합과 비교하세요.
 
 ![모든 기본값이 적용된 Parameters 탭](../images/ui/dock-2-parameters-defaults.png)
 
-- **Feature Types**: Auto. [Phillips & Dudík 2008](../references.md)의
-  maxnet 자동 규칙은 출현점 116개에 대해 LQPHT 전체를 선택합니다.
+- **Feature Types**: 자동 (출현점 수에 따른 maxnet 기본 규칙).
+  [Phillips et al. 2017](../references.md)의 maxnet 기본 규칙은 출현점
+  116개(80개 이상)에 대해 LQPH를 선택합니다. threshold 피처는 자동으로
+  추가되지 않습니다.
 - **Regularization multiplier**: 1.0
   ([Phillips & Dudík 2008](../references.md) 권장).
 - **Spatial evaluation**: Geographic K-Fold
@@ -92,12 +95,14 @@ variegatus (Phillips et al, 2006 standard)**을 선택하고 저장 폴더를
   buffer 50,000 m, 고정 random seed = 42
   ([Roberts et al. 2017](../references.md) 기본값).
 - **Jackknife variable importance**: 활성화.
-- **Permutation importance**: 활성화, 반복 10회.
+- **Permutation importance**: 활성화, 반복 10회, 평가 자료는 기본값인
+  **학습 자료 (maxent.jar 방식)**.
 - **Output Files**: `qmaxent_output/model.pkl` 및
   `qmaxent_output/results.xlsx`.
 
-고정 random seed는 **이 튜토리얼을 따라 하시는 모든 분이 비트 단위로
-동일한 결과**를 얻도록 보장합니다 —
+고정 random seed는 **이 튜토리얼을 따라 하시는 모든 분이 같은 결과**를
+얻도록 해 줍니다(v0.2.0부터 배경점 추출에도 적용되므로 래스터 순서를 그대로
+두세요). 이는
 [Araújo et al. 2019](../references.md)이 강조하는 계산 재현성의 핵심
 요건입니다.
 
@@ -105,6 +110,11 @@ variegatus (Phillips et al, 2006 standard)**을 선택하고 저장 폴더를
 
 **▶ Run Maxent**를 누릅니다. **③ Training** 탭이 활성화되고 약 30초 내에
 모든 단계가 완료됩니다.
+
+!!! note "화면의 수치"
+    이 절의 화면과 AUC 값은 v0.1.x(자동 규칙 LQPHT)에서 얻은 것입니다. v0.2.0은
+    LQPH를 선택하고 배경점 추출에도 시드를 적용하므로 수치가 조금 다르게
+    나옵니다. 흐름과 해석은 같습니다.
 
 ![100%로 완료된 Training 탭의 전체 로그](../images/ui/dock-3-training-completed.png)
 
@@ -130,9 +140,11 @@ variegatus (Phillips et al, 2006 standard)**을 선택하고 저장 폴더를
   모드(전체 모델 기준선, *해당 변수만*, *해당 변수 제외*)의 AUC를
   변수별로 산출합니다.
 - **Permutation importance** — scikit-learn의 `permutation_importance`,
-  `n_repeats=10`, 검증 세트에서 평가. 결과는 ④ Results의
+  `n_repeats=10`. 기본값에서는 전체 모델을 모든 학습 출현점과 배경점에
+  적용해 평가합니다(maxent.jar 방식). 결과는 ④ Results의
   Permutation Importance 하위 탭에 표시됩니다.
-- **Save results** — `results.xlsx`와 `training_log.txt`가 `.pkl` 옆에
+- **Save results** — `results.xlsx`, `training_log.txt`, 그리고 모델 카드
+  `model_model_card.json` 과 계수표 `model_coefficients.csv` 가 `.pkl` 옆에
   자동 저장됩니다.
 
 **Train AUC 0.957 vs. CV AUC 0.744 ± 0.075**. 그 차이는 공간적으로
@@ -161,9 +173,9 @@ Fold 4와 5는 가장 작은 검증 세트(각 8개)를 가지며 AUC 변동성�
 연강수량 1,500–3,500 mm 구간에 적합도가 가장 높게 할당되어 있습니다 —
 이는 남미 열대 우림 기후대에 해당합니다. 약 800 mm 이하부터는 적합도가
 급격히 떨어지며, 곡선 모양은 hinge와 quadratic 피처의 결합입니다.
-다른 변수를 드롭다운에서 시도해 보면 부드러운 U자·정점형 곡선은
-quadratic 계열, 각진 불연속점은 hinge·threshold 피처에서 비롯됨을 확인할
-수 있습니다.
+다른 변수를 드롭다운에서 시도해 보면 부드러운 U자형이나 정점형 곡선은
+quadratic 계열, 각진 꺾임은 hinge 피처에서 비롯됨을 확인할 수 있습니다.
+계단 모양은 threshold 피처를 수동으로 켰을 때 나타납니다.
 
 ### 잭나이프 중요도 (Jackknife)
 
@@ -186,9 +198,11 @@ Bradypus의 경우:
 ### 치환 중요도 (Permutation importance)
 
 **Permutation Importance** 하위 탭은 같은 질문에 다른 방식으로
-답합니다. scikit-learn의 `permutation_importance`는 검증 세트에서
-각 변수의 값을 무작위로 섞고, AUC 하락을 측정하고, 10회 반복 평균을
-전체 합 100%로 정규화합니다.
+답합니다. scikit-learn의 `permutation_importance`는 평가 자료(기본값은
+학습 자료)에서 각 변수의 값을 무작위로 섞고, AUC 하락을 측정하고, 10회 반복
+평균을 전체 합 100%로 정규화합니다. **② Parameters** 에서 평가 자료를
+**교차검증 검증 폴드 (전체 폴드 합산)** 으로 바꾸면 새로운 지역에 대한 예측
+성능이 각 변수에 얼마나 의존하는지 볼 수 있습니다.
 
 ![Permutation 중요도 막대](../images/examples/bradypus/permutation.png)
 
@@ -216,12 +230,15 @@ Bradypus의 경우:
 
 ## 7. 결과물 저장
 
-자동으로 두 개의 파일이 저장되었습니다.
+자동으로 다음 파일이 저장되었습니다.
 
 - `qmaxent_output/model.pkl` — 학습된 모델의 직렬화 산출물.
   Data 탭의 **Load existing model (.pkl)…** 버튼으로 나중에 다시
   불러올 수 있고, 협업자에게 공유할 수도 있습니다. 보안 주의 사항은
   [모델 저장 및 재사용](../saving-models.md)을 참고하세요.
+- `qmaxent_output/model_model_card.json`, `qmaxent_output/model_coefficients.csv`:
+  설정, 자료 요약, 성능, 임계값, 변수 중요도를 담은 모델 카드와 모든 피처의
+  계수표. `.pkl` 과 달리 공유해도 안전한 텍스트 파일입니다.
 - `qmaxent_output/results.xlsx` — 실험 설정, 변수 목록, CV 결과,
   잭나이프, 치환 중요도, 반응 곡선 변곡점, 임계값 등을 시트별로
   정리한 다중 시트 표. 시트 구성은
@@ -232,49 +249,55 @@ Bradypus의 경우:
 저장됩니다. 출판물 단일 칼럼 그림용으로 바로 붙여넣을 수 있는 크기로
 출력됩니다.
 
-## 8. 우선조사 후보지 (Priority Sites for Survey)
+## 8. 조사지점 선정 (Survey Site Selection)
 
 학습된 모델을 곧바로 활용해 후속 조사 계획을 세우는 단계입니다.
-**⑤ Priority Sites for Survey** 탭은 서로 다른 두 가지 모드를
-제공합니다 — **Discovery**(새 개체군 *발견*)와
-**Validation**(적합도 구간별 *층화 검증*).
+**⑤ 조사지점 선정** 탭은 서로 다른 두 가지 모드를 제공합니다.
+**고적합도 탐색** 은 새 개체군을 *찾는* 모드이고, **적합도 구간별 층화
+표집** 은 예측 적합도 구간 전반에서 모델을 *확인하는* 모드입니다.
 
-### 8.1 Discovery 모드
+### 8.1 고적합도 탐색 모드
 
-Discovery는 높은 적합도 구간에서 후보를 추출합니다. 탭을 열고 모드를
-**Discovery** 유지, 자동 설정된 최소 적합도(~0.81)를 그대로, `n_sites = 20`,
-1 km / 500 m 간격 기본값으로 두고 **▶ Extract Priority Sites**를 누릅니다.
+고적합도 탐색은 높은 적합도 구간에서 조사지점을 뽑습니다. 탭을 열고 모드를
+**고적합도 탐색** 으로 유지, 자동 설정된 **최소 적합도**(~0.81)를 그대로,
+**조사지점 수** 20, 1 km / 500 m 간격 기본값으로 두고 **▶  조사지점 선정** 을
+누릅니다.
 
-![폼이 입력된 Discovery 모드 Priority Sites 탭](../images/ui/dock-5-priority-sites-discovery.png)
+![설정이 입력된 고적합도 탐색 모드의 조사지점 선정 탭](../images/ui/dock-5-priority-sites-discovery.png)
 
-20개 후보지(빨간 점)가 적합도 지도 위에 추출되고, attribute table에는
-Nominatim 역지오코딩으로 행정 정보가 자동 부착됩니다.
+20개 조사지점(빨간 점, `Survey sites` 레이어)이 적합도 지도 위에 표시되고,
+`survey_sites.gpkg` 의 attribute table에는 Nominatim 역지오코딩으로 행정 정보가
+자동 부착됩니다. **주소 언어** 기본값인 **현지 이름** 에서는 각 나라의 언어로
+기록됩니다(예: 브라질의 지점은 포르투갈어).
 
-![캔버스 위 Discovery 후보지와 attribute table](../images/ui/dock-5-priority-sites-extracted.png)
+![캔버스 위 고적합도 탐색 조사지점과 attribute table](../images/ui/dock-5-priority-sites-extracted.png)
 
-각 후보는 기존 출현점에서 최소 1 km, 다른 후보에서 최소 500 m 이상
+각 조사지점은 기존 출현점에서 최소 1 km, 다른 조사지점에서 최소 500 m 이상
 떨어져 있어 한 차례 출장에서 여러 곳을 합리적으로 방문할 수 있게
-배치됩니다. Discovery는 *"종이 있을 수 있지만 우리가 아직 가 보지
+배치됩니다. 고적합도 탐색은 *"종이 있을 수 있지만 우리가 아직 가 보지
 않은 곳은 어디인가?"*라는 질문에 답하는 모드로,
+[Williams et al. 2009](../references.md)와
 [Rhoden et al. 2017](../references.md)의 "Maxent-directed surveys"
-패러다임에 정확히 대응합니다.
+접근에 대응합니다.
 
-### 8.2 Validation 모드
+### 8.2 적합도 구간별 층화 표집 모드
 
-모드를 **Validation**로 바꾸면 다른 표집을 수행합니다 — 임계값 이상의
-적합도 셀을 4개 분위로 층화하여 각 분위에서 균등하게 후보를 뽑습니다.
-이렇게 하면 한 번의 현장 출장으로 모델의 보정(calibration)을 적합도
-전 구간에서 검증할 수 있습니다.
+모드를 **적합도 구간별 층화 표집** 으로 바꾸면 다른 방식으로 표집합니다.
+**구간별 층화 표집 설정** 에서 고른 임계값(MTP, T10, MaxSSS, 사용자 지정)
+이상인 셀을 적합도 4분위로 나누고, 구간마다 같은 수의 조사지점을 뽑습니다.
+임계값은 표집 범위만 정하며 이진 지도를 만들지 않습니다. 낮은 적합도 지점도
+일부러 포함하므로 한 번의 현장 출장으로 모델의 보정(calibration)을 적합도
+구간 전반에서 확인할 수 있습니다.
 
-![분위 층화가 설정된 Validation 모드 Priority Sites 탭](../images/ui/dialog-priority-validation.png)
+![분위 층화가 설정된 적합도 구간별 층화 표집 모드의 조사지점 선정 탭](../images/ui/dialog-priority-validation.png)
 
-산출된 후보지는 저적합도부터 고적합도까지 대략 균등 분포하며, attribute
-table에는 각 후보의 분위 정보가 부착됩니다.
+선정된 조사지점은 낮은 적합도부터 높은 적합도까지 대략 균등하게 분포하며,
+attribute table의 `quartile` 필드에 각 지점의 분위(1~4)가 기록됩니다.
 
-![분위별 색이 적용된 Validation 모드 후보지](../images/maps/priority-sites-validation-canvas.png)
+![분위별 색이 적용된 적합도 구간별 층화 표집 조사지점](../images/maps/priority-sites-validation-canvas.png)
 
-Validation은 새로운 개체군 발견보다 **모델 검증**에 적합한 모드로,
-§ 4에서 계산한 교차검증 AUC의 현장 측 보완 절차에 해당합니다.
+적합도 구간별 층화 표집은 새로운 개체군 발견보다 **모델 검증**에 알맞은
+모드로, § 4에서 계산한 교차검증 AUC를 현장에서 보완하는 절차에 해당합니다.
 
 ## 다음 단계
 

@@ -18,26 +18,35 @@ elapid의 구현이 최적화를 scikit-learn의 로지스틱-회귀 루틴에 �
 있게 해줍니다 ([Anderson 2023](references.md);
 [Pedregosa et al. 2011](references.md)).
 
-## 피처 선택을 위한 maxnet 자동 규칙
+## 피처 선택을 위한 maxnet 기본 규칙
 
 Maxent 피처 클래스(Linear, Quadratic, Product, Hinge, Threshold)는
-**유연성**과 **과적합 위험** 사이의 절충입니다.
-[Phillips & Dudík 2008](references.md)의 수백 종에 대한 벤치마크는
-표본 크기 기반 규칙을 확립했고, 이후의 벤치마크에서도 이 규칙은
-유지되었습니다:
+**유연성**과 **과적합 위험** 사이의 절충입니다. maxent.jar의 auto features는
+출현점 수에 따라 피처 클래스를 늘리는 규칙을 쓰며
+([Phillips & Dudík 2008](references.md)), Maxent 개발자들의 R 구현인 maxnet은
+같은 구간을 쓰되 threshold 피처를 기본에서 뺍니다
+(`maxnet.formula(classes = "default")`,
+[Phillips et al. 2017](references.md)):
 
-| 표본 크기 | 허용 피처 |
-|---|---|
-| ≤ 10 | L |
-| ≤ 30 | L, Q |
-| ≤ 80 | L, Q, H |
-| > 80 | L, Q, P, H, T |
+| 출현점 수 | maxent.jar auto features | maxnet 기본값 (QMaxent 자동) |
+|---|---|---|
+| 10개 미만 | L | L |
+| 10~14개 | LQ | LQ |
+| 15~79개 | LQH | LQH |
+| 80개 이상 | LQPHT | LQPH |
 
-QMaxent의 **Auto** 모드는 이 규칙을 직접 적용합니다. 이 규칙의 근거가
-되는 벤치마크는 Maxent 문헌에서 가장 광범위하게 복제된 튜닝
-권고이며, ENMeval 식
-([Muscarella et al. 2014](references.md)) hyperparameter 검색 없이 이
-규칙을 벗어나는 것은 발표에서 정당화하기 어렵습니다.
+QMaxent의 **자동 (출현점 수에 따른 maxnet 기본 규칙)** 은 오른쪽 열을
+적용합니다(v0.2.0). v0.1.x는 80개 이상에서 threshold까지 켰지만, elapid의
+scikit-learn 백엔드는 모든 피처에 같은 정규화 강도를 적용하므로 threshold 피처가
+과적합되었습니다. Bradypus 자료의 Random 10-fold 검증 AUC는 QMaxent LQPHT 0.873,
+QMaxent LQPH 0.890, maxent.jar LQPHT 0.895였습니다. threshold 피처는 수동
+선택에서 계속 쓸 수 있습니다.
+
+이 규칙은 기본값일 뿐 최적 모델을 보장하지 않습니다. 알맞은 피처 클래스와 정규화
+배수는 자료에 따라 다르므로([Merow, Smith & Silander 2013](references.md);
+[Radosavljevic & Anderson 2014](references.md)), 수동 선택과 교차검증으로 여러
+조합을 비교하거나 ENMeval([Muscarella et al. 2014](references.md)) 같은 모델
+선택 도구를 함께 쓰세요.
 
 ## 공간 교차검증이 중요한 이유
 
@@ -95,9 +104,13 @@ al. 2006 이후 발표된 Maxent 문헌에서 사용된 형식입니다.
   특이도 합을 최대화하는 임계값. 발표된 비교 대부분에서 가장 좋은
   보정.
 
-QMaxent는 XLSX 내보내기의 Table 3에 세 가지 임계값을 모두 보고합니다.
-Java-MaxEnt 연구를 재현(T10)하거나 관대(MTP) 또는 엄격한 분류를
-선호할 특정 이유가 없는 한 **MaxSSS**를 선택하세요.
+QMaxent는 XLSX 내보내기의 `Survey Sites` 시트에 세 가지 임계값을 모두
+보고합니다. 이진 지도를 만들 때에는 Java-MaxEnt 연구를 재현(T10)하거나
+관대(MTP) 또는 엄격한 분류를 선호할 특정 이유가 없는 한 **MaxSSS**를 선택하세요.
+
+**⑤ 조사지점 선정** 탭의 적합도 구간별 층화 표집에서는 임계값이 이진 지도를
+만들지 않고 **표집 범위만** 정합니다. 임계값 이상인 셀을 적합도 4분위로 나눠
+구간마다 같은 수의 지점을 뽑습니다([Rhoden, Peterman & Taylor 2017](references.md)).
 
 ## 출력 변환 비교
 
@@ -125,7 +138,9 @@ elapid는 내부적으로 **one-hot 확장**으로 인코딩합니다
 - **Java MaxEnt**는 보지 못한 코드를 무작위 클래스에 침묵으로 매핑하여
   영향받는 셀에서 임의의 적합도 값을 만듭니다.
 - **QMaxent**는 unified preflight 대화상자를 통해 보지 못한 코드를
-  감지하고 외삽 대신 **NoData로 자동 마스킹**합니다.
+  감지하고 외삽 대신 **NoData로 자동 마스킹**합니다. 사전 점검에서 걸러지지
+  않은 코드가 있어도 예측은 멈추지 않으며(v0.2.0), 그 셀은 범주 기여가 없는
+  것으로 계산됩니다.
 
 이는 권장 관행입니다
 ([Elith, Kearney & Phillips 2010](references.md)) — 학습 영역을 벗어난

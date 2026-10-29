@@ -91,6 +91,11 @@ Data 탭이 갱신되어 정합된 스택을 보여줍니다.
 로그 읽기:
 
 - **Full-data model** — `Training AUC = 0.8647`.
+- **제외된 출현점**: 출현점 3,732개 중 3,320개만 학습에 쓰였습니다. v0.2.0의
+  로그는 래스터 범위 밖이나 NoData 셀 때문에 제외된 출현점 수(`⚠ … were
+  excluded.`)와 같은 래스터 셀을 공유하는 출현점 수(`ℹ … share a raster
+  cell …`)를 따로 알려 줍니다. 같은 셀을 공유하는 점이 많다면 필요에 따라
+  공간 솎아내기 후 다시 실행하세요.
 - **Cross-validation** — Geographic K-Fold n=5, seed=42:
 
   | Fold | 검증 출현점 수 | AUC |
@@ -149,18 +154,19 @@ AUC를 산출하지만, 그 AUC는 보통 정합 후 결과보다 0.05–0.10 �
 
 **결론을 내리기 전에 항상 Check Raster Consistency를 실행하세요.**
 
-## 7. 우선조사 후보지
+## 7. 조사지점 선정
 
-투영 후 **⑤ Priority Sites for Survey**로 이동하여 **Discovery** 모드로
-후보지를 추출합니다. Ariolimax의 좁은 연구지역에서는 기본값이 잘
+투영 후 **⑤ 조사지점 선정** 탭으로 이동하여 **고적합도 탐색** 모드로
+조사지점을 선정합니다. Ariolimax의 좁은 연구지역에서는 기본값이 잘
 작동합니다.
 
-![Ariolimax에 대한 Discovery 모드 Priority Sites 탭](../images/examples/ariolimax/priority-sites-discovery.png)
+![Ariolimax에 대한 고적합도 탐색 모드의 조사지점 선정 탭](../images/examples/ariolimax/priority-sites-discovery.png)
 
-후보지는 적합도 지도가 강조한 해안 산맥 일대에 분포하며, 결과
-GeoPackage를 그대로 현장에 가져갈 수 있습니다.
+조사지점은 적합도 지도가 강조한 해안 산맥 일대에 분포하며, 결과
+GeoPackage(`survey_sites.gpkg`)를 그대로 현장에 가져갈 수 있습니다. 역지오코딩
+주소는 기본으로 현지 이름(이 지역은 영어)으로 기록됩니다.
 
-![적합도 지도 위에 겹친 Ariolimax 우선조사 후보지](../images/examples/ariolimax/priority-sites.png)
+![적합도 지도 위에 겹친 Ariolimax 조사지점](../images/examples/ariolimax/priority-sites.png)
 
 ## 이 예제가 시연하는 것
 

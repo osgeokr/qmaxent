@@ -1,6 +1,6 @@
 # 참고문헌
 
-QMaxent의 기본값, 평가 절차, 우선조사 후보지 워크플로는 종 분포 모델링(SDM)
+QMaxent의 기본값, 평가 절차, 조사지점 선정 워크플로는 종 분포 모델링(SDM)
 문헌에 근거합니다. 본 장은 플러그인이 인용하는 문헌을 주제별로 묶고, 각
 참고문헌이 QMaxent 안에서 어떻게 활용되는지 한 줄 주석을 덧붙였습니다.
 플러그인 소스 코드의 관련 모듈(`workers/maxent_worker.py`,
@@ -27,6 +27,8 @@ Phillips, S. J., Anderson, R. P., Dudík, M., Schapire, R. E., & Blair, M. E.
 *Ecography*, 40(7), 887–893. <https://doi.org/10.1111/ecog.03049>
 :   현재 표준 보고 형식으로 자리잡은 cloglog 출력 변환을 정의한 릴리스.
     QMaxent는 Spatial Projection 하위 탭에서 cloglog를 기본값으로 사용합니다.
+    함께 공개된 maxnet R 패키지의 기본 피처 규칙(`classes = "default"`)이
+    QMaxent 자동 피처 규칙의 근거입니다.
 
 Elith, J., Phillips, S. J., Hastie, T., Dudík, M., Chee, Y. E., & Yates, C. J.
 (2011). A statistical explanation of MaxEnt for ecologists. *Diversity and
@@ -96,7 +98,9 @@ Communications*, 11, 4540. <https://doi.org/10.1038/s41467-020-18321-y>
 Radosavljevic, A., & Anderson, R. P. (2014). Making better Maxent models of
 species distributions: complexity, overfitting and evaluation. *Journal of
 Biogeography*, 41(4), 629–643. <https://doi.org/10.1111/jbi.12227>
-:   표본 크기 기반 피처 자동 선택 규칙과 정규화 배수 기본값 1.0의 근거.
+:   모델 복잡도(피처 클래스와 정규화 배수)를 자료에 맞게 조정해야 하는
+    근거와 과적합 평가 방법. 자동 피처 규칙이 기본값일 뿐 최적 모델을
+    보장하지 않는다는 안내의 근거.
 
 Lobo, J. M., Jiménez-Valverde, A., & Real, R. (2008). AUC: a misleading
 measure of the performance of predictive distribution models. *Global
@@ -110,8 +114,8 @@ Ecology and Biogeography*, 17(2), 145–151.
 Liu, C., White, M., & Newell, G. (2013). Selecting thresholds for the
 prediction of species occurrence with presence-only data. *Journal of
 Biogeography*, 40(4), 778–789. <https://doi.org/10.1111/jbi.12058>
-:   QMaxent Priority Sites 탭의 MaxSSS(Maximum Sum of Sensitivity and
-    Specificity) 임계값과 MTP·T10 비교 논의의 출처.
+:   QMaxent 조사지점 선정 탭의 MaxSSS(Maximum Sum of Sensitivity and
+    Specificity) 임계값과 MTP, T10 비교 논의의 출처.
 
 Pearson, R. G., Raxworthy, C. J., Nakamura, M., & Peterson, A. T. (2007).
 Predicting species distributions from small numbers of occurrence records:
@@ -126,14 +130,14 @@ Williams, J. N., Seo, C., Thorne, J., Nelson, J. K., Erwin, S., O'Brien, J. M.,
 & Schwartz, M. W. (2009). Using species distribution models to predict new
 occurrences for rare plants. *Diversity and Distributions*, 15(4),
 565–576. <https://doi.org/10.1111/j.1472-4642.2009.00567.x>
-:   QMaxent Priority Sites 탭의 Discovery 모드(모델이 예측한 고적합도
+:   QMaxent 조사지점 선정 탭의 고적합도 탐색 모드(모델이 예측한 고적합도
     지역으로 신규 현장 조사를 안내) 개념적 근거.
 
 Rhoden, C. M., Peterman, W. E., & Taylor, C. A. (2017). Maxent-directed
 field surveys identify new populations of narrowly endemic habitat
 specialists. *PeerJ*, 5, e3632. <https://doi.org/10.7717/peerj.3632>
-:   QMaxent Validation 모드(예측 검증을 위해 적합도 사분위에 걸친 층화
-    표본 추출)의 출처.
+:   QMaxent 적합도 구간별 층화 표집 모드(임계값 이상인 셀을 적합도
+    4분위로 나눠 구간마다 같은 수의 지점을 뽑는 방식)의 출처.
 
 ## 소프트웨어 의존성
 

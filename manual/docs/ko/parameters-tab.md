@@ -19,26 +19,39 @@ Maxent의 "피처"는 각 환경 변수에 대한 적합도 반응을 표현하�
 | **Product** | `bio1 × bio7` | 쌍별 상호작용 |
 | **Threshold** | `1[bio1 > threshold]` | 계단 반응 |
 
-### Auto (권장)
+### 자동 (출현점 수에 따른 maxnet 기본 규칙)
 
-기본값. QMaxent는 R `maxnet` 패키지가 사용하는 동일한 **maxnet 자동 규칙** 으로
-출현 지점 수에 따라 LQPHT 부분집합을 활성화합니다:
+기본값입니다. QMaxent는 Maxent 개발자들의 R 구현인 `maxnet` 패키지의 기본 피처
+규칙(`maxnet.formula(classes = "default")`,
+[Phillips et al. 2017](references.md))을 출현점 수에 따라 적용합니다:
 
-| 출현 점 수 | 활성화되는 피처 |
+| 출현점 수 | 사용하는 피처 |
 |---|---|
-| ≥ 80 | 모두 (LQPHT) |
-| 15–79 | LQH (Product, Threshold 제외) |
-| 10–14 | LQ |
-| < 10 | L만 |
+| 10개 미만 | L |
+| 10~14개 | LQ |
+| 15~79개 | LQH |
+| 80개 이상 | LQPH |
 
-이 보수적 스케일링은 작은 데이터셋의 과적합을 방지합니다. 116점 Bradypus 예제를
-포함한 대부분의 연구에서 기본값은 발표된 관행이 권장하는 그대로입니다
-(Radosavljevic & Anderson 2014).
+threshold 피처는 maxnet과 마찬가지로 자동으로 추가되지 않습니다. 필요하면
+**수동 선택** 에서 직접 고르세요. 116점 Bradypus 예제에는 LQPH가 적용됩니다.
 
-### Manual selection
+!!! note "threshold 피처를 자동 규칙에서 뺀 이유 (v0.2.0)"
+    v0.1.x는 maxent.jar의 auto features처럼 출현점 80개 이상에서 threshold까지
+    켰습니다(LQPHT). 그런데 elapid의 scikit-learn 백엔드는 모든 피처에 같은
+    정규화 강도를 적용하므로 threshold 피처가 과적합됩니다. Bradypus 자료의
+    Random 10-fold 검증 AUC는 QMaxent LQPHT 0.873, QMaxent LQPH 0.890,
+    maxent.jar LQPHT 0.895였습니다.
 
-**Manual selection** 을 선택하면 LQPHT의 어떤 조합이든 직접 켜고 끌 수 있습니다.
-다음 경우에 유용:
+이 규칙은 기본값일 뿐 최적 모델을 보장하지 않습니다. 가장 알맞은 피처 유형은
+자료에 따라 다르므로, **수동 선택** 과 교차검증으로 여러 조합을 비교하거나
+[ENMeval](references.md)(Muscarella et al. 2014) 같은 모델 선택 도구를 함께
+쓰세요.
+
+### 수동 선택
+
+**수동 선택** (Manual selection)을 고르면 LQPHT의 어떤 조합이든 직접 켜고 끌 수
+있습니다. 처음에는 Linear, Quadratic, Product, Hinge가 체크되어 있고 Threshold는
+해제되어 있습니다. 다음 경우에 유용:
 
 - **다른 발표 연구 재현** — 특정 피처 부분집합을 사용한 경우
 - **과적합 진단** — Hinge와 Threshold를 끄면 AUC를 약간 잃지만 더 부드러운 반응곡선
@@ -99,8 +112,12 @@ QMaxent는 5가지 방법을 제공합니다.
     맞춰 설정.
 - **Buffer**: Buffered LOO의 보류 출현 지점 주변 제외 반경, 미터. 50 km 가 육상
     척추동물의 합리적 기본값 — 분산 거리에 따라 더 작거나 큰 값 사용.
-- **Fix random seed** *(체크박스 + 값)*: 재현성을 위해 활성화. 시드는 폴드 구성과
-    배경 표본 추출에 사용되므로, 같은 시드로 재실행하면 비트 단위로 동일한 결과.
+- **랜덤 시드 고정** (Fix random seed) *(체크박스 + 값)*: 재현성을 위해 활성화.
+    시드는 폴드 구성, 배경점 추출, 순열 중요도에 쓰이므로 같은 입력과 같은 시드로
+    재실행하면 같은 결과가 나옵니다. v0.1.x에서는 배경점 추출에 시드가 적용되지
+    않아 실행마다 배경점이 달랐습니다. 배경점은 래스터 목록의 첫 래스터에서
+    뽑으므로, 결과를 똑같이 재현하려면 [① 데이터 탭](data-tab.md)의 래스터 순서도
+    그대로 유지하세요.
 
 ## Jackknife 변수 중요도
 
@@ -112,15 +129,36 @@ QMaxent는 5가지 방법을 제공합니다.
 많은 변수를 가진 모델에서는 학습 시간이 약 `2 × (변수 수) + 1` 배가 되지만, 일반적인
 < 15개 변수의 경우 추가 비용이 작으므로 기본적으로 켜둡니다.
 
+## Permutation 중요도
+
+**Permutation importance** 를 체크하면 각 변수의 값을 무작위로 섞었을 때 AUC가
+얼마나 떨어지는지 측정합니다(반복 횟수 기본 10회). 재학습이 없어 빠르지만 상관된
+변수의 중요도를 낮게 볼 수 있으므로 Jackknife와 함께 해석하세요.
+
+**평가 자료** (Evaluate on) 옵션으로 AUC 하락을 어느 자료에서 잴지 고릅니다:
+
+| 옵션 | 동작 | 쓰임 |
+|---|---|---|
+| **학습 자료 (maxent.jar 방식)** *(기본)* | 전체 모델을 모든 학습 출현점과 배경점에 적용 | maxent.jar 연구와 변수 순위 비교 |
+| **교차검증 검증 폴드 (전체 폴드 합산)** | 폴드별 모델을 해당 검증 폴드에 적용하고 전체 폴드 결과를 합침 | 새로운 지역에 대한 예측 성능이 각 변수에 얼마나 의존하는지 확인 |
+
+검증 폴드 옵션은 K-Fold(Geographic, Random) 또는 Checkerboard 교차검증이
+필요합니다. 교차검증을 끄거나 Buffered LOO를 쓰는 등 쓸 수 있는 검증 폴드가
+없으면 학습 자료로 계산하고 로그에 알려 줍니다. 참고로 v0.1.x는 첫 번째 폴드만
+사용했기 때문에 순위가 불안정했습니다.
+
 ## 출력 파일
 
-모델 실행 시 두 파일이 작성됩니다:
+모델 실행 시 다음 파일이 작성됩니다:
 
-- **Model (.pkl)**: 직렬화된 학습 Maxent 모델(elapid `MaxentModel` 인스턴스가 Python
+- **모델 파일 (.pkl)**: 직렬화된 학습 Maxent 모델(elapid `MaxentModel` 인스턴스가 Python
     pickle로). [① Data 탭](data-tab.md)에서 다시 불러오기. pickle 보안 안내는
     [모델 저장 및 재사용](saving-models.md) 참고.
-- **Results XLSX**: 실험 설정·변수 목록·교차검증·Jackknife 중요도·우선조사 후보지
-    출력을 담은 다중 시트 Excel 워크북. 학술 논문 보충 표 관행 형식. [결과
+- **모델 카드와 계수표**: `.pkl` 옆에 `<모델>_model_card.json` 과
+    `<모델>_coefficients.csv` 가 함께 저장됩니다. 공유해도 안전한 텍스트
+    파일입니다. 자세한 내용은 [모델 저장 및 재사용](saving-models.md) 참고.
+- **결과 XLSX**: 실험 설정, 변수 목록, 교차검증, Jackknife 중요도, 조사지점 선정
+    임계값을 담은 다중 시트 Excel 워크북. 학술 논문 보충 표 관행 형식. [결과
     내보내기](exporting-results.md) 참고.
 
 두 경로 모두 홈 디렉터리 아래 `qmaxent_output` 폴더가 기본값이지만, 쓰기 가능한 어느

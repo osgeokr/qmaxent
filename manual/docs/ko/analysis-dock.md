@@ -19,10 +19,11 @@ QMaxent Analysis 도크는 플러그인의 핵심으로, 전체 SDM 워크플로
 | ② | **Parameters** | Maxent 피처 유형, 정규화, 공간 교차검증, 출력 경로 설정 |
 | ③ | **Training** | 모델 학습 진행 상황과 AUC·Jackknife·경고 로그 확인 |
 | ④ | **Results** | 반응곡선, Jackknife 변수 중요도 확인 / 공간 투영 실행 |
-| ⑤ | **Priority Sites for Survey** | 학습된 모델로 현장 조사용 후보지 생성 |
+| ⑤ | **조사지점 선정** | 학습된 모델의 예측 래스터에서 현장 조사지점 선정 |
 
 번호 접두어는 의도적입니다 — 순서를 명시합니다. **Training** 이 끝나기 전에는
-**Results** 탭을 사용할 수 없고, **Priority Sites** 는 완성된 투영 래스터가 필요합니다.
+**Results** 탭을 사용할 수 없고, **조사지점 선정** 탭은 완성된 예측 래스터가
+필요합니다.
 
 ## 상태바와 Run 버튼
 
@@ -50,7 +51,7 @@ flowchart LR
     B --> C[③ Training]
     C --> D[④ Results]
     D -->|Spatial Projection| E[서식적합도 래스터]
-    E --> F[⑤ Priority Sites for Survey]
+    E --> F[⑤ 조사지점 선정]
     style C fill:#FBF7E8,stroke:#3A7E94
     style E fill:#FBF7E8,stroke:#5E8C36
 ```
