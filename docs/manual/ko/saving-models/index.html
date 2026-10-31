@@ -808,6 +808,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="저장된 모델 재로드">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1단계. 기존 모델 불러오기 누르기
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      2단계. 모델 변수마다 래스터 짝짓기
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1175,6 +1199,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="저장된 모델 재로드">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1단계. 기존 모델 불러오기 누르기
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      2단계. 모델 변수마다 래스터 짝짓기
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1281,7 +1329,18 @@ QMaxent로 발표한 결과의 장기적 재현성에 필수적입니다.</p>
 <p><strong>① Data</strong> 탭에서 <strong>Load existing model (.pkl)…</strong> 버튼을 클릭하고
 저장된 파일을 선택. QMaxent는 pickle에서 변수 목록을 읽고 <strong>변수
 매핑 대화상자</strong>를 엽니다:</p>
-<p><img alt="Map model variables to rasters dialog" src="../../images/ui/dialog-load-existing-model.png" /></p>
+<h3 id="1">1단계. 기존 모델 불러오기 누르기<a class="headerlink" href="#1" title="Permanent link">&para;</a></h3>
+<p><img alt="기존 모델 불러오기 버튼이 강조된 데이터 탭" class="qm-shot" src="../../images/steps/ko/m01_load_model_button.png" width="680" /></p>
+<ol>
+<li><strong>① 데이터</strong> 탭에서 <strong>기존 모델 불러오기 (.pkl)...</strong>를 누르고 <code>.pkl</code> 파일을 고릅니다.</li>
+</ol>
+<h3 id="2">2단계. 모델 변수마다 래스터 짝짓기<a class="headerlink" href="#2" title="Permanent link">&para;</a></h3>
+<p><img alt="모델 변수를 래스터에 매칭 창" class="qm-shot" src="../../images/steps/ko/m02_model_load_dialog.png" width="600" /></p>
+<ol>
+<li>모델을 학습할 때 쓴 변수마다 지금 그 값을 담고 있는 래스터 레이어를 고릅니다.</li>
+<li><strong>모델 불러오기</strong>를 누릅니다. 래스터 목록이 모델의 변수 순서대로 다시 만들어지고,
+   바로 <strong>④ 결과 → 공간 예측</strong>으로 넘어갈 수 있습니다.</li>
+</ol>
 <p>대화상자에는 저장된 변수마다 한 줄이 있습니다. 각 줄에 대해 QMaxent는
 변수 이름과 레이어 이름을 매칭하여 현재 QGIS 프로젝트에서 기본 래스터를
 선택합니다. 이름이 정확히 일치할 때 대화상자는 단순한 확인 단계입니다.

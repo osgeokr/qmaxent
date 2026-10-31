@@ -742,6 +742,48 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#step-by-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step by step
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step by step">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-response-curves" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1. Response curves
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-variable-importance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2. Variable importance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-make-the-suitability-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3. Make the suitability map
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#response-curves" class="md-nav__link">
     <span class="md-ellipsis">
       Response Curves
@@ -1148,6 +1190,48 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#step-by-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step by step
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step by step">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-response-curves" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1. Response curves
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-variable-importance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2. Variable importance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-make-the-suitability-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3. Make the suitability map
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#response-curves" class="md-nav__link">
     <span class="md-ellipsis">
       Response Curves
@@ -1253,6 +1337,49 @@
 </tr>
 </tbody>
 </table>
+<h2 id="step-by-step">Step by step<a class="headerlink" href="#step-by-step" title="Permanent link">&para;</a></h2>
+<h3 id="step-1-response-curves">Step 1. Response curves<a class="headerlink" href="#step-1-response-curves" title="Permanent link">&para;</a></h3>
+<p><img alt="Response Curves sub-tab with the variable selector and the curve highlighted" class="qm-shot" src="../images/steps/en/r01_results_response.png" width="680" /></p>
+<ol>
+<li>Click <strong>Response Curves</strong>.</li>
+<li>Choose a variable in <strong>Variable</strong>.</li>
+<li>Read the curve: how predicted suitability changes along that
+   variable, with the training range shaded.</li>
+</ol>
+<h3 id="step-2-variable-importance">Step 2. Variable importance<a class="headerlink" href="#step-2-variable-importance" title="Permanent link">&para;</a></h3>
+<p><img alt="Jackknife Importance sub-tab" class="qm-shot" src="../images/steps/en/r02_results_jackknife.png" width="680" /></p>
+<ol>
+<li>Click <strong>Jackknife Importance</strong>.</li>
+<li>The ROC curves (left) and the jackknife bars (right).</li>
+</ol>
+<p><img alt="Permutation Importance sub-tab" class="qm-shot" src="../images/steps/en/r03_results_permutation.png" width="680" /></p>
+<ol>
+<li>Click <strong>Permutation Importance</strong>.</li>
+<li><strong>Save PNG...</strong> saves the chart.</li>
+<li><strong>Save CSV...</strong> saves the numbers.</li>
+</ol>
+<h3 id="step-3-make-the-suitability-map">Step 3. Make the suitability map<a class="headerlink" href="#step-3-make-the-suitability-map" title="Permanent link">&para;</a></h3>
+<p><img alt="Spatial Projection sub-tab with the settings and the run button" class="qm-shot" src="../images/steps/en/r04_results_projection_settings.png" width="680" /></p>
+<ol>
+<li>Click <strong>Spatial Projection</strong>.</li>
+<li>Choose the <strong>Output transform</strong> (<strong>cloglog</strong> by default).</li>
+<li>Check the <strong>Output raster</strong> path.</li>
+<li>Click <strong>▶ Run Spatial Projection</strong>.</li>
+</ol>
+<p><img alt="Spatial Projection while it is running" class="qm-shot" src="../images/steps/en/r05_projection_running.png" width="680" /></p>
+<ol>
+<li>The progress bar.</li>
+<li>The current step.</li>
+</ol>
+<p><img alt="Spatial Projection after the run" class="qm-shot" src="../images/steps/en/r06_projection_done.png" width="680" /></p>
+<ol>
+<li><code>Done:</code> and the path of the saved GeoTIFF.</li>
+</ol>
+<p><img alt="QGIS main window with the prediction layer" class="qm-shot" src="../images/steps/en/r07_main_projection_map.png" width="1440" /></p>
+<ol>
+<li>The map is added to the <strong>Layers</strong> panel when <strong>Auto-load result as
+   QGIS layer</strong> is ticked.</li>
+</ol>
 <h2 id="response-curves">Response Curves<a class="headerlink" href="#response-curves" title="Permanent link">&para;</a></h2>
 <p>Pick a variable from the drop-down at the top. QMaxent draws the predicted
 cloglog suitability across the variable's actual training range (shaded
@@ -1302,7 +1429,7 @@ exported into Table 4 of the XLSX — see
 <h2 id="spatial-projection">Spatial Projection<a class="headerlink" href="#spatial-projection" title="Permanent link">&para;</a></h2>
 <p>The third sub-tab projects the trained model across all the input rasters,
 producing a habitat-suitability GeoTIFF.</p>
-<p><img alt="Spatial Projection sub-tab before clicking Run" src="../images/ui/dock-4-results-spatial-projection.png" /></p>
+<p><img alt="Spatial Projection sub-tab before clicking Run" class="qm-shot" src="../images/steps/en/r04_results_projection_settings.png" width="680" /></p>
 <p>Controls:</p>
 <ul>
 <li><strong>Output transform</strong>:</li>
@@ -1341,7 +1468,7 @@ single combined dialog:</p>
 the input rasters.</p>
 <h3 id="after-the-projection">After the projection<a class="headerlink" href="#after-the-projection" title="Permanent link">&para;</a></h3>
 <p>A success message appears in the panel:</p>
-<p><img alt="Projection sub-tab after a successful run" src="../images/ui/dock-4-projection-done.png" /></p>
+<p><img alt="Projection sub-tab after a successful run" class="qm-shot" src="../images/steps/en/r06_projection_done.png" width="680" /></p>
 <p>The GeoTIFF is loaded into QGIS with a default white-to-green ramp keyed
 to the cloglog 0–1 range, ready to compose into a publication map.</p>
 <h2 id="next">Next<a class="headerlink" href="#next" title="Permanent link">&para;</a></h2>

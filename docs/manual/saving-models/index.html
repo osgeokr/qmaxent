@@ -808,6 +808,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Reloading a saved model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-click-load-existing-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1. Click Load existing model
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-match-each-model-variable-to-a-raster" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2. Match each model variable to a raster
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1175,6 +1199,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Reloading a saved model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-click-load-existing-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1. Click Load existing model
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-match-each-model-variable-to-a-raster" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2. Match each model variable to a raster
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1285,7 +1333,20 @@ share</strong>: they contain only text and numbers, no executable code.</p>
 <p>On the <strong>① Data</strong> tab, click <strong>Load existing model (.pkl)…</strong> and select
 the saved file. QMaxent reads the variable list out of the pickle and
 opens a <strong>variable-mapping dialog</strong>:</p>
-<p><img alt="Map model variables to rasters dialog" src="../images/ui/dialog-load-existing-model.png" /></p>
+<h3 id="step-1-click-load-existing-model">Step 1. Click Load existing model<a class="headerlink" href="#step-1-click-load-existing-model" title="Permanent link">&para;</a></h3>
+<p><img alt="Data tab with the Load existing model button highlighted" class="qm-shot" src="../images/steps/en/m01_load_model_button.png" width="680" /></p>
+<ol>
+<li>On the <strong>① Data</strong> tab, click <strong>Load existing model (.pkl)...</strong> and
+   choose the <code>.pkl</code> file.</li>
+</ol>
+<h3 id="step-2-match-each-model-variable-to-a-raster">Step 2. Match each model variable to a raster<a class="headerlink" href="#step-2-match-each-model-variable-to-a-raster" title="Permanent link">&para;</a></h3>
+<p><img alt="Variable-mapping dialog" class="qm-shot" src="../images/steps/en/m02_model_load_dialog.png" width="600" /></p>
+<ol>
+<li>For every variable the model was trained with, choose the raster
+   layer that holds it now.</li>
+<li>Click <strong>Load model</strong>. The raster list is rebuilt in the model's order and
+   you can go straight to <strong>④ Results → Spatial Projection</strong>.</li>
+</ol>
 <p>The dialog has one row per saved variable. For each row, QMaxent picks
 a default raster from the current QGIS project by matching variable
 names to layer names. When the names match exactly, the dialog is just

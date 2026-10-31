@@ -542,6 +542,39 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Install from the QGIS Plugin Repository">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-open-the-plugin-manager" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1. Open the Plugin Manager
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-find-qmaxent-and-install-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2. Find QMaxent and install it
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-find-the-qmaxent-menu" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3. Find the QMaxent menu
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1148,6 +1181,39 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Install from the QGIS Plugin Repository">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-open-the-plugin-manager" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1. Open the Plugin Manager
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-find-qmaxent-and-install-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2. Find QMaxent and install it
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-find-the-qmaxent-menu" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3. Find the QMaxent menu
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1213,14 +1279,29 @@ Python's own pip (see <a href="../dependencies/">Dependencies</a>).</p>
 <h2 id="install-from-the-qgis-plugin-repository">Install from the QGIS Plugin Repository<a class="headerlink" href="#install-from-the-qgis-plugin-repository" title="Permanent link">&para;</a></h2>
 <p>QMaxent is published on the
 <a href="https://plugins.qgis.org/plugins/qmaxent/">official QGIS Plugin Repository</a>.</p>
+<h3 id="step-1-open-the-plugin-manager">Step 1. Open the Plugin Manager<a class="headerlink" href="#step-1-open-the-plugin-manager" title="Permanent link">&para;</a></h3>
+<p><img alt="Plugins menu with Manage and Install Plugins highlighted" class="qm-shot" src="../images/steps/en/i01_menu_manage_plugins.png" width="360" /></p>
 <ol>
-<li>Open QGIS and choose <strong>Plugins → Manage and Install Plugins…</strong></li>
-<li>In the <strong>All</strong> tab, type <code>qmaxent</code> in the search box. The plugin
-    appears in the result list.</li>
-<li>Click <strong>Install Plugin</strong>.</li>
+<li>Open the <strong>Plugins</strong> menu.</li>
+<li>Click <strong>Manage and Install Plugins...</strong></li>
 </ol>
-<p>Once installed, three entry points appear under <strong>Plugins → QMaxent</strong>:</p>
-<p><img alt="Plugins → QMaxent menu showing the three entry points: Analysis, Dependencies, Download Example Dataset" src="../images/ui/menu-plugins-qmaxent.png" /></p>
+<h3 id="step-2-find-qmaxent-and-install-it">Step 2. Find QMaxent and install it<a class="headerlink" href="#step-2-find-qmaxent-and-install-it" title="Permanent link">&para;</a></h3>
+<p><img alt="Plugin Manager with QMaxent found and the Install Plugin button highlighted" class="qm-shot" src="../images/steps/en/i02_plugin_manager_search.png" width="887" /></p>
+<ol>
+<li>Make sure the <strong>All</strong> page is selected on the left.</li>
+<li>Type <code>QMaxent</code> in the search box.</li>
+<li>Click <strong>QMaxent</strong> in the result list. Its description appears on the
+   right.</li>
+<li>Click <strong>Install Plugin</strong>. When the installation ends, click <strong>Close</strong>.</li>
+</ol>
+<h3 id="step-3-find-the-qmaxent-menu">Step 3. Find the QMaxent menu<a class="headerlink" href="#step-3-find-the-qmaxent-menu" title="Permanent link">&para;</a></h3>
+<p><img alt="Plugins menu with the QMaxent submenu open" class="qm-shot" src="../images/steps/en/i04_menu_qmaxent_deps.png" width="610" /></p>
+<ol>
+<li>Open the <strong>Plugins</strong> menu again.</li>
+<li>Point to <strong>QMaxent</strong>. Three entries appear.</li>
+<li><strong>QMaxent Dependencies</strong> opens the dependency setup described in the
+   next chapter.</li>
+</ol>
 <table>
 <thead>
 <tr>
@@ -1231,23 +1312,29 @@ Python's own pip (see <a href="../dependencies/">Dependencies</a>).</p>
 <tbody>
 <tr>
 <td><strong>QMaxent Analysis</strong></td>
-<td>Opens the main analysis dock — the heart of the plugin</td>
+<td>Opens the Analysis dock, where all modelling happens</td>
 </tr>
 <tr>
 <td><strong>QMaxent Dependencies</strong></td>
-<td>Opens the dependency-management dialog (next chapter)</td>
+<td>Opens the dependency setup (next chapter)</td>
 </tr>
 <tr>
-<td><strong>Download Example Dataset</strong></td>
-<td>Bundled SDM datasets for tutorials (see <em>Example datasets</em>)</td>
+<td><strong>Download Example Dataset...</strong></td>
+<td>Downloads the example data used in this manual (see <a href="../example-datasets/">Example datasets</a>)</td>
 </tr>
 </tbody>
 </table>
 <h2 id="verifying-the-installation">Verifying the installation<a class="headerlink" href="#verifying-the-installation" title="Permanent link">&para;</a></h2>
-<p>Choose <strong>Plugins → QMaxent → QMaxent Dependencies</strong>. If the dialog opens,
-the plugin is correctly installed. The <strong>Environment Status</strong> banner will
-most likely read <em>Dependencies not installed</em> the first time — that is
-expected and is dealt with in the next chapter.</p>
+<p>Right after the installation, QMaxent opens two panels on the right side
+of QGIS: <strong>QMaxent Dependencies</strong> at the top and the <strong>QMaxent Analysis</strong>
+dock below it.</p>
+<p><img alt="QGIS main window right after the installation, with the QMaxent Dependencies panel highlighted" class="qm-shot" src="../images/steps/en/d00_main_first_start.png" width="1440" /></p>
+<ol>
+<li>The <strong>QMaxent Dependencies</strong> panel reads <em>Dependencies not installed</em>
+   the first time. That is expected: the next chapter installs them.</li>
+</ol>
+<p>If the panels do not appear, choose <strong>Plugins → QMaxent → QMaxent
+Dependencies</strong>. If that opens, the plugin is installed correctly.</p>
 <h2 id="updating-to-a-newer-version">Updating to a newer version<a class="headerlink" href="#updating-to-a-newer-version" title="Permanent link">&para;</a></h2>
 <p>When a new release ships, the QGIS Plugin Manager will mark QMaxent as
 upgradable. Click <strong>Upgrade Plugin</strong> in the <strong>Installed</strong> tab. Dependencies

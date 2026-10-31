@@ -763,6 +763,57 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#step-by-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step by step
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step by step">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-choose-the-purpose-and-the-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1. Choose the purpose and the settings
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-validation-surveys-use-gradient-stratified-sampling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2. (Validation surveys) Use gradient-stratified sampling
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-addresses-and-the-output-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3. Addresses and the output file
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-run-and-check-the-sites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 4. Run and check the sites
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#survey-purpose" class="md-nav__link">
     <span class="md-ellipsis">
       Survey purpose
@@ -1184,6 +1235,57 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#step-by-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step by step
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step by step">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-choose-the-purpose-and-the-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1. Choose the purpose and the settings
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-validation-surveys-use-gradient-stratified-sampling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2. (Validation surveys) Use gradient-stratified sampling
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-addresses-and-the-output-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3. Addresses and the output file
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-run-and-check-the-sites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 4. Run and check the sites
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#survey-purpose" class="md-nav__link">
     <span class="md-ellipsis">
       Survey purpose
@@ -1304,6 +1406,50 @@ Survey</em> before v0.2.0), turns a habitat-suitability raster into a
 have one of two purposes: looking for new populations, or checking the
 model in the field. QMaxent supports both with separate sampling
 designs grounded in the survey-design literature.</p>
+<h2 id="step-by-step">Step by step<a class="headerlink" href="#step-by-step" title="Permanent link">&para;</a></h2>
+<h3 id="step-1-choose-the-purpose-and-the-settings">Step 1. Choose the purpose and the settings<a class="headerlink" href="#step-1-choose-the-purpose-and-the-settings" title="Permanent link">&para;</a></h3>
+<p><img alt="Survey Site Selection tab in High-suitability search mode" class="qm-shot" src="../images/steps/en/s01_survey_discovery_settings.png" width="680" /></p>
+<ol>
+<li><strong>Survey purpose</strong>: <strong>High-suitability search</strong> looks for new
+   populations in suitable, unsurveyed places. <strong>Gradient-stratified
+   sampling</strong> checks the model along its suitability gradient (Step 2).</li>
+<li><strong>High-suitability search settings</strong>: the <strong>Minimum suitability</strong> and
+   the <strong>Sampling order</strong> (<strong>Random</strong> or <strong>Top-N (highest first)</strong>).</li>
+<li><strong>Sampling strategy</strong>: the number of sites and the minimum distances
+   (in metres) from known presences and between sites.</li>
+<li><strong>▶ Select Survey Sites</strong> runs the selection.</li>
+</ol>
+<h3 id="step-2-validation-surveys-use-gradient-stratified-sampling">Step 2. (Validation surveys) Use gradient-stratified sampling<a class="headerlink" href="#step-2-validation-surveys-use-gradient-stratified-sampling" title="Permanent link">&para;</a></h3>
+<p><img alt="Gradient-stratified sampling chosen, with its settings" class="qm-shot" src="../images/steps/en/s02_survey_validation_settings.png" width="680" /></p>
+<ol>
+<li>Select <strong>Gradient-stratified sampling</strong>.</li>
+<li><strong>Gradient-stratified sampling settings</strong>: the <strong>Threshold method</strong>
+   sets the lowest suitability included. Cells above it are split into
+   four suitability bands and sites are spread over the bands.</li>
+</ol>
+<h3 id="step-3-addresses-and-the-output-file">Step 3. Addresses and the output file<a class="headerlink" href="#step-3-addresses-and-the-output-file" title="Permanent link">&para;</a></h3>
+<p><img alt="Reverse geocoding and Output groups" class="qm-shot" src="../images/steps/en/s03_survey_geocode_output.png" width="680" /></p>
+<ol>
+<li><strong>Reverse geocoding</strong>: <strong>Add administrative address (OpenStreetMap)</strong>
+   writes the address of each site. <strong>Address language</strong> chooses local
+   names or another language. It needs an internet connection.</li>
+<li><strong>Output</strong>: the GeoPackage path and <strong>Auto-add to QGIS project</strong>.</li>
+</ol>
+<h3 id="step-4-run-and-check-the-sites">Step 4. Run and check the sites<a class="headerlink" href="#step-4-run-and-check-the-sites" title="Permanent link">&para;</a></h3>
+<p><img alt="Selection running, with the progress bar and status" class="qm-shot" src="../images/steps/en/s04_survey_running.png" width="680" /></p>
+<ol>
+<li>The progress bar.</li>
+<li>The status line, for example the reverse geocoding count.</li>
+</ol>
+<p><img alt="Selection finished" class="qm-shot" src="../images/steps/en/s05_survey_done.png" width="680" /></p>
+<ol>
+<li>The status line reports how many sites were selected and where the
+   file was saved.</li>
+</ol>
+<p><img alt="QGIS main window with the survey sites on the map" class="qm-shot" src="../images/steps/en/s06_main_survey_map.png" width="1440" /></p>
+<ol>
+<li>The survey sites layer is added to the <strong>Layers</strong> panel.</li>
+</ol>
 <h2 id="survey-purpose">Survey purpose<a class="headerlink" href="#survey-purpose" title="Permanent link">&para;</a></h2>
 <p>Pick one:</p>
 <table>
@@ -1341,7 +1487,7 @@ sample it differently:</p>
   species is found more often where the model predicts higher
   suitability.</li>
 </ul>
-<p><img alt="Survey Site Selection tab in High-suitability search mode after selection" src="../images/ui/dock-5-priority-sites-discovery.png" /></p>
+<p><img alt="Survey Site Selection tab in High-suitability search mode" class="qm-shot" src="../images/steps/en/s01_survey_discovery_settings.png" width="680" /></p>
 <h2 id="mode-settings">Mode settings<a class="headerlink" href="#mode-settings" title="Permanent link">&para;</a></h2>
 <p>Only the settings group of the selected mode is shown.</p>
 <h3 id="high-suitability-search-settings">High-suitability search settings<a class="headerlink" href="#high-suitability-search-settings" title="Permanent link">&para;</a></h3>
@@ -1492,7 +1638,7 @@ instead, such as <code>survey_sites_1.gpkg</code>, and reports the name it used.
 <p>The training thresholds (MTP, T10, MaxSSS) that Gradient-stratified
 sampling can use are also recorded in the model card
 (<code>&lt;model&gt;_model_card.json</code>, see <a href="../saving-models/">Saving and reusing models</a>).</p>
-<p><img alt="Survey Site Selection tab after selection with the sites rendered on the QGIS canvas" src="../images/ui/dock-5-priority-sites-extracted.png" /></p>
+<p><img alt="Survey sites on the QGIS canvas" class="qm-shot" src="../images/steps/en/s06_main_survey_map.png" width="1440" /></p>
 <p>The sites are immediately ready for export to mobile-GIS apps such
 as <strong>QField</strong>, <strong>Mergin Maps</strong>, or <strong>Locus Map</strong> for offline field use.</p>
 <h2 id="choosing-parameter-values">Choosing parameter values<a class="headerlink" href="#choosing-parameter-values" title="Permanent link">&para;</a></h2>

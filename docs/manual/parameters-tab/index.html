@@ -700,6 +700,57 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#step-by-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step by step
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step by step">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-check-the-main-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1. Check the main settings
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-optional-choose-the-feature-classes-yourself" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2. (Optional) Choose the feature classes yourself
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-optional-choose-another-evaluation-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3. (Optional) Choose another evaluation method
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-check-the-importance-options-and-the-output-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 4. Check the importance options and the output files
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#feature-types" class="md-nav__link">
     <span class="md-ellipsis">
       Feature Types
@@ -1160,6 +1211,57 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#step-by-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step by step
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step by step">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-check-the-main-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1. Check the main settings
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-optional-choose-the-feature-classes-yourself" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2. (Optional) Choose the feature classes yourself
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-optional-choose-another-evaluation-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3. (Optional) Choose another evaluation method
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-check-the-importance-options-and-the-output-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 4. Check the importance options and the output files
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#feature-types" class="md-nav__link">
     <span class="md-ellipsis">
       Feature Types
@@ -1255,7 +1357,47 @@ Maxent feature classes to allow, the regularization multiplier, the spatial
 cross-validation method, and where to write outputs. Defaults follow
 established Maxent practice; this chapter explains what each control does
 and when to override the default.</p>
-<p><img alt="Parameters tab with default settings" src="../images/ui/dock-2-parameters-defaults.png" /></p>
+<h2 id="step-by-step">Step by step<a class="headerlink" href="#step-by-step" title="Permanent link">&para;</a></h2>
+<h3 id="step-1-check-the-main-settings">Step 1. Check the main settings<a class="headerlink" href="#step-1-check-the-main-settings" title="Permanent link">&para;</a></h3>
+<p><img alt="Parameters tab with the Feature Types, Regularization and Spatial evaluation groups highlighted" class="qm-shot" src="../images/steps/en/p01_params_overview.png" width="680" /></p>
+<ol>
+<li><strong>Feature Types</strong>: keep <strong>Auto (maxnet default rule by sample size)</strong>
+   unless you have a reason to choose the feature classes yourself.</li>
+<li><strong>Regularization</strong>: the <strong>Regularization multiplier</strong> controls how
+   smooth the model is. Larger values give simpler models.</li>
+<li><strong>Spatial evaluation</strong>: the <strong>Method</strong> used to test the model, the
+   number of <strong>Folds</strong>, and <strong>Fix random seed</strong> for repeatable results.</li>
+</ol>
+<h3 id="step-2-optional-choose-the-feature-classes-yourself">Step 2. (Optional) Choose the feature classes yourself<a class="headerlink" href="#step-2-optional-choose-the-feature-classes-yourself" title="Permanent link">&para;</a></h3>
+<p><img alt="Feature Types group with Manual selection chosen" class="qm-shot" src="../images/steps/en/p02_params_manual_features.png" width="680" /></p>
+<ol>
+<li>Select <strong>Manual selection</strong>.</li>
+<li>Tick the feature classes to use: <strong>Linear</strong>, <strong>Quadratic</strong>,
+   <strong>Hinge</strong>, <strong>Product</strong> and <strong>Threshold</strong>.</li>
+</ol>
+<h3 id="step-3-optional-choose-another-evaluation-method">Step 3. (Optional) Choose another evaluation method<a class="headerlink" href="#step-3-optional-choose-another-evaluation-method" title="Permanent link">&para;</a></h3>
+<p><img alt="Spatial evaluation Method list opened" class="qm-shot" src="../images/steps/en/p03_params_cv_dropdown.png" width="680" /></p>
+<ol>
+<li>Open the <strong>Method</strong> list. <strong>Geographic K-Fold</strong> is the default and
+   the safest choice for most data. The other methods are described in
+   <a href="#spatial-cross-validation">Spatial cross-validation</a>.</li>
+</ol>
+<h3 id="step-4-check-the-importance-options-and-the-output-files">Step 4. Check the importance options and the output files<a class="headerlink" href="#step-4-check-the-importance-options-and-the-output-files" title="Permanent link">&para;</a></h3>
+<p><img alt="Advanced, random seed, importance options and Output Files highlighted" class="qm-shot" src="../images/steps/en/p04_params_lower.png" width="680" /></p>
+<ol>
+<li><strong>Advanced</strong>: hinge and threshold knots, <strong>Add presences to
+   background</strong> and <strong>Down-weight spatially clustered points</strong>. The
+   defaults suit most data.</li>
+<li><strong>Fix random seed</strong> keeps the folds and the background sample the
+   same from run to run.</li>
+<li><strong>Jackknife variable importance</strong> fits extra models to measure each
+   variable. It makes the run longer.</li>
+<li><strong>Permutation importance</strong> measures how much the model gets worse when
+   each variable is shuffled.</li>
+<li><strong>Output Files</strong>: where the model (<code>.pkl</code>) and the results workbook
+   (<code>.xlsx</code>) are saved. Click <strong>...</strong> to change the paths.</li>
+</ol>
+<p>Then click <strong>▶ Run Maxent</strong> at the bottom of the dock.</p>
 <h2 id="feature-types">Feature Types<a class="headerlink" href="#feature-types" title="Permanent link">&para;</a></h2>
 <p>Maxent's "features" are the basis functions it uses to express the response
 of suitability to each environmental variable
@@ -1409,7 +1551,7 @@ folds:</p>
 </tr>
 </tbody>
 </table>
-<p><img alt="CV-method drop-down expanded" src="../images/ui/dock-2-parameters-cv-dropdown.png" /></p>
+<p><img alt="CV-method drop-down expanded" class="qm-shot" src="../images/steps/en/p03_params_cv_dropdown.png" width="680" /></p>
 <p>The default <strong>Geographic K-Fold (k = 5, fixed seed = 42)</strong> strikes a balance
 recommended by <a href="../references/">Roberts et al. 2017</a>: geographic blocks
 break the spatial-autocorrelation cheating that random K-Fold permits,

@@ -721,6 +721,48 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#step-by-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step by step
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step by step">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-start-the-run-and-follow-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1. Start the run and follow it
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-read-the-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2. Read the summary
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-keep-a-copy-of-the-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3. Keep a copy of the log
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#what-happens-when-you-click-run" class="md-nav__link">
     <span class="md-ellipsis">
       What happens when you click Run
@@ -1142,6 +1184,48 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#step-by-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step by step
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step by step">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-start-the-run-and-follow-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1. Start the run and follow it
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-read-the-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2. Read the summary
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-keep-a-copy-of-the-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3. Keep a copy of the log
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#what-happens-when-you-click-run" class="md-nav__link">
     <span class="md-ellipsis">
       What happens when you click Run
@@ -1218,7 +1302,34 @@
 the Training tab. A progress bar shows fold-by-fold progress and a log
 panel records what the model is doing in real time — useful for diagnosing
 slow runs, oversized rasters, or convergence issues.</p>
-<p><img alt="Training tab in its initial waiting state" src="../images/ui/dock-3-training-waiting.png" /></p>
+<h2 id="step-by-step">Step by step<a class="headerlink" href="#step-by-step" title="Permanent link">&para;</a></h2>
+<h3 id="step-1-start-the-run-and-follow-it">Step 1. Start the run and follow it<a class="headerlink" href="#step-1-start-the-run-and-follow-it" title="Permanent link">&para;</a></h3>
+<p>Click <strong>▶ Run Maxent</strong> at the bottom of the dock. The dock switches to
+this tab.</p>
+<p><img alt="Training tab while the model is being fitted" class="qm-shot" src="../images/steps/en/t01_training_running.png" width="680" /></p>
+<ol>
+<li>The progress bar.</li>
+<li>The current step, for example the jackknife model being fitted.</li>
+<li>The log. Every step is written here as it happens.</li>
+</ol>
+<h3 id="step-2-read-the-summary">Step 2. Read the summary<a class="headerlink" href="#step-2-read-the-summary" title="Permanent link">&para;</a></h3>
+<p><img alt="Training tab after the run, with the final summary" class="qm-shot" src="../images/steps/en/t02_training_done.png" width="680" /></p>
+<ol>
+<li>The status line reports that the run is finished.</li>
+<li>The end of the log summarises the model and the evaluation (see
+   <a href="#reading-the-log">Reading the log</a>).</li>
+<li>The bottom line of the dock keeps the key numbers:
+   the number of presence and background points, the training AUC and
+   the cross-validated AUC.</li>
+</ol>
+<h3 id="step-3-keep-a-copy-of-the-log">Step 3. Keep a copy of the log<a class="headerlink" href="#step-3-keep-a-copy-of-the-log" title="Permanent link">&para;</a></h3>
+<p><img alt="Clear log, Copy log and Save log as buttons" class="qm-shot" src="../images/steps/en/t03_training_log_buttons.png" width="680" /></p>
+<ol>
+<li><strong>Clear log</strong> empties the log window.</li>
+<li><strong>Copy log</strong> copies the whole log to the clipboard.</li>
+<li><strong>Save log as...</strong> saves the log as a text file, which is useful as a
+   record of the run.</li>
+</ol>
 <h2 id="what-happens-when-you-click-run">What happens when you click Run<a class="headerlink" href="#what-happens-when-you-click-run" title="Permanent link">&para;</a></h2>
 <p>QMaxent runs the following pipeline; each step writes a status line to the
 log:</p>
@@ -1292,7 +1403,7 @@ handles ties in the optimisation step.</p>
 </ul>
 <h2 id="completion">Completion<a class="headerlink" href="#completion" title="Permanent link">&para;</a></h2>
 <p>When the run finishes, you see the green <strong>Done</strong> state:</p>
-<p><img alt="Training tab at 100% with the full log" src="../images/ui/dock-3-training-completed.png" /></p>
+<p><img alt="Training tab at 100% with the full log" class="qm-shot" src="../images/steps/en/t02_training_done.png" width="680" /></p>
 <p>The dock's footer status bar populates with <code>train AUC=… CV AUC=…</code> and the
 <strong>④ Results</strong> tab unlocks.</p>
 <h2 id="cancelling-a-run">Cancelling a run<a class="headerlink" href="#cancelling-a-run" title="Permanent link">&para;</a></h2>

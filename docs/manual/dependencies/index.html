@@ -548,27 +548,51 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#opening-the-dependencies-dialog" class="md-nav__link">
+  <a href="#step-by-step" class="md-nav__link">
     <span class="md-ellipsis">
-      Opening the Dependencies dialog
+      Step by step
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step by step">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-open-the-qmaxent-dependencies-panel" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1. Open the QMaxent Dependencies panel
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#environment-status-panel" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#step-2-install-the-dependencies" class="md-nav__link">
     <span class="md-ellipsis">
-      Environment Status panel
+      Step 2. Install the dependencies
     </span>
   </a>
   
 </li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-check-that-the-environment-is-ready" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3. Check that the environment is ready
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#install-update-dependencies" class="md-nav__link">
+  <a href="#environment-status-messages" class="md-nav__link">
     <span class="md-ellipsis">
-      Install / Update Dependencies
+      Environment Status messages
     </span>
   </a>
   
@@ -1160,27 +1184,51 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#opening-the-dependencies-dialog" class="md-nav__link">
+  <a href="#step-by-step" class="md-nav__link">
     <span class="md-ellipsis">
-      Opening the Dependencies dialog
+      Step by step
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step by step">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-open-the-qmaxent-dependencies-panel" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1. Open the QMaxent Dependencies panel
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#environment-status-panel" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#step-2-install-the-dependencies" class="md-nav__link">
     <span class="md-ellipsis">
-      Environment Status panel
+      Step 2. Install the dependencies
     </span>
   </a>
   
 </li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-check-that-the-environment-is-ready" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3. Check that the environment is ready
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#install-update-dependencies" class="md-nav__link">
+  <a href="#environment-status-messages" class="md-nav__link">
     <span class="md-ellipsis">
-      Install / Update Dependencies
+      Environment Status messages
     </span>
   </a>
   
@@ -1262,24 +1310,48 @@ system Python or QGIS itself. On Linux and macOS this folder is a Python
 virtual environment; on Windows it is a plain package folder (see
 <a href="#where-the-packages-are-installed">Where the packages are installed</a>).</p>
 <p>This is a one-time, ~5-minute setup.</p>
-<h2 id="opening-the-dependencies-dialog">Opening the Dependencies dialog<a class="headerlink" href="#opening-the-dependencies-dialog" title="Permanent link">&para;</a></h2>
-<p>Choose <strong>Plugins → QMaxent → QMaxent Dependencies</strong>.</p>
-<p><img alt="QMaxent Dependencies dialog before install showing Status: Dependencies not installed" src="../images/ui/dialog-dependencies.png" /></p>
-<p>The dialog reports the current state of the QMaxent package folder,
-the plugin version, and a summary of what will be installed.</p>
-<h2 id="environment-status-panel">Environment Status panel<a class="headerlink" href="#environment-status-panel" title="Permanent link">&para;</a></h2>
-<p>The status banner at the top tells you exactly what to do:</p>
+<h2 id="step-by-step">Step by step<a class="headerlink" href="#step-by-step" title="Permanent link">&para;</a></h2>
+<h3 id="step-1-open-the-qmaxent-dependencies-panel">Step 1. Open the QMaxent Dependencies panel<a class="headerlink" href="#step-1-open-the-qmaxent-dependencies-panel" title="Permanent link">&para;</a></h3>
+<p>The panel opens by itself right after the plugin is installed. You can
+also open it at any time from the menu.</p>
+<p><img alt="Plugins menu with QMaxent and QMaxent Dependencies highlighted" class="qm-shot" src="../images/steps/en/i04_menu_qmaxent_deps.png" width="610" /></p>
+<ol>
+<li>Open the <strong>Plugins</strong> menu.</li>
+<li>Point to <strong>QMaxent</strong>.</li>
+<li>Click <strong>QMaxent Dependencies</strong>.</li>
+</ol>
+<h3 id="step-2-install-the-dependencies">Step 2. Install the dependencies<a class="headerlink" href="#step-2-install-the-dependencies" title="Permanent link">&para;</a></h3>
+<p><img alt="QMaxent Dependencies panel before the installation" class="qm-shot" src="../images/steps/en/d01_deps_not_installed.png" width="380" /></p>
+<ol>
+<li><strong>Environment Status</strong> reads <em>Dependencies not installed</em>.</li>
+<li>Click <strong>Install / Update Dependencies</strong>.</li>
+</ol>
+<p>The packages are downloaded from <a href="https://pypi.org">PyPI</a> into
+<code>~/.qgis_qmaxent</code> (<code>%USERPROFILE%\.qgis_qmaxent</code> on Windows), the path
+shown at the bottom of the panel. The download is about 300 to 500 MB
+(about 590 MB on disk). Allow 3 to 8 minutes on a typical broadband
+connection. A progress bar and the package being installed are shown
+below the button while you wait:</p>
+<p><img alt="QMaxent Dependencies panel while the packages are being installed" class="qm-shot" src="../images/steps/en/d02_deps_installing.png" width="380" /></p>
+<h3 id="step-3-check-that-the-environment-is-ready">Step 3. Check that the environment is ready<a class="headerlink" href="#step-3-check-that-the-environment-is-ready" title="Permanent link">&para;</a></h3>
+<p><img alt="QMaxent Dependencies panel after the installation, with the green ready status" class="qm-shot" src="../images/steps/en/d03_deps_ready.png" width="380" /></p>
+<ol>
+<li><strong>Environment Status</strong> turns green and reads
+   <em>✓ QMaxent environment ready</em>. You can close the panel and open
+   <strong>QMaxent Analysis</strong>.</li>
+</ol>
+<h2 id="environment-status-messages">Environment Status messages<a class="headerlink" href="#environment-status-messages" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Banner</th>
+<th>Message</th>
 <th>Meaning</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>✗ <strong>Dependencies not installed</strong></td>
-<td>First-time setup needed (the case above)</td>
+<td>First-time setup needed</td>
 </tr>
 <tr>
 <td>✓ <strong>QMaxent environment ready</strong></td>
@@ -1287,21 +1359,10 @@ the plugin version, and a summary of what will be installed.</p>
 </tr>
 <tr>
 <td>✗ <strong>Dependencies need updating</strong></td>
-<td>The package list or the installation method changed with a plugin upgrade; click <strong>Install / Update Dependencies</strong> again</td>
+<td>The package list or the installation method changed with a plugin upgrade. Click <strong>Install / Update Dependencies</strong> again</td>
 </tr>
 </tbody>
 </table>
-<h2 id="install-update-dependencies">Install / Update Dependencies<a class="headerlink" href="#install-update-dependencies" title="Permanent link">&para;</a></h2>
-<p>Click <strong>Install / Update Dependencies</strong>. The plugin downloads the
-packages from <a href="https://pypi.org">PyPI</a> into the path shown at the bottom
-of the dialog (default: <code>~/.qgis_qmaxent</code> on macOS/Linux,
-<code>%USERPROFILE%\.qgis_qmaxent</code> on Windows). Total download is approximately
-<strong>300–500 MB</strong> depending on your platform (about 590 MB on disk once
-installed); allow 3–8 minutes on a typical broadband connection.</p>
-<p>When the installer finishes, the status banner turns green:</p>
-<p><img alt="QMaxent Dependencies dialog after install showing Status: ✓ QMaxent environment ready" src="../images/ui/dialog-dependencies-installed.png" /></p>
-<p>You can now close the dialog and open <strong>QMaxent Analysis</strong> — the modeling
-workflow is unlocked.</p>
 <h2 id="what-is-installed">What is installed<a class="headerlink" href="#what-is-installed" title="Permanent link">&para;</a></h2>
 <p>QMaxent installs the following packages and their transitive dependencies:</p>
 <ul>
