@@ -1278,9 +1278,17 @@ layer is added to the project and selected as the presence layer.</p>
   raster grid. That said, a projected CRS that matches the rasters avoids a
   mid-run reprojection step.</li>
 <li><strong>Duplicates and clustering</strong> are tolerated but distort the model.
-  <a href="../references/">Boria et al. 2014</a> recommend <strong>spatial thinning</strong> before
-  modeling; consider running QGIS plugin <em>NNJoin</em> or the standalone tool
-  <em>spThin</em> before using QMaxent.</li>
+  maxent.jar keeps one presence per raster cell by default; QMaxent keeps
+  all records, and the <a href="../training-tab/">③ Training tab</a> log reports how
+  many share a cell. Reduce the records to one per cell or apply
+  <strong>spatial thinning</strong> before modeling
+  (<a href="../references/">Boria et al. 2014</a>), for example with the standalone
+  tool <em>spThin</em>. Records with identical coordinates can also be removed
+  with <code>Vector → Geoprocessing Tools → Delete Duplicate Geometries</code>.</li>
+<li><strong>Very large presence sets</strong> (hundreds of thousands of points) are
+  usually dominated by such duplicates and need several GB of memory per
+  model fit (about 4 GB for 100,000 points in our tests). Thin them first;
+  the model rarely changes once each occupied cell is represented once.</li>
 </ul>
 <h2 id="environmental-rasters">Environmental rasters<a class="headerlink" href="#environmental-rasters" title="Permanent link">&para;</a></h2>
 <p>Two buttons populate the raster list:</p>
