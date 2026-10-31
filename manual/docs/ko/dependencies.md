@@ -10,36 +10,46 @@ Windows는 패키지 폴더. 아래 [설치 위치와 방식](#install-location)
 
 이는 약 5분 정도의 일회성 설정입니다.
 
-## Dependencies 다이얼로그 열기
+## 단계별 따라하기
 
-**플러그인 → QMaxent → QMaxent Dependencies** 를 선택하세요.
+### 1단계. QMaxent 의존성 패널 열기
 
-![설치 전 QMaxent Dependencies 다이얼로그 — Status: Dependencies not installed](images/ui/dialog-dependencies.png)
+플러그인을 설치하면 이 패널이 저절로 열립니다. 메뉴에서 언제든 다시 열 수도 있습니다.
 
-다이얼로그는 QMaxent 가상환경의 현재 상태, 플러그인 버전, 설치될 항목 요약을 보여줍니다.
+![플러그인 메뉴에서 QMaxent와 QMaxent 의존성이 강조된 화면](images/steps/ko/i04_menu_qmaxent_deps.png){ .qm-shot width="562" }
 
-## Environment Status 패널
+1. **플러그인** 메뉴를 엽니다.
+2. **QMaxent**에 마우스를 올립니다.
+3. **QMaxent 의존성**을 누릅니다.
 
-상단 상태 배너가 다음 단계를 정확히 알려줍니다:
+### 2단계. 의존성 설치
 
-| 배너 | 의미 |
+![설치 전 QMaxent 의존성 패널](images/steps/ko/d01_deps_not_installed.png){ .qm-shot width="380" }
+
+1. **환경 상태**에 *Dependencies not installed*가 표시됩니다.
+2. **의존성 설치 / 업데이트**를 누릅니다.
+
+패키지는 [PyPI](https://pypi.org)에서 받아 패널 아래쪽에 표시된 경로
+`~/.qgis_qmaxent`(Windows는 `%USERPROFILE%\.qgis_qmaxent`)에 설치됩니다. 내려받는 양은
+300~500 MB 정도(설치 후 약 590 MB)이고, 일반 인터넷 환경에서 3~8분 걸립니다. 기다리는
+동안 버튼 아래에 진행 막대와 설치 중인 패키지 이름이 표시됩니다.
+
+![패키지를 설치하고 있는 QMaxent 의존성 패널](images/steps/ko/d02_deps_installing.png){ .qm-shot width="380" }
+
+### 3단계. 준비 완료 확인
+
+![설치가 끝나 초록색 준비 완료 상태가 표시된 QMaxent 의존성 패널](images/steps/ko/d03_deps_ready.png){ .qm-shot width="380" }
+
+1. **환경 상태**가 초록색 *✓ QMaxent environment ready*로 바뀝니다. 패널을 닫고
+   **QMaxent 분석**을 열면 됩니다.
+
+## 환경 상태 메시지
+
+| 메시지 | 의미 |
 |---|---|
-| ✗ **Dependencies not installed** | 최초 설치 필요(위 화면) |
-| ✓ **QMaxent environment ready** | 모든 의존성이 설치되어 모델링 준비 완료 |
-| ⚠ **Update available** | 의존성 중 일부 업데이트 권장 |
-
-## 의존성 설치 / 업데이트
-
-**Install / Update Dependencies** 를 클릭하세요. 플러그인이 [PyPI](https://pypi.org)에서
-패키지들을 다운로드해 다이얼로그 하단에 표시된 경로에 설치합니다(기본:
-macOS/Linux는 `~/.qgis_qmaxent`, Windows는 `%USERPROFILE%\.qgis_qmaxent`).
-총 다운로드는 플랫폼에 따라 약 **300–500 MB** 이며, 일반 광대역에서 3–8분 소요됩니다.
-
-설치가 끝나면 상태 배너가 초록으로 바뀝니다:
-
-![설치 후 QMaxent Dependencies 다이얼로그 — Status: ✓ QMaxent environment ready](images/ui/dialog-dependencies-installed.png)
-
-이제 다이얼로그를 닫고 **QMaxent Analysis** 를 열면 모델링 워크플로가 활성화됩니다.
+| ✗ **Dependencies not installed** | 처음 한 번 설치가 필요합니다 |
+| ✓ **QMaxent environment ready** | 모두 설치되어 모델링을 시작할 수 있습니다 |
+| ✗ **Dependencies need updating** | 플러그인 업그레이드로 패키지 목록이나 설치 방식이 바뀌었습니다. **의존성 설치 / 업데이트**를 다시 누르세요 |
 
 ## 설치 위치와 방식 {#install-location}
 

@@ -18,25 +18,48 @@ QGIS 자체에는 영향을 주지 않습니다.
 QMaxent는 [공식 QGIS 플러그인 저장소](https://plugins.qgis.org/plugins/qmaxent/)에
 공개되어 있습니다.
 
-1. QGIS에서 **플러그인 → 플러그인 관리 및 설치…** 를 엽니다.
-2. **All** 탭의 검색창에 `qmaxent` 를 입력하면 결과 목록에 플러그인이 나타납니다.
-3. **Install Plugin** 을 클릭합니다.
+### 1단계. 플러그인 관리자 열기
 
-설치가 완료되면 **플러그인 → QMaxent** 메뉴에 세 가지 진입점이 추가됩니다:
+![플러그인 메뉴에서 플러그인 관리 및 설치가 강조된 화면](images/steps/ko/i01_menu_manage_plugins.png){ .qm-shot width="365" }
 
-![플러그인 → QMaxent 메뉴에 표시된 세 가지 진입점](images/ui/menu-plugins-qmaxent.png)
+1. **플러그인** 메뉴를 엽니다.
+2. **플러그인 관리 및 설치...**를 누릅니다.
 
-| 메뉴 항목 | 설명 |
+### 2단계. QMaxent를 찾아 설치
+
+![QMaxent를 찾은 플러그인 관리자와 플러그인 설치 버튼](images/steps/ko/i02_plugin_manager_search.png){ .qm-shot width="887" }
+
+1. 왼쪽에서 **모두**가 선택되어 있는지 확인합니다.
+2. 검색창에 `QMaxent`를 입력합니다.
+3. 결과 목록에서 **QMaxent**를 누르면 오른쪽에 설명이 나타납니다.
+4. **플러그인 설치**를 누릅니다. 설치가 끝나면 **닫기**를 누릅니다.
+
+### 3단계. QMaxent 메뉴 확인
+
+![QMaxent 하위 메뉴가 열린 플러그인 메뉴](images/steps/ko/i04_menu_qmaxent_deps.png){ .qm-shot width="562" }
+
+1. **플러그인** 메뉴를 다시 엽니다.
+2. **QMaxent**에 마우스를 올리면 세 항목이 보입니다.
+3. **QMaxent 의존성**은 다음 장에서 설명하는 의존성 설치 화면을 엽니다.
+
+| 메뉴 항목 | 하는 일 |
 |---|---|
-| **QMaxent Analysis** | 메인 분석 도크 — 플러그인의 핵심 |
-| **QMaxent Dependencies** | 의존성 관리 다이얼로그 (다음 장) |
-| **Download Example Dataset** | 튜토리얼용 SDM 예제 데이터셋 (*예제 데이터* 장 참고) |
+| **QMaxent 분석** | 모든 모델링을 하는 분석 도크를 엽니다 |
+| **QMaxent 의존성** | 의존성 설치 화면을 엽니다(다음 장) |
+| **예제 데이터셋 다운로드...** | 이 매뉴얼에서 쓰는 예제 데이터를 받습니다([예제 데이터](example-datasets.md) 참고) |
 
 ## 설치 확인
 
-**플러그인 → QMaxent → QMaxent Dependencies** 를 선택하세요. 다이얼로그가 정상적으로
-열린다면 플러그인은 올바르게 설치된 것입니다. 처음에는 **Environment Status** 배너가
-*Dependencies not installed* 로 표시되는데, 이는 정상이며 다음 장에서 설치합니다.
+설치가 끝나면 QGIS 오른쪽에 두 패널이 열립니다. 위쪽이 **QMaxent 의존성**, 아래쪽이
+**QMaxent 분석** 도크입니다.
+
+![설치 직후 QMaxent 의존성 패널이 강조된 QGIS 주 화면](images/steps/ko/d00_main_first_start.png){ .qm-shot width="1440" }
+
+1. 처음에는 **QMaxent 의존성** 패널에 *Dependencies not installed*가 표시됩니다.
+   정상이며, 다음 장에서 설치합니다.
+
+패널이 보이지 않으면 **플러그인 → QMaxent → QMaxent 의존성**을 누르세요. 화면이 열리면
+플러그인은 올바르게 설치된 것입니다.
 
 ## 새 버전으로 업데이트
 

@@ -1,22 +1,64 @@
 # Example datasets
 
 QMaxent ships a one-click downloader for two canonical SDM example
-datasets, accessed from **Plugins → QMaxent → Download Example Dataset**.
+datasets, accessed from **Plugins → QMaxent → Download Example Dataset...**
 They are the same datasets the broader Maxent literature has used for
 almost two decades, which means you can compare your results directly
 with published benchmarks.
 
-## Opening the dialog
+## Step by step
 
-Choose **Plugins → QMaxent → Download Example Dataset**.
+### Step 1. Open the downloader
 
-![Download Example Dataset dialog with Bradypus selected](images/ui/dialog-download-example-dataset.png)
+![Plugins menu with QMaxent and Download Example Dataset highlighted](images/steps/en/e00_menu_example.png){ .qm-shot width="610" }
 
-Two datasets are offered. Pick one of the radio buttons, choose where to
-save the files (the default is a `qmaxent_examples` folder under your
-home directory), and click **Download**. The plugin fetches the data,
-unpacks it, and **automatically adds the layers to your current QGIS
-project** so you can start modeling right away.
+1. Open the **Plugins** menu.
+2. Point to **QMaxent**.
+3. Click **Download Example Dataset...**
+
+### Step 2. Choose a dataset and a folder
+
+![Download Example Dataset dialog with Bradypus selected](images/steps/en/e01_example_dialog_bradypus.png){ .qm-shot width="540" }
+
+1. Choose the dataset. **Bradypus variegatus** is the best one to start
+   with.
+2. Check **Save to**. The default is a `qmaxent_examples` folder in your
+   home folder. Click **...** to choose another folder.
+3. Click **Download**.
+
+For **Ariolimax**, the dialog also offers a **Variant**:
+
+![Download Example Dataset dialog with Ariolimax and the Variant options highlighted](images/steps/en/e01_example_dialog_ariolimax.png){ .qm-shot width="540" }
+
+1. Select **Ariolimax**.
+2. **Variant**: **Pre-harmonized (default)** loads the rasters as
+   published, all on one grid. **Mismatch demo** loads copies whose CRS,
+   extent and resolution were changed on purpose, so that you can
+   practise the raster consistency check (see
+   [Fixing rasters that do not line up](data-tab.md#fixing-rasters-that-do-not-line-up)).
+3. **Save to** works as for Bradypus.
+4. Click **Download**.
+
+### Step 3. Wait for the download
+
+![Download progress bar in the dialog](images/steps/en/e02_example_downloading_ariolimax.png){ .qm-shot width="540" }
+
+1. The progress bar and the line below it show which file is being
+   downloaded. Click **Cancel** to stop.
+
+When the download ends, a message tells you where the files are:
+
+![Message saying the example dataset is ready](images/steps/en/e03_example_done_msg_ariolimax.png){ .qm-shot width="431" }
+
+1. Click **OK**.
+
+### Step 4. Check the layers
+
+![QGIS main window with the Bradypus layers loaded](images/steps/en/e04_main_bradypus_loaded.png){ .qm-shot width="1440" }
+
+1. The presence layer and the environmental rasters are added to the
+   **Layers** panel and drawn on the map. You can go straight to the
+   [Quick start](quick-start.md).
 
 ## Bradypus variegatus dataset
 
@@ -43,21 +85,15 @@ for working through this manual.
 *The Pacific banana slug*. This is the default test dataset that ships
 with [elapid](https://github.com/earth-chris/elapid).
 
-!!! note "About the Ariolimax download vs the Ariolimax worked example"
+!!! note "Pre-harmonized or Mismatch demo?"
 
-    The official Ariolimax download is **already harmonised** — all
-    six rasters share a common CRS, extent, and resolution out of the
-    box. So when you load it, **Check Raster Consistency** will pass
-    immediately and you will not see the mismatch problem the
-    [Ariolimax worked example](examples/ariolimax.md) walks through.
-
-    The worked example uses a **deliberately desynchronised version**
-    of the same data — the author intentionally reprojected and
-    resampled some rasters to mimic the silent-failure scenario that
-    SDM users frequently encounter in real fieldwork. If you want to
-    follow that example exactly, work from the desynchronised
-    dataset described in the example chapter; the bundled download
-    will not exhibit the mismatch.
+    The published Ariolimax rasters already share one CRS, extent and
+    resolution, so **Check Raster Consistency** passes at once. Choose
+    **Mismatch demo** in the **Variant** box when you want to see and fix
+    a grid mismatch, as in the
+    [Ariolimax worked example](examples/ariolimax.md). The demo copies
+    are written to a `mismatch_demo` subfolder; the original files stay
+    unchanged.
 
 ## Save location and project structure
 

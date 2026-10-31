@@ -9,6 +9,51 @@
 | **Permutation Importance** | 변수 값을 섞었을 때의 AUC 하락 (평가 자료는 [② 파라미터 탭](parameters-tab.md)에서 선택) |
 | **Spatial Projection** | 예측을 GeoTIFF로 작성하고 스타일링된 QGIS 레이어로 불러오기 |
 
+## 단계별 따라하기
+
+### 1단계. 반응 곡선
+
+![변수 선택 상자와 곡선이 강조된 반응 곡선 하위 탭](images/steps/ko/r01_results_response.png){ .qm-shot width="680" }
+
+1. **반응 곡선**을 누릅니다.
+2. **변수**에서 변수를 고릅니다.
+3. 그 변수 값에 따라 예측 적합도가 어떻게 바뀌는지 봅니다. 음영은 학습 자료의 값 범위입니다.
+
+### 2단계. 변수 중요도
+
+![Jackknife 중요도 하위 탭](images/steps/ko/r02_results_jackknife.png){ .qm-shot width="680" }
+
+1. **Jackknife 중요도**를 누릅니다.
+2. 왼쪽은 ROC 곡선, 오른쪽은 Jackknife 막대입니다.
+
+![Permutation Importance 하위 탭](images/steps/ko/r03_results_permutation.png){ .qm-shot width="680" }
+
+1. **Permutation Importance**를 누릅니다.
+2. **Save PNG...**로 그래프를 저장합니다.
+3. **Save CSV...**로 수치를 저장합니다.
+
+### 3단계. 서식적합도 지도 만들기
+
+![설정과 실행 버튼이 강조된 공간 예측 하위 탭](images/steps/ko/r04_results_projection_settings.png){ .qm-shot width="680" }
+
+1. **공간 예측**을 누릅니다.
+2. **출력 변환**을 고릅니다(기본 **cloglog**).
+3. **출력 래스터** 경로를 확인합니다.
+4. **▶ 공간 예측 실행**을 누릅니다.
+
+![실행 중인 공간 예측](images/steps/ko/r05_projection_running.png){ .qm-shot width="680" }
+
+1. 진행 막대입니다.
+2. 지금 하고 있는 단계입니다.
+
+![실행이 끝난 공간 예측](images/steps/ko/r06_projection_done.png){ .qm-shot width="680" }
+
+1. `완료:`와 저장된 GeoTIFF 경로가 표시됩니다.
+
+![예측 레이어가 올라온 QGIS 주 화면](images/steps/ko/r07_main_projection_map.png){ .qm-shot width="1440" }
+
+1. **결과를 QGIS 레이어로 자동 로드**가 체크되어 있으면 지도가 **레이어** 패널에 추가됩니다.
+
 ## Response Curves
 
 상단 드롭다운에서 변수를 하나 선택하세요. QMaxent가 변수의 실제 학습 범위(음영
@@ -66,7 +111,7 @@ Bradypus 예제는 train AUC 0.956과 CV AUC 0.758을 보여줍니다 — 모델
 이 하위 탭은 학습된 모델을 전체 래스터 스택에 적용해 연속 서식적합도 표면을
 생성합니다.
 
-![실행 후 Spatial Projection 하위 탭 — 출력 GeoTIFF 경로 표시](images/ui/dock-4-projection-done.png)
+![실행 후 공간 예측 하위 탭](images/steps/ko/r06_projection_done.png){ .qm-shot width="680" }
 
 ### 출력 변환
 

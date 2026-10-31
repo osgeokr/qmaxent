@@ -20,27 +20,51 @@ Python's own pip (see [Dependencies](dependencies.md)).
 QMaxent is published on the
 [official QGIS Plugin Repository](https://plugins.qgis.org/plugins/qmaxent/).
 
-1. Open QGIS and choose **Plugins → Manage and Install Plugins…**
-2. In the **All** tab, type `qmaxent` in the search box. The plugin
-    appears in the result list.
-3. Click **Install Plugin**.
+### Step 1. Open the Plugin Manager
 
-Once installed, three entry points appear under **Plugins → QMaxent**:
+![Plugins menu with Manage and Install Plugins highlighted](images/steps/en/i01_menu_manage_plugins.png){ .qm-shot width="360" }
 
-![Plugins → QMaxent menu showing the three entry points: Analysis, Dependencies, Download Example Dataset](images/ui/menu-plugins-qmaxent.png)
+1. Open the **Plugins** menu.
+2. Click **Manage and Install Plugins...**
+
+### Step 2. Find QMaxent and install it
+
+![Plugin Manager with QMaxent found and the Install Plugin button highlighted](images/steps/en/i02_plugin_manager_search.png){ .qm-shot width="887" }
+
+1. Make sure the **All** page is selected on the left.
+2. Type `QMaxent` in the search box.
+3. Click **QMaxent** in the result list. Its description appears on the
+   right.
+4. Click **Install Plugin**. When the installation ends, click **Close**.
+
+### Step 3. Find the QMaxent menu
+
+![Plugins menu with the QMaxent submenu open](images/steps/en/i04_menu_qmaxent_deps.png){ .qm-shot width="610" }
+
+1. Open the **Plugins** menu again.
+2. Point to **QMaxent**. Three entries appear.
+3. **QMaxent Dependencies** opens the dependency setup described in the
+   next chapter.
 
 | Menu item | What it does |
 |---|---|
-| **QMaxent Analysis** | Opens the main analysis dock — the heart of the plugin |
-| **QMaxent Dependencies** | Opens the dependency-management dialog (next chapter) |
-| **Download Example Dataset** | Bundled SDM datasets for tutorials (see *Example datasets*) |
+| **QMaxent Analysis** | Opens the Analysis dock, where all modelling happens |
+| **QMaxent Dependencies** | Opens the dependency setup (next chapter) |
+| **Download Example Dataset...** | Downloads the example data used in this manual (see [Example datasets](example-datasets.md)) |
 
 ## Verifying the installation
 
-Choose **Plugins → QMaxent → QMaxent Dependencies**. If the dialog opens,
-the plugin is correctly installed. The **Environment Status** banner will
-most likely read *Dependencies not installed* the first time — that is
-expected and is dealt with in the next chapter.
+Right after the installation, QMaxent opens two panels on the right side
+of QGIS: **QMaxent Dependencies** at the top and the **QMaxent Analysis**
+dock below it.
+
+![QGIS main window right after the installation, with the QMaxent Dependencies panel highlighted](images/steps/en/d00_main_first_start.png){ .qm-shot width="1440" }
+
+1. The **QMaxent Dependencies** panel reads *Dependencies not installed*
+   the first time. That is expected: the next chapter installs them.
+
+If the panels do not appear, choose **Plugins → QMaxent → QMaxent
+Dependencies**. If that opens, the plugin is installed correctly.
 
 ## Updating to a newer version
 

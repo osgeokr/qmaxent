@@ -9,6 +9,53 @@ After a successful run, the Results tab unlocks four sub-tabs:
 | **Permutation Importance** | AUC drop when each variable is shuffled, as % of the total; the data it is evaluated on is set by **Evaluate on** in [② Parameters](parameters-tab.md#permutation-importance) |
 | **Spatial Projection** | Write the prediction to a GeoTIFF and load it as a styled QGIS layer |
 
+## Step by step
+
+### Step 1. Response curves
+
+![Response Curves sub-tab with the variable selector and the curve highlighted](images/steps/en/r01_results_response.png){ .qm-shot width="680" }
+
+1. Click **Response Curves**.
+2. Choose a variable in **Variable**.
+3. Read the curve: how predicted suitability changes along that
+   variable, with the training range shaded.
+
+### Step 2. Variable importance
+
+![Jackknife Importance sub-tab](images/steps/en/r02_results_jackknife.png){ .qm-shot width="680" }
+
+1. Click **Jackknife Importance**.
+2. The ROC curves (left) and the jackknife bars (right).
+
+![Permutation Importance sub-tab](images/steps/en/r03_results_permutation.png){ .qm-shot width="680" }
+
+1. Click **Permutation Importance**.
+2. **Save PNG...** saves the chart.
+3. **Save CSV...** saves the numbers.
+
+### Step 3. Make the suitability map
+
+![Spatial Projection sub-tab with the settings and the run button](images/steps/en/r04_results_projection_settings.png){ .qm-shot width="680" }
+
+1. Click **Spatial Projection**.
+2. Choose the **Output transform** (**cloglog** by default).
+3. Check the **Output raster** path.
+4. Click **▶ Run Spatial Projection**.
+
+![Spatial Projection while it is running](images/steps/en/r05_projection_running.png){ .qm-shot width="680" }
+
+1. The progress bar.
+2. The current step.
+
+![Spatial Projection after the run](images/steps/en/r06_projection_done.png){ .qm-shot width="680" }
+
+1. `Done:` and the path of the saved GeoTIFF.
+
+![QGIS main window with the prediction layer](images/steps/en/r07_main_projection_map.png){ .qm-shot width="1440" }
+
+1. The map is added to the **Layers** panel when **Auto-load result as
+   QGIS layer** is ticked.
+
 ## Response Curves
 
 Pick a variable from the drop-down at the top. QMaxent draws the predicted
@@ -72,7 +119,7 @@ exported into Table 4 of the XLSX — see
 The third sub-tab projects the trained model across all the input rasters,
 producing a habitat-suitability GeoTIFF.
 
-![Spatial Projection sub-tab before clicking Run](images/ui/dock-4-results-spatial-projection.png)
+![Spatial Projection sub-tab before clicking Run](images/steps/en/r04_results_projection_settings.png){ .qm-shot width="680" }
 
 Controls:
 
@@ -117,7 +164,7 @@ the input rasters.
 
 A success message appears in the panel:
 
-![Projection sub-tab after a successful run](images/ui/dock-4-projection-done.png)
+![Projection sub-tab after a successful run](images/steps/en/r06_projection_done.png){ .qm-shot width="680" }
 
 The GeoTIFF is loaded into QGIS with a default white-to-green ramp keyed
 to the cloglog 0–1 range, ready to compose into a publication map.

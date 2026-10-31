@@ -1,132 +1,248 @@
 # Quick start
 
-This 5-minute walkthrough takes you from a freshly installed plugin to a
-finished habitat-suitability map for *Bradypus variegatus*, the brown-throated
-three-toed sloth — the same species the original Maxent paper used
-[Phillips, Anderson & Schapire 2006](references.md). Every screenshot below
-shows real numbers from a run you can reproduce.
+This walkthrough takes you from a freshly installed plugin to a finished
+habitat-suitability map and a list of field survey sites for
+*Bradypus variegatus*, the brown-throated three-toed sloth. It is the same
+species the original Maxent paper used
+([Phillips, Anderson & Schapire 2006](references.md)).
 
-!!! tip "Prerequisites"
-    Make sure you have completed [Installation](installation.md) and
-    [Dependencies](dependencies.md) — the **QMaxent environment ready**
-    banner must be green before continuing.
+Every step shows the real QGIS screen. The red boxes and numbered
+circles on each picture match the numbered instructions below it, so you
+can follow along click by click.
 
-## Step 1 · Download the example dataset
+!!! tip "Before you start"
+    Complete [Installation](installation.md) and
+    [Dependencies](dependencies.md) first. The **QMaxent environment
+    ready** status must be shown in green before you continue.
 
-Open **Plugins → QMaxent → Download Example Dataset**, choose
-**Bradypus variegatus**, and confirm.
+!!! info "How long does it take?"
+    About 10 minutes in total. Most of that is the model fit in Step 9,
+    which runs in the background while QGIS stays usable.
 
-![Download Example Dataset dialog with Bradypus variegatus selected](images/ui/dialog-download-example-dataset.png)
+## Part 1. Get the example data
 
-QMaxent fetches the bundled dataset (presence shapefile + 9 environmental
-rasters at 0.5° resolution covering the Americas) and adds every layer to
-the active QGIS project automatically.
+### Step 1. Open the example dataset downloader
 
-![Bradypus presence overlaid on bio17 across Central and South America](images/maps/example-bradypus-loaded.png)
+![Plugins menu with QMaxent and Download Example Dataset highlighted](images/steps/en/e00_menu_example.png){ .qm-shot width="610" }
 
-## Step 2 · Open the Analysis dock
+1. Open the **Plugins** menu in the QGIS menu bar.
+2. Point to **QMaxent**.
+3. Click **Download Example Dataset...**
 
-Choose **Plugins → QMaxent → QMaxent Analysis**. The dock opens on the
-right of the QGIS main window with five numbered tabs you progress through
-left-to-right.
+### Step 2. Choose Bradypus and download
 
-![Analysis dock — empty Data tab, showing the five-tab structure](images/ui/dock-1-data-empty.png)
+![Download Example Dataset dialog with Bradypus selected](images/steps/en/e01_example_dialog_bradypus.png){ .qm-shot width="540" }
 
-## Step 3 · Configure the Data tab
+1. Select **Bradypus variegatus**.
+2. Check the folder in **Save to**. The default is a `qmaxent_examples`
+   folder in your home folder. Click **...** to choose another place.
+3. Click **Download**.
 
-On **① Data**, pick `bradypus` from the **Presence Points Layer** drop-down
-(QMaxent reports `116 presence points loaded`), click **Add from project**
-to register every loaded raster at once, then click **Check Raster
-Consistency** to verify the stack.
+The download takes a few seconds. When the message below appears, click
+**OK**.
 
-![Data tab with Bradypus loaded and consistency check passed](images/ui/dock-1-data-with-bradypus.png)
+![Message saying the example dataset is ready](images/steps/en/e03_example_done_msg_ariolimax.png){ .qm-shot width="431" }
 
-The status line should turn green:
-`✓ All 9 rasters share grid (CRS: EPSG:4326, resolution: 0.5 × 0.5)`.
+### Step 3. Check the layers on the map
 
-## Step 4 · Accept the Parameters defaults
+![QGIS main window with the Bradypus layers loaded](images/steps/en/e04_main_bradypus_loaded.png){ .qm-shot width="1440" }
 
-Switch to **② Parameters**. For this quick tour, accept the defaults.
-They are sensible starting values from the SDM literature
-([Phillips & Dudík 2008](references.md), [Phillips et al. 2017](references.md)),
-not a guarantee of the best model for your data:
+1. The **Layers** panel now lists the `bradypus` presence layer and the
+   nine environmental rasters (`bio1` to `bio17` and `biome`). The blue
+   points on the map are the 116 places where the sloth was recorded.
 
-- **Feature classes**: **Auto (maxnet default rule by sample size)**,
-  which gives LQPH (linear, quadratic, product, hinge) for 80 or more
-  presences, so LQPH for the 116 Bradypus records
-- **Regularization multiplier**: 1.0
-- **Spatial CV**: Geographic K-Fold, 5 folds, **Fix random seed** 42
-  (the seed also fixes the background sample)
-- **Jackknife variable importance**: enabled
-- **Output files**: `qmaxent_output/model.pkl` and
-  `qmaxent_output/results.xlsx`
+## Part 2. Prepare the data (① Data tab)
 
-The fixed random seed is what lets a reviewer **reproduce your numbers
-bit-for-bit** — central to the principle of computational reproducibility
-emphasised in the SDM-best-practice review of
-[Araújo et al. 2019](references.md).
+### Step 4. Open the Analysis dock
 
-![Parameters tab with default settings](images/ui/dock-2-parameters-defaults.png)
+Choose **Plugins → QMaxent → QMaxent Analysis**. The Analysis dock opens
+on the right side of QGIS.
 
-## Step 5 · Run Maxent
+![Analysis dock with the five tabs and the Run Maxent button highlighted](images/steps/en/a01_dock_overview.png){ .qm-shot width="680" }
 
-Click **▶ Run Maxent** at the bottom of the dock. Focus shifts to the
-**③ Training** tab; about 30 seconds later you should see:
+1. **① Data**: choose the presence points and the environmental rasters.
+2. **② Parameters**: set how the model is fitted and evaluated.
+3. **③ Training**: follow the model fit and read the log.
+4. **④ Results**: look at response curves and variable importance, and
+   make the suitability map.
+5. **⑤ Survey Site Selection**: pick field survey sites from the map.
+6. **▶ Run Maxent** starts the model fit. You use it once the first two
+   tabs are ready.
 
-![Training tab at 100% with the full log](images/ui/dock-3-training-completed.png)
+Work through the tabs from left to right.
 
-The log reports a training AUC of about 0.96 and a 5-fold mean CV AUC
-of about 0.74 (the screenshot was recorded with an earlier version; exact
-values differ slightly in v0.2.0). The honest gap between training and CV AUC is
-itself a good sign — it tells you the model has not been silently
-over-fitted to the training presences (a risk that
-[Roberts et al. 2017](references.md) document at length).
+### Step 5. Choose the presence points
 
-## Step 6 · Inspect Response Curves and Jackknife
+![Data tab with the presence layer selector highlighted](images/steps/en/a02_data_presence.png){ .qm-shot width="680" }
 
-On **④ Results → Response Curves**, pick `bio1` from the variable selector
-to see how the model's cloglog suitability responds to mean annual
-temperature across its training range.
+1. In **Presence Points Layer**, choose `bradypus`. The line below it
+   reads `116 presence points loaded`.
+2. **Open point file...** loads a point file (GeoPackage, shapefile and
+   others) that is not yet in your project.
+3. **Load CSV (X/Y columns)...** loads a table with coordinate columns.
+   You do not need either button for this example.
 
-![Response curve for bio1 with shaded training range](images/ui/dock-4-response-curve-bio1.png)
+### Step 6. Add the environmental rasters
 
-The **Jackknife Importance** sub-tab combines the ROC curve with per-variable
-contribution bars — the classic single-figure summary used in Maxent papers
-since [Phillips, Anderson & Schapire 2006](references.md).
+![Data tab after Add from project, with the raster list filled](images/steps/en/a03_data_rasters_added.png){ .qm-shot width="680" }
 
-![ROC and Jackknife panels for the 9 Bradypus variables](images/ui/dock-4-jackknife-bars.png)
+1. Click **Add from project**.
+2. Every raster in the project appears in the list. The button on the
+   right of each row shows whether QMaxent treats the raster as
+   `[continuous]` or `[categorical]`. Click it to change the type.
+   Scroll down the list and check that `biome` is marked
+   `[categorical]`, because its values are class codes, not amounts.
 
-## Step 7 · Project across the landscape
+### Step 7. Check that the rasters line up
 
-Switch to **Spatial Projection**. Leave **cloglog** as the output transform
-([Phillips et al. 2017](references.md) recommend cloglog as the default
-probability-of-presence interpretation) and **Auto-load result as QGIS
-layer** ticked, then click **▶ Run Spatial Projection**.
+![Check Raster Consistency button and the green status line](images/steps/en/a04_data_consistency_ok.png){ .qm-shot width="680" }
 
-![Spatial Projection sub-tab after a successful run](images/ui/dock-4-projection-done.png)
+1. Click **Check Raster Consistency**.
+2. The status line turns green:
+   `✓ All 9 rasters share grid (CRS: EPSG:4326, resolution: 0.5 × 0.5)`.
+   If it turns red instead, see
+   [Fixing rasters that do not line up](data-tab.md#fixing-rasters-that-do-not-line-up).
 
-The styled GeoTIFF appears on the canvas:
+## Part 3. Fit the model (② Parameters and ③ Training)
 
-![Predicted habitat suitability for Bradypus across the Americas](images/maps/quickstart-final-suitability.png)
+### Step 8. Review the parameters
 
-That is your finished QMaxent baseline.
+Click the **② Parameters** tab. For this first run, keep the defaults.
 
-## What just happened
+![Parameters tab with the Feature Types, Regularization and Spatial evaluation groups highlighted](images/steps/en/p01_params_overview.png){ .qm-shot width="680" }
 
-In seven clicks you ran a complete species-distribution-model pipeline:
-sampled background points, fit a regularized Maxent model with auto-selected
-features, evaluated it with spatial K-Fold CV, computed Jackknife variable
-importance, and projected the model across the entire dataset extent.
+1. **Feature Types**: **Auto (maxnet default rule by sample size)**
+   chooses the feature classes from the number of presences. With 116
+   records it uses linear, quadratic, product and hinge (LQPH).
+2. **Regularization**: a multiplier of 1.00 is the usual starting value.
+3. **Spatial evaluation**: **Geographic K-Fold** with 5 folds checks the
+   model on areas it did not see during fitting. **Fix random seed: 42**
+   makes the run repeatable.
+
+These defaults are a sensible starting point
+([Phillips & Dudík 2008](references.md);
+[Phillips et al. 2017](references.md)), not a guarantee of the best
+model for your own data.
+
+### Step 9. Run Maxent
+
+Click **▶ Run Maxent** at the bottom of the dock. QMaxent switches to the
+**③ Training** tab.
+
+![Training tab while the model is being fitted](images/steps/en/t01_training_running.png){ .qm-shot width="680" }
+
+1. The progress bar shows how far the run is.
+2. The line under it names the current step.
+3. The log records every step as it happens.
+
+When the run ends, the tab looks like this:
+
+![Training tab after the run, with the final summary](images/steps/en/t02_training_done.png){ .qm-shot width="680" }
+
+1. The status line reports the result.
+2. The log ends with a summary of the model and the evaluation.
+3. The bar at the bottom of the dock keeps the key numbers in view, for
+   example `presence=116  background=10,108 | train AUC=0.9135 | CV AUC=0.7524`.
+
+The test AUC from spatial cross-validation is lower than the training
+AUC. That gap is normal and honest: it shows how well the model does in
+places it was not fitted to ([Roberts et al. 2017](references.md)).
+
+## Part 4. Read the results and make the map (④ Results)
+
+### Step 10. Look at the response curves
+
+Click the **④ Results** tab.
+
+![Response Curves sub-tab with the variable selector and the curve highlighted](images/steps/en/r01_results_response.png){ .qm-shot width="680" }
+
+1. The **Response Curves** sub-tab is open.
+2. Choose a variable in **Variable**.
+3. The curve shows how predicted suitability changes along that
+   variable. The shaded band is the range of values at the training
+   points.
+
+### Step 11. See which variables matter
+
+![Jackknife Importance sub-tab with ROC curves and jackknife bars](images/steps/en/r02_results_jackknife.png){ .qm-shot width="680" }
+
+1. Click **Jackknife Importance**.
+2. The left panel shows the ROC curves. The right panel compares the
+   model fitted with only one variable and without that variable.
+
+![Permutation Importance sub-tab with the bar chart and the save buttons](images/steps/en/r03_results_permutation.png){ .qm-shot width="680" }
+
+1. **Permutation Importance** ranks the variables by how much the model
+   gets worse when each one is shuffled.
+2. **Save PNG...** saves the chart.
+3. **Save CSV...** saves the numbers.
+
+### Step 12. Make the suitability map
+
+![Spatial Projection sub-tab with the output settings and the run button](images/steps/en/r04_results_projection_settings.png){ .qm-shot width="680" }
+
+1. Click **Spatial Projection**.
+2. Keep **cloglog** in **Output transform**. It gives values from 0 to 1
+   that read as relative suitability ([Phillips et al. 2017](references.md)).
+3. **Output raster** is where the map is saved. Click **...** to change it.
+4. Click **▶ Run Spatial Projection**.
+
+![Status line reporting the saved prediction raster](images/steps/en/r06_projection_done.png){ .qm-shot width="680" }
+
+1. When the status line reads `Done:` followed by the file path, the map
+   is saved and added to the project.
+
+![QGIS main window with the prediction layer on the map](images/steps/en/r07_main_projection_map.png){ .qm-shot width="1440" }
+
+1. The `prediction` layer appears in the **Layers** panel. Darker colours
+   mean higher predicted suitability.
+
+## Part 5. Pick survey sites (⑤ Survey Site Selection)
+
+### Step 13. Set up the survey
+
+Click the **⑤ Survey Site Selection** tab.
+
+![Survey Site Selection tab with the purpose, search settings, sampling strategy and run button highlighted](images/steps/en/s01_survey_discovery_settings.png){ .qm-shot width="680" }
+
+1. **Survey purpose**: choose **High-suitability search** to look for new
+   populations in places that are suitable but not yet surveyed.
+2. **High-suitability search settings**: **Minimum suitability** is the
+   lowest map value a site may have.
+3. **Sampling strategy**: set how many sites you want and how far apart
+   they must be from known records and from each other (in metres).
+4. Click **▶ Select Survey Sites**.
+
+### Step 14. Check the survey sites
+
+![Status line reporting how many survey sites were selected](images/steps/en/s05_survey_done.png){ .qm-shot width="680" }
+
+1. The status line reports the result, for example
+   `✓ 20 survey sites selected (MinSuit = 0.9000)`, and where the
+   GeoPackage was saved.
+
+![QGIS main window with the survey sites on the suitability map](images/steps/en/s06_main_survey_map.png){ .qm-shot width="1440" }
+
+1. The `Survey sites` layer is added on top of the map. Open its
+   attribute table to see the coordinates, the suitability value and,
+   if reverse geocoding was on, the address of each site.
+
+## What you have done
+
+In these steps you ran a complete species distribution modelling
+workflow inside QGIS. You loaded presence points and environmental
+rasters, checked that the rasters line up, fitted a regularized Maxent
+model, evaluated it with spatial cross-validation, read the response
+curves and variable importance, mapped habitat suitability and turned the
+map into a list of field survey sites.
 
 ## Next steps
 
-- **Read the User guide chapters** in order to understand what each tab
-  control does and when to override its default.
-- **Try the [Bradypus worked example](examples/bradypus.md)** for the same
-  workflow with deeper interpretation of every plot.
-- **Move to messy data** with the [Ariolimax example](examples/ariolimax.md),
-  which intentionally breaks raster alignment so you can practise the
-  **Check Raster Consistency** + **Harmonize to Folder…** preflight.
-- **Reproduce a published study** with the
-  [Pitta nympha example](examples/pitta-nympha.md), which mirrors
-  [Lee et al. 2025](references.md) one parameter at a time.
+- Read the **User guide** chapters to learn what each control does and
+  when to change its default.
+- Work through the [Bradypus worked example](examples/bradypus.md) for a
+  closer reading of every plot.
+- Practise fixing rasters that do not line up with the
+  [Ariolimax example](examples/ariolimax.md).
+- Reproduce a published study with the
+  [Pitta nympha example](examples/pitta-nympha.md).

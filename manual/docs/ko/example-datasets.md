@@ -1,20 +1,60 @@
 # 예제 데이터
 
 QMaxent는 두 가지 표준 SDM 예제 데이터셋을 한 번의 클릭으로 다운로드할 수 있는
-기능을 **플러그인 → QMaxent → Download Example Dataset** 메뉴에서 제공합니다.
+기능을 **플러그인 → QMaxent → 예제 데이터셋 다운로드...** 메뉴에서 제공합니다.
 지난 20년간 Maxent 문헌에서 사용된 동일한 데이터셋이라, 결과를 발표 벤치마크와
 직접 비교할 수 있습니다.
 
-## 다이얼로그 열기
+## 단계별 따라하기
 
-**플러그인 → QMaxent → Download Example Dataset** 을 선택하세요.
+### 1단계. 다운로드 창 열기
 
-![Download Example Dataset 다이얼로그 — Bradypus 선택 상태](images/ui/dialog-download-example-dataset.png)
+![플러그인 메뉴에서 QMaxent와 예제 데이터셋 다운로드가 강조된 화면](images/steps/ko/e00_menu_example.png){ .qm-shot width="562" }
 
-두 데이터셋 중 하나를 라디오 버튼으로 선택하고, 저장 위치(기본은 홈 디렉터리 아래
-`qmaxent_examples` 폴더)를 정한 뒤 **Download** 를 클릭합니다. 플러그인이 데이터를
-가져와 압축을 풀고, **현재 QGIS 프로젝트에 자동으로 레이어를 추가**해 즉시 모델링을
-시작할 수 있게 합니다.
+1. **플러그인** 메뉴를 엽니다.
+2. **QMaxent**에 마우스를 올립니다.
+3. **예제 데이터셋 다운로드...**를 누릅니다.
+
+### 2단계. 데이터셋과 저장 폴더 고르기
+
+![Bradypus가 선택된 예제 데이터셋 다운로드 창](images/steps/ko/e01_example_dialog_bradypus.png){ .qm-shot width="540" }
+
+1. 데이터셋을 고릅니다. 처음이라면 **Bradypus variegatus**가 좋습니다.
+2. **저장 위치**를 확인합니다. 기본값은 홈 폴더 아래 `qmaxent_examples` 폴더이며,
+   **...**를 눌러 바꿀 수 있습니다.
+3. **다운로드**를 누릅니다.
+
+**Ariolimax**를 고르면 **Variant**(변형) 선택이 함께 나타납니다.
+
+![Ariolimax와 Variant 선택이 강조된 예제 데이터셋 다운로드 창](images/steps/ko/e01_example_dialog_ariolimax.png){ .qm-shot width="540" }
+
+1. **Ariolimax**를 선택합니다.
+2. **Variant**: **Pre-harmonized (default)**는 공개된 래스터를 그대로, 모두 같은
+   격자로 불러옵니다. **Mismatch demo**는 좌표계, 범위, 해상도를 일부러 바꾼 사본을
+   불러오므로 래스터 일관성 점검을 연습할 수 있습니다
+   ([래스터가 맞지 않을 때](data-tab.md#fix-mismatch) 참고).
+3. **저장 위치**는 Bradypus와 같습니다.
+4. **다운로드**를 누릅니다.
+
+### 3단계. 다운로드 기다리기
+
+![창 안의 다운로드 진행 막대](images/steps/ko/e02_example_downloading_bradypus.png){ .qm-shot width="540" }
+
+1. 진행 막대와 그 아래 줄에 지금 받고 있는 파일이 표시됩니다. 멈추려면 **취소**를
+   누릅니다.
+
+다운로드가 끝나면 파일이 저장된 위치를 알려 주는 메시지가 나타납니다.
+
+![예제 데이터셋 준비가 끝났다는 메시지](images/steps/ko/e03_example_done_msg_bradypus.png){ .qm-shot width="444" }
+
+1. **OK**를 누릅니다.
+
+### 4단계. 레이어 확인
+
+![Bradypus 레이어가 올라온 QGIS 주 화면](images/steps/ko/e04_main_bradypus_loaded.png){ .qm-shot width="1440" }
+
+1. 출현 레이어와 환경변수 래스터가 **레이어** 패널에 추가되고 지도에 그려집니다.
+   바로 [빠른 시작](quick-start.md)으로 넘어가면 됩니다.
 
 ## Bradypus variegatus 데이터셋
 
@@ -36,11 +76,16 @@ QMaxent는 두 가지 표준 SDM 예제 데이터셋을 한 번의 클릭으로 
 
 ## Ariolimax 데이터셋
 
-*태평양바나나민달팽이*. [elapid](https://github.com/earth-chris/elapid) 의 기본
-테스트 데이터셋으로, 다른 형태의 도전 과제를 보여줍니다 — 환경 변수 래스터들이
-**공통 좌표계, 범위, 해상도를 공유하지 않습니다**. 이 데이터셋은 의도적으로 QMaxent의
-**Check Raster Consistency** 와 **Harmonize Rasters** 도구를 보여주기 위해 사용됩니다 —
-[Ariolimax 실전 예제](examples/ariolimax.md)를 참고하세요.
+*태평양바나나민달팽이*. [elapid](https://github.com/earth-chris/elapid)의 기본 테스트
+데이터셋입니다.
+
+!!! note "Pre-harmonized와 Mismatch demo 중 무엇을 고를까요?"
+
+    공개된 Ariolimax 래스터는 이미 좌표계, 범위, 해상도가 모두 같아서
+    **래스터 일관성 점검**을 바로 통과합니다. 격자가 맞지 않는 상황을 직접 보고 고쳐
+    보고 싶다면 **Variant**에서 **Mismatch demo**를 고르세요.
+    [Ariolimax 실전 예제](examples/ariolimax.md)와 같은 상황이 만들어집니다. 변형된
+    사본은 `mismatch_demo` 하위 폴더에 저장되며 원본 파일은 바뀌지 않습니다.
 
 ## 저장 위치 및 프로젝트 구조
 

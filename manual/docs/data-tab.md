@@ -5,7 +5,67 @@ The Data tab is where you tell QMaxent **which species** you are modeling and
 the presence-points selector, the environmental-raster list with its
 **Check Raster Consistency** action, and the background-points sample size.
 
-![Data tab in its initial empty state](images/ui/dock-1-data-empty.png)
+## Step by step
+
+### Step 1. Choose the presence points
+
+![Data tab with the presence layer selector and the two file buttons highlighted](images/steps/en/a02_data_presence.png){ .qm-shot width="680" }
+
+1. **Presence Points Layer** lists every point layer in the project.
+   Choose your species layer. The grey line below it tells you how many
+   points were loaded.
+2. **Open point file...** adds a point file (GeoPackage, shapefile,
+   GeoJSON and other formats QGIS reads) to the project and selects it.
+3. **Load CSV (X/Y columns)...** reads a table with coordinate columns
+   (see Step 2).
+
+### Step 2. (Optional) Load presence points from a CSV table
+
+![Load CSV dialog with the file, delimiter, X and Y columns, CRS and OK button highlighted](images/steps/en/a06_csv_dialog.png){ .qm-shot width="460" }
+
+1. **File**: the path of the table.
+2. **Browse...** chooses the file.
+3. **Delimiter** is detected for you. Change it only if the columns look
+   wrong.
+4. **X / longitude column**: the longitude or easting column.
+5. **Y / latitude column**: the latitude or northing column. QMaxent
+   guesses both from the column names (for example `lon`/`lat`, `x`/`y`).
+6. **Coordinate reference system**: the CRS of the numbers in the table.
+   Use EPSG:4326 for decimal degrees.
+7. Click **OK**. The table is added to the project as a point layer.
+
+### Step 3. Add the environmental rasters
+
+![Data tab after Add from project, with the raster list filled](images/steps/en/a03_data_rasters_added.png){ .qm-shot width="680" }
+
+1. **Add from project** puts every raster layer of the project in the
+   list. **Add raster files...** adds rasters straight from disk.
+2. Each row has a type button. `[continuous]` is for measured amounts
+   such as temperature; `[categorical]` is for class codes such as land
+   cover or biome. Click the button to switch. Use **Remove selected** and
+   the **▲ ▼** buttons to remove rows or change their order.
+
+### Step 4. Check that the rasters line up
+
+![Check Raster Consistency button and the green status line](images/steps/en/a04_data_consistency_ok.png){ .qm-shot width="680" }
+
+1. Click **Check Raster Consistency**.
+2. A green status line means every raster has the same CRS, extent and
+   resolution. A red line means they differ; see
+   [Fixing rasters that do not line up](#fixing-rasters-that-do-not-line-up).
+
+### Step 5. Check the background points
+
+![Background Points and Export for external Maxent groups](images/steps/en/a05_data_background_export.png){ .qm-shot width="680" }
+
+1. **Background Points**: **Sample count** is the number of random
+   background points (10,000 by default). See
+   [Background points](#background-points) below.
+2. **Export for external Maxent** is optional. It writes the same data
+   for the Java Maxent program (see
+   [Export for external Maxent](#export-for-external-maxent)).
+
+When these steps are done, go to the [② Parameters tab](parameters-tab.md).
 
 ## Presence Points Layer
 
@@ -127,8 +187,47 @@ complete CRS into the file, for example with **Raster > Projections >
 Assign Projection**. Harmonize no longer stops with a raw PROJ error in
 this situation.
 
-![Data tab showing a grid mismatch warning](images/ui/dock-1-data-mismatch.png)
-![Data tab after harmonization, all rasters share the grid](images/ui/dock-1-data-harmonized.png)
+## Fixing rasters that do not line up
+
+The steps below use the Ariolimax **Mismatch demo** from
+[Example datasets](example-datasets.md), whose rasters were changed on
+purpose.
+
+### Step 1. Add the rasters and run the check
+
+![Data tab with the Ariolimax presence layer and the six rasters](images/steps/en/h01_ariolimax_rasters.png){ .qm-shot width="680" }
+
+1. Choose the presence layer.
+2. Add the rasters with **Add from project**.
+
+![Red status line reporting a grid mismatch, with the Harmonize to Folder button](images/steps/en/h02_mismatch_detected.png){ .qm-shot width="680" }
+
+1. Click **Check Raster Consistency**.
+2. Because the grids differ, a new button **Harmonize to Folder...**
+   appears. Click it.
+3. The red status line names what differs (CRS, extent, resolution).
+
+### Step 2. Choose a folder and let QMaxent align the rasters
+
+QMaxent asks for an output folder. It proposes a `qmaxent_harmonized`
+folder next to the first raster; click **Select Folder** to accept it.
+The original files are never changed. A progress window follows:
+
+![Harmonizing progress window](images/steps/en/h03_harmonize_progress.png){ .qm-shot width="244" }
+
+### Step 3. Replace the rasters in the list
+
+![Message asking whether to replace the raster list with the harmonized rasters](images/steps/en/h04_harmonize_replace.png){ .qm-shot width="521" }
+
+1. Click **Replace** to use the aligned copies in place of the
+   originals. **Add as additional layers** keeps both sets in the
+   project.
+
+![Data tab after harmonization, with the green status line](images/steps/en/h05_harmonized_ok.png){ .qm-shot width="680" }
+
+1. The list now points to the aligned copies.
+2. The status line turns green. You can continue to the
+   [② Parameters tab](parameters-tab.md).
 
 ## Background points
 
@@ -156,6 +255,24 @@ The **Add presences to background** checkbox is **on by default** — this
 is the convention the original Java MaxEnt applies and is required for
 the Maxent likelihood to be well-defined
 ([Phillips & Dudík 2008](references.md)).
+
+## Export for external Maxent
+
+This group writes your presence points and rasters in a form that the
+original Java program `maxent.jar` reads, so that you can run the same
+data there or share a ready-to-use Maxent input folder.
+
+![Export for external Maxent group with the format options, output folder and Export button highlighted](images/steps/en/a07_data_export_external.png){ .qm-shot width="680" }
+
+1. The **Export for external Maxent** group.
+2. **Samples + Raster** writes a samples CSV and one `.asc` grid per
+   raster.
+3. **SWD** writes two CSV files with the raster values already
+   extracted at the presence and background points ("samples with
+   data").
+4. **Output folder**: where the files go. Click **...** to change it.
+5. Click **Export**. A `README` with an example `maxent.jar` command is
+   written next to the files.
 
 ## Load existing model (.pkl)…
 

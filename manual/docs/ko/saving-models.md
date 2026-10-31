@@ -44,7 +44,19 @@ QMaxent로 발표한 결과의 장기적 재현성에 필수적입니다.
 저장된 파일을 선택. QMaxent는 pickle에서 변수 목록을 읽고 **변수
 매핑 대화상자**를 엽니다:
 
-![Map model variables to rasters dialog](../images/ui/dialog-load-existing-model.png)
+### 1단계. 기존 모델 불러오기 누르기
+
+![기존 모델 불러오기 버튼이 강조된 데이터 탭](images/steps/ko/m01_load_model_button.png){ .qm-shot width="680" }
+
+1. **① 데이터** 탭에서 **기존 모델 불러오기 (.pkl)...**를 누르고 `.pkl` 파일을 고릅니다.
+
+### 2단계. 모델 변수마다 래스터 짝짓기
+
+![모델 변수를 래스터에 매칭 창](images/steps/ko/m02_model_load_dialog.png){ .qm-shot width="600" }
+
+1. 모델을 학습할 때 쓴 변수마다 지금 그 값을 담고 있는 래스터 레이어를 고릅니다.
+2. **모델 불러오기**를 누릅니다. 래스터 목록이 모델의 변수 순서대로 다시 만들어지고,
+   바로 **④ 결과 → 공간 예측**으로 넘어갈 수 있습니다.
 
 대화상자에는 저장된 변수마다 한 줄이 있습니다. 각 줄에 대해 QMaxent는
 변수 이름과 레이어 이름을 매칭하여 현재 QGIS 프로젝트에서 기본 래스터를

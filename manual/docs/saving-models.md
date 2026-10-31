@@ -48,7 +48,22 @@ On the **① Data** tab, click **Load existing model (.pkl)…** and select
 the saved file. QMaxent reads the variable list out of the pickle and
 opens a **variable-mapping dialog**:
 
-![Map model variables to rasters dialog](images/ui/dialog-load-existing-model.png)
+### Step 1. Click Load existing model
+
+![Data tab with the Load existing model button highlighted](images/steps/en/m01_load_model_button.png){ .qm-shot width="680" }
+
+1. On the **① Data** tab, click **Load existing model (.pkl)...** and
+   choose the `.pkl` file.
+
+### Step 2. Match each model variable to a raster
+
+![Variable-mapping dialog](images/steps/en/m02_model_load_dialog.png){ .qm-shot width="600" }
+
+1. For every variable the model was trained with, choose the raster
+   layer that holds it now.
+2. Click **Load model**. The raster list is rebuilt in the model's order and
+   you can go straight to **④ Results → Spatial Projection**.
+
 
 The dialog has one row per saved variable. For each row, QMaxent picks
 a default raster from the current QGIS project by matching variable

@@ -1,136 +1,223 @@
 # 빠른 시작
 
-이 5분 워크스루는 갓 설치한 플러그인에서 출발해 *Bradypus variegatus*(세발가락나무늘보)의
-완성된 서식적합도 지도까지 가는 과정을 다룹니다 — 원 Maxent 논문이 사용한 종입니다.
-본 장의 모든 스크린샷은 사용자가 직접 재현할 수 있는 실제 수치를 보여줍니다.
+이 장에서는 플러그인을 막 설치한 상태에서 출발해, *Bradypus variegatus*(갈색목세발가락나무늘보)의
+서식적합도 지도와 현장 조사지점 목록을 만드는 데까지 따라가 봅니다. 원 Maxent 논문
+([Phillips, Anderson & Schapire 2006](references.md))이 사용한 바로 그 종입니다.
 
-!!! tip "사전 준비"
-    [설치](installation.md) 와 [의존성 관리](dependencies.md) 를 먼저 완료하세요 —
-    **QMaxent environment ready** 배너가 초록색이어야 진행할 수 있습니다.
+각 단계에는 실제 QGIS 화면을 실었습니다. 그림의 빨간 상자와 번호는 그림 아래 번호
+목록과 짝을 이루므로, 번호 순서대로 따라 누르시면 됩니다.
 
-## 1단계 · 예제 데이터셋 다운로드
+!!! tip "시작하기 전에"
+    [설치](installation.md)와 [의존성 관리](dependencies.md)를 먼저 마치세요.
+    의존성 화면의 환경 상태가 초록색 **QMaxent environment ready**로 바뀌어 있어야 합니다.
 
-**플러그인 → QMaxent → Download Example Dataset** 을 열고, **Bradypus variegatus**
-선택, 저장 경로 기본값 유지, **Download** 클릭.
+!!! info "얼마나 걸리나요?"
+    모두 10분 정도입니다. 대부분은 9단계의 모델 학습 시간이며, 학습은 백그라운드에서
+    진행되므로 그동안에도 QGIS를 쓸 수 있습니다.
 
-![Bradypus 선택된 Download Example Dataset 다이얼로그](images/ui/dialog-download-example-dataset.png)
+## 1부. 예제 데이터 받기
 
-몇 초 뒤, 출현 지점 레이어와 9개 환경 변수 래스터가 QGIS 프로젝트에 추가됩니다:
+### 1단계. 예제 데이터셋 다운로드 창 열기
 
-![중남미 지역의 환경 래스터 위에 표시된 Bradypus 출현 지점](images/maps/example-bradypus-loaded.png)
+![플러그인 메뉴에서 QMaxent와 예제 데이터셋 다운로드가 강조된 화면](images/steps/ko/e00_menu_example.png){ .qm-shot width="562" }
 
-## 2단계 · Analysis 도크 열고 데이터 불러오기
+1. QGIS 메뉴 막대에서 **플러그인** 메뉴를 엽니다.
+2. **QMaxent**에 마우스를 올립니다.
+3. **예제 데이터셋 다운로드...**를 누릅니다.
 
-**플러그인 → QMaxent → QMaxent Analysis** 를 엽니다. 도크에는 다섯 개의 번호 매겨진
-탭이 있고 순서대로 진행합니다. **① Data** 부터 시작 — **Presence Points Layer**
-드롭다운에서 `bradypus` 를 선택하고, **Add from project** 를 클릭해 로드된 모든 래스터
-레이어를 한 번에 추가합니다. `biome` 은 `[categorical]` 로 표시해 QMaxent가 연속 변수가
-아닌 이산 요인으로 처리하게 합니다.
+### 2단계. Bradypus를 골라 다운로드
 
-**Check Raster Consistency** 를 클릭. 예제 데이터는 이미 정렬되어 있어 초록 ✓ 가
-표시됩니다:
+![Bradypus가 선택된 예제 데이터셋 다운로드 창](images/steps/ko/e01_example_dialog_bradypus.png){ .qm-shot width="540" }
 
-![Bradypus 출현 레이어(116점)와 9개 환경 래스터, biome이 categorical로 표시되고, Check Raster Consistency 결과 모든 래스터가 그리드 일치](images/ui/dock-1-data-with-bradypus.png)
+1. **Bradypus variegatus**를 선택합니다.
+2. **저장 위치**의 폴더를 확인합니다. 기본값은 홈 폴더 아래 `qmaxent_examples`
+   폴더이며, **...**를 눌러 다른 곳을 고를 수 있습니다.
+3. **다운로드**를 누릅니다.
 
-도크 하단 상태바에 `presence=116 background=10,104` 이 표시됩니다.
+몇 초 뒤 아래 메시지가 나타나면 **OK**를 누릅니다.
 
-## 3단계 · 기본 파라미터 사용
+![예제 데이터셋 준비가 끝났다는 메시지](images/steps/ko/e03_example_done_msg_bradypus.png){ .qm-shot width="444" }
 
-**② Parameters** 로 이동합니다. 기본값은 첫 실행의 출발점으로 쓰기 좋게 설정되어
-있습니다: **자동 (출현점 수에 따른 maxnet 기본 규칙)** 피처 선택,
-**정규화 배수 1.0**, **Geographic K-Fold(k=5)** 공간 교차검증, **Jackknife 변수 중요도**
-활성화. 자동 피처 규칙은 기본값일 뿐 최적 모델을 보장하지 않으므로, 본 분석에서는
-[② 파라미터 탭](parameters-tab.md)의 안내대로 다른 조합과 비교해 보세요.
+### 3단계. 지도에 올라온 레이어 확인
 
-![기본 설정의 Parameters 탭](images/ui/dock-2-parameters-defaults.png)
+![Bradypus 레이어가 올라온 QGIS 주 화면](images/steps/ko/e04_main_bradypus_loaded.png){ .qm-shot width="1440" }
 
-Output Files 섹션에는 학습된 모델용 `.pkl` 과 발표용 보충 표용 `.xlsx` 경로가 지정되어
-있습니다. 나중에 변경할 수 있으니 지금은 기본값을 그대로 둡니다.
+1. **레이어** 패널에 출현 레이어 `bradypus`와 환경변수 래스터 9개(`bio1`~`bio17`,
+   `biome`)가 추가됩니다. 지도 위 파란 점이 이 종이 기록된 116개 지점입니다.
 
-## 4단계 · Maxent 실행
+## 2부. 데이터 준비(① 데이터 탭)
 
-도크 하단의 초록색 **▶ Run Maxent** 버튼을 클릭합니다. **③ Training** 탭으로 전환되며
-진행 상황이 실시간으로 보고됩니다.
+### 4단계. 분석 도크 열기
 
-약 30초 후 실행이 완료됩니다:
+**플러그인 → QMaxent → QMaxent 분석**을 누르면 QGIS 오른쪽에 분석 도크가 열립니다.
 
-![100% 완료된 Training 탭과 전체 로그: 116 presence, 10,104 background, train AUC=0.9569, CV AUC=0.7436 ± 0.0750, 변수별 jackknife](images/ui/dock-3-training-completed.png)
+![탭 다섯 개와 Maxent 실행 버튼이 강조된 분석 도크](images/steps/ko/a01_dock_overview.png){ .qm-shot width="680" }
 
-로그를 위에서 아래로 읽으면 모델의 전체 이야기를 알 수 있습니다:
+1. **① 데이터**: 출현 지점과 환경변수 래스터를 고릅니다.
+2. **② 매개변수**: 모델을 어떻게 적합하고 평가할지 정합니다.
+3. **③ 훈련**: 모델 학습 진행 상황과 로그를 봅니다.
+4. **④ 결과**: 반응 곡선과 변수 중요도를 보고, 서식적합도 지도를 만듭니다.
+5. **⑤ 조사지점 선정**: 지도에서 현장 조사지점을 고릅니다.
+6. **▶ Maxent 실행**: 모델 학습을 시작합니다. 앞의 두 탭을 마친 뒤에 누릅니다.
 
-- 배경 표본 추출과 공변량 추출 완료
-- 자동 규칙이 선택한 피처 유형: linear, quadratic, product, hinge (출현점 116개이므로
-    LQPH, threshold는 자동으로 추가되지 않음)
-- **Training AUC = 0.9569**(표본 내 적합)
-- **CV AUC = 0.7436 ± 0.0750**(5개 공간 폴드의 보류 검증 성능)
-- 9개 변수 각각의 Jackknife 결과
+탭은 왼쪽에서 오른쪽 순서로 진행합니다.
 
-도크 하단 상태바에 핵심 수치가 표시됩니다: `train AUC=0.9569 · CV AUC=0.7436`.
+### 5단계. 출현 지점 고르기
 
-!!! note "화면의 수치"
-    이 장의 화면과 AUC 값은 v0.1.x(LQPHT)에서 얻은 것입니다. v0.2.0에서는 자동
-    규칙이 LQPH를 선택하고 배경점 추출에도 시드가 적용되므로 수치가 조금 다르게
-    나옵니다.
+![출현 포인트 레이어 선택 상자가 강조된 데이터 탭](images/steps/ko/a02_data_presence.png){ .qm-shot width="680" }
 
-## 5단계 · 결과 확인
+1. **출현 포인트 레이어**에서 `bradypus`를 고릅니다. 아래 줄에 불러온 출현점 수(116개)가
+   표시됩니다.
+2. **점 파일 열기...**는 프로젝트에 아직 없는 점 파일(GeoPackage, 셰이프파일 등)을
+   불러올 때 씁니다.
+3. **CSV 불러오기 (X/Y 열)...**는 좌표 열이 있는 표를 불러올 때 씁니다.
+   이 예제에서는 두 버튼 모두 쓰지 않습니다.
 
-**④ Results** 탭이 활성화됩니다. 세 개의 하위 탭을 둘러보며 모델이 학습한 내용을
-이해해 보세요.
+### 6단계. 환경변수 래스터 추가
 
-### Response Curves(반응곡선)
+![프로젝트에서 추가를 누른 뒤 래스터 목록이 채워진 데이터 탭](images/steps/ko/a03_data_rasters_added.png){ .qm-shot width="680" }
 
-드롭다운에서 변수를 하나 선택 — 여기서는 `bio1`(연평균 기온):
+1. **프로젝트에서 추가**를 누릅니다.
+2. 프로젝트의 래스터가 모두 목록에 들어옵니다. 각 줄 오른쪽 버튼은 그 래스터를
+   연속형(`[continuous]`)으로 볼지 범주형(`[categorical]`)으로 볼지 보여 주며, 눌러서
+   바꿀 수 있습니다. 목록을 내려 `biome`이 범주형으로 표시되어 있는지 확인하세요.
+   값이 양이 아니라 분류 코드이기 때문입니다.
 
-![학습 범위에 걸친 bio1 cloglog 적합도 반응곡선](images/ui/dock-4-response-curve-bio1.png)
+### 7단계. 래스터가 서로 맞는지 점검
 
-음영 영역은 실제 데이터 범위를 나타냅니다. 이 범위 밖의 예측은 외삽이며 신중하게
-해석해야 합니다.
+![래스터 일관성 점검 버튼과 초록색 상태 줄](images/steps/ko/a04_data_consistency_ok.png){ .qm-shot width="680" }
 
-### Jackknife 중요도와 ROC
+1. **래스터 일관성 점검**을 누릅니다.
+2. 상태 줄이 초록색으로 바뀌고, 9개 래스터가 같은 격자(좌표계 EPSG:4326, 해상도
+   0.5 × 0.5)를 쓴다고 알려 줍니다. 빨간색으로 바뀌면
+   [래스터가 맞지 않을 때](data-tab.md#fix-mismatch)를 참고하세요.
 
-Jackknife 하위 탭은 두 가지 진단을 한 화면에 결합합니다 — 좌측의 ROC 곡선(학습 +
-폴드별 CV)과 우측의 Jackknife 막대(각 변수만 / 각 변수 제외 시 모델 AUC):
+## 3부. 모델 학습(② 매개변수, ③ 훈련)
 
-![9개 Bradypus 변수의 ROC 곡선과 Jackknife 변수 중요도](images/ui/dock-4-jackknife-bars.png)
+### 8단계. 매개변수 확인
 
-평균 CV ROC(점선)는 무작위 대각선을 한참 위에 있고, Jackknife 막대는 `bio7`,
-`biome`, `bio12` 가 이 종에 가장 많은 정보를 담고 있음을 보여줍니다.
+**② 매개변수** 탭을 누릅니다. 처음에는 기본값을 그대로 둡니다.
 
-### Spatial Projection(공간 투영)
+![피처 타입, 정규화, 공간 평가 영역이 강조된 매개변수 탭](images/steps/ko/p01_params_overview.png){ .qm-shot width="680" }
 
-Spatial Projection 하위 탭은 학습된 모델을 전체 환경 변수 래스터에 적용해 서식적합도
-지도를 생성합니다. **cloglog** 가 권장 출력 변환입니다(Phillips et al. 2017).
-**Auto-load result as QGIS layer** 체크를 유지한 채 **▶ Run Spatial Projection** 클릭:
+1. **피처 타입**: **자동 (출현점 수에 따른 maxnet 기본 규칙)**이 출현점 수에 맞춰
+   피처 종류를 고릅니다. 출현점이 116개이면 선형, 이차, 곱, 힌지(LQPH)를 씁니다.
+2. **정규화**: 배수 1.00이 일반적인 출발값입니다.
+3. **공간 평가**: 5개 폴드의 **Geographic K-Fold**가 학습에 쓰지 않은 지역에서 모델을
+   검증합니다. **랜덤 시드 고정: 42**는 같은 결과를 다시 얻게 해 줍니다.
 
-![실행 후 Spatial Projection 하위 탭 — 출력 GeoTIFF 경로 표시](images/ui/dock-4-projection-done.png)
+이 기본값은 무난한 출발점일 뿐([Phillips & Dudík 2008](references.md);
+[Phillips et al. 2017](references.md)), 여러분의 자료에 가장 좋은 설정이라는 보장은
+아닙니다.
 
-결과 래스터가 흰색-초록 연속 색상으로 자동 스타일링되어 QGIS에 즉시 추가됩니다:
+### 9단계. Maxent 실행
 
-![중남미 전역의 Bradypus 서식적합도 지도, 흰색=낮음, 초록=높음](images/maps/quickstart-final-suitability.png)
+도크 아래의 **▶ Maxent 실행**을 누르면 **③ 훈련** 탭으로 넘어갑니다.
 
-## 6단계 · 조사지점 선정 *(선택)*
+![모델 학습이 진행 중인 훈련 탭](images/steps/ko/t01_training_running.png){ .qm-shot width="680" }
 
-**⑤ 조사지점 선정** 탭으로 이동합니다. **고적합도 탐색** 모드(새 개체군 찾기)를
-선택하고 **최소 적합도** 를 높게(예: 0.9), **조사지점 수** 를 20으로, 역지오코딩을
-켠 뒤 **▶  조사지점 선정** 클릭:
+1. 진행 막대가 얼마나 진행되었는지 보여 줍니다.
+2. 그 아래 줄에 지금 하고 있는 단계가 표시됩니다.
+3. 로그 창에 모든 단계가 차례로 기록됩니다.
 
-![선정 후 고적합도 탐색 모드의 조사지점 선정 탭: 20개 선정, 19/20 지오코딩됨](images/ui/dock-5-priority-sites-extracted.png)
+학습이 끝나면 다음과 같이 바뀝니다.
 
-조사지점이 적합도 지도 위에 빨간 점(`Survey sites` 레이어)으로 표시됩니다:
+![학습이 끝나고 최종 요약이 표시된 훈련 탭](images/steps/ko/t02_training_done.png){ .qm-shot width="680" }
 
-![Bradypus 적합도 지도 위에 빨간 점으로 표시된 조사지점](images/maps/priority-sites-on-canvas.png)
+1. 상태 줄에 결과가 표시됩니다.
+2. 로그 끝에 모델과 평가 결과 요약이 나옵니다.
+3. 도크 맨 아래 줄에는 핵심 수치가 계속 표시됩니다. 예:
+   `출현=116  배경=10,108 | 훈련 AUC=0.9135 | CV AUC=0.7524`
 
-출력 GeoPackage(`survey_sites.gpkg`)의 속성 테이블에는 각 조사지점의 좌표,
-적합도 점수, (Nominatim이 찾을 수 있던 경우) 행정 주소가 포함되어 있어 현장 조사에
-즉시 사용할 수 있습니다. 주소는 기본으로 현지 이름(이 예제에서는 각 나라의 언어)으로
-기록됩니다.
+공간 교차검증의 AUC가 학습 AUC보다 낮은 것은 정상입니다. 모델이 학습에 쓰지 않은
+지역에서 얼마나 잘 맞는지를 정직하게 보여 주는 값이기 때문입니다
+([Roberts et al. 2017](references.md)).
+
+## 4부. 결과 확인과 지도 만들기(④ 결과)
+
+### 10단계. 반응 곡선 보기
+
+**④ 결과** 탭을 누릅니다.
+
+![변수 선택 상자와 반응 곡선이 강조된 반응 곡선 하위 탭](images/steps/ko/r01_results_response.png){ .qm-shot width="680" }
+
+1. **반응 곡선** 하위 탭이 열려 있습니다.
+2. **변수**에서 보고 싶은 변수를 고릅니다.
+3. 곡선은 그 변수 값에 따라 예측 적합도가 어떻게 바뀌는지 보여 줍니다. 음영 띠는
+   학습 지점들이 가진 값의 범위입니다.
+
+### 11단계. 어떤 변수가 중요한지 보기
+
+![ROC 곡선과 Jackknife 막대가 있는 Jackknife 중요도 하위 탭](images/steps/ko/r02_results_jackknife.png){ .qm-shot width="680" }
+
+1. **Jackknife 중요도**를 누릅니다.
+2. 왼쪽은 ROC 곡선, 오른쪽은 변수 하나만 쓴 모델과 그 변수를 뺀 모델의 성능 비교입니다.
+
+![막대그래프와 저장 버튼이 있는 Permutation Importance 하위 탭](images/steps/ko/r03_results_permutation.png){ .qm-shot width="680" }
+
+1. **Permutation Importance**는 각 변수 값을 뒤섞었을 때 모델 성능이 얼마나
+   떨어지는지로 변수 순위를 매깁니다.
+2. **Save PNG...**로 그래프를 저장합니다.
+3. **Save CSV...**로 수치를 저장합니다.
+
+### 12단계. 서식적합도 지도 만들기
+
+![출력 설정과 실행 버튼이 강조된 공간 예측 하위 탭](images/steps/ko/r04_results_projection_settings.png){ .qm-shot width="680" }
+
+1. **공간 예측**을 누릅니다.
+2. **출력 변환**은 **cloglog**로 둡니다. 0~1 사이 값으로 상대적 적합도를 나타냅니다
+   ([Phillips et al. 2017](references.md)).
+3. **출력 래스터**는 지도가 저장될 위치입니다. **...**를 눌러 바꿀 수 있습니다.
+4. **▶ 공간 예측 실행**을 누릅니다.
+
+![예측 래스터 저장 경로를 알려 주는 상태 줄](images/steps/ko/r06_projection_done.png){ .qm-shot width="680" }
+
+1. 상태 줄에 저장 경로가 표시되면 지도가 저장되고 프로젝트에 추가된 것입니다.
+
+![예측 레이어가 올라온 QGIS 주 화면](images/steps/ko/r07_main_projection_map.png){ .qm-shot width="1440" }
+
+1. **레이어** 패널에 `prediction` 레이어가 추가됩니다. 색이 진할수록 예측 적합도가
+   높은 곳입니다.
+
+## 5부. 조사지점 고르기(⑤ 조사지점 선정)
+
+### 13단계. 조사 조건 정하기
+
+**⑤ 조사지점 선정** 탭을 누릅니다.
+
+![조사 목적, 탐색 설정, 샘플링 전략, 실행 버튼이 강조된 조사지점 선정 탭](images/steps/ko/s01_survey_discovery_settings.png){ .qm-shot width="680" }
+
+1. **조사 목적**: 적합하지만 아직 조사하지 않은 곳에서 새 개체군을 찾으려면
+   **고적합도 탐색**을 고릅니다.
+2. **고적합도 탐색 설정**: **최소 적합도**는 조사지점이 가져야 할 가장 낮은 지도
+   값입니다.
+3. **샘플링 전략**: 조사지점 수, 그리고 기존 기록 및 다른 조사지점과 떨어져야 할
+   거리(미터)를 정합니다.
+4. **▶ 조사지점 선정**을 누릅니다.
+
+### 14단계. 조사지점 확인
+
+![선정된 조사지점 수를 알려 주는 상태 줄](images/steps/ko/s05_survey_done.png){ .qm-shot width="680" }
+
+1. 상태 줄에 선정된 조사지점 수와 GeoPackage 저장 위치가 표시됩니다.
+
+![적합도 지도 위에 조사지점이 표시된 QGIS 주 화면](images/steps/ko/s06_main_survey_map.png){ .qm-shot width="1440" }
+
+1. 조사지점 레이어가 지도 위에 추가됩니다. 속성 테이블을 열면 지점별 좌표, 적합도 값,
+   그리고 역지오코딩을 켰다면 주소까지 볼 수 있습니다.
+
+## 지금까지 한 일
+
+출현 지점과 환경변수 래스터를 불러오고, 래스터 격자를 점검하고, 정규화된 Maxent
+모델을 학습하고, 공간 교차검증으로 평가하고, 반응 곡선과 변수 중요도를 읽고,
+서식적합도 지도를 만든 뒤, 그 지도를 현장 조사지점 목록으로 바꾸었습니다. 종분포모형의
+전체 과정을 QGIS 안에서 마친 것입니다.
 
 ## 다음 단계
 
-축하합니다 — 완전한 Maxent 워크플로를 실행했습니다. 이제부터는:
-
-- **학습된 모델을 나중에 재사용** → [모델 저장 및 재사용](saving-models.md)
-- **결과를 논문으로 정리** → [결과 내보내기](exporting-results.md)
-- **기본값의 근거를 이해** → [방법론 해설](methodological-background.md)
-- **더 깊이 있는 사례 분석** → [실전 예제](examples/index.md) 가 Bradypus, Ariolimax,
-    Pitta nympha를 차례대로 다룹니다.
+- **사용 가이드**의 각 장에서 버튼과 설정이 하는 일과, 언제 기본값을 바꾸면 좋은지
+  알아보세요.
+- [Bradypus 예제](examples/bradypus.md)에서 그래프 하나하나를 더 자세히 읽어 보세요.
+- [Ariolimax 예제](examples/ariolimax.md)로 격자가 맞지 않는 래스터를 고치는 과정을
+  연습해 보세요.
+- [Pitta nympha 예제](examples/pitta-nympha.md)로 발표된 연구를 재현해 보세요.

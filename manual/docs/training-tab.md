@@ -5,7 +5,38 @@ the Training tab. A progress bar shows fold-by-fold progress and a log
 panel records what the model is doing in real time — useful for diagnosing
 slow runs, oversized rasters, or convergence issues.
 
-![Training tab in its initial waiting state](images/ui/dock-3-training-waiting.png)
+## Step by step
+
+### Step 1. Start the run and follow it
+
+Click **▶ Run Maxent** at the bottom of the dock. The dock switches to
+this tab.
+
+![Training tab while the model is being fitted](images/steps/en/t01_training_running.png){ .qm-shot width="680" }
+
+1. The progress bar.
+2. The current step, for example the jackknife model being fitted.
+3. The log. Every step is written here as it happens.
+
+### Step 2. Read the summary
+
+![Training tab after the run, with the final summary](images/steps/en/t02_training_done.png){ .qm-shot width="680" }
+
+1. The status line reports that the run is finished.
+2. The end of the log summarises the model and the evaluation (see
+   [Reading the log](#reading-the-log)).
+3. The bottom line of the dock keeps the key numbers:
+   the number of presence and background points, the training AUC and
+   the cross-validated AUC.
+
+### Step 3. Keep a copy of the log
+
+![Clear log, Copy log and Save log as buttons](images/steps/en/t03_training_log_buttons.png){ .qm-shot width="680" }
+
+1. **Clear log** empties the log window.
+2. **Copy log** copies the whole log to the clipboard.
+3. **Save log as...** saves the log as a text file, which is useful as a
+   record of the run.
 
 ## What happens when you click Run
 
@@ -89,7 +120,7 @@ A few patterns to recognise:
 
 When the run finishes, you see the green **Done** state:
 
-![Training tab at 100% with the full log](images/ui/dock-3-training-completed.png)
+![Training tab at 100% with the full log](images/steps/en/t02_training_done.png){ .qm-shot width="680" }
 
 The dock's footer status bar populates with `train AUC=… CV AUC=…` and the
 **④ Results** tab unlocks.

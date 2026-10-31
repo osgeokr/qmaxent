@@ -4,7 +4,48 @@ Parameters 탭은 *모델링* 및 *평가* 설정을 제어합니다 — 허용�
 정규화 배수, 공간 교차검증 방식, 출력 경로. 기본값은 정립된 Maxent 관행을 따르며,
 본 장에서는 각 컨트롤이 무엇을 하고 언제 기본값을 변경해야 하는지 설명합니다.
 
-![기본 설정의 Parameters 탭](images/ui/dock-2-parameters-defaults.png)
+## 단계별 따라하기
+
+### 1단계. 주요 설정 확인
+
+![피처 타입, 정규화, 공간 평가 영역이 강조된 매개변수 탭](images/steps/ko/p01_params_overview.png){ .qm-shot width="680" }
+
+1. **피처 타입**: 특별한 이유가 없으면 **자동 (출현점 수에 따른 maxnet 기본 규칙)**을
+   그대로 둡니다.
+2. **정규화**: **정규화 배율**은 모델을 얼마나 단순하게 만들지 정합니다. 값이 클수록
+   단순한 모델이 됩니다.
+3. **공간 평가**: 모델을 검증하는 **방법**, **Folds**(폴드 수), 같은 결과를 다시 얻기
+   위한 **랜덤 시드 고정**입니다.
+
+### 2단계. (선택) 피처 종류 직접 고르기
+
+![수동 선택을 고른 피처 타입 영역](images/steps/ko/p02_params_manual_features.png){ .qm-shot width="680" }
+
+1. **수동 선택**을 고릅니다.
+2. 쓸 피처를 체크합니다: **Linear**(선형), **Quadratic**(이차), **Hinge**(힌지),
+   **Product**(곱), **Threshold**(임계).
+
+### 3단계. (선택) 다른 평가 방법 고르기
+
+![공간 평가 방법 목록을 펼친 화면](images/steps/ko/p03_params_cv_dropdown.png){ .qm-shot width="680" }
+
+1. **방법** 목록을 엽니다. 기본값 **Geographic K-Fold**가 대부분의 자료에 가장 안전합니다.
+   다른 방법은 아래 [공간 평가](#spatial-evaluation) 절에서 설명합니다.
+
+### 4단계. 중요도 옵션과 출력 파일 확인
+
+![고급 설정, 랜덤 시드, 중요도 옵션, 출력 파일이 강조된 화면](images/steps/ko/p04_params_lower.png){ .qm-shot width="680" }
+
+1. **고급 설정**: Hinge/Threshold knot 수, **출현점을 배경에 추가**, **공간 밀집 출현점
+   가중치 감소**입니다. 대부분은 기본값이면 됩니다.
+2. **랜덤 시드 고정**은 실행할 때마다 폴드와 배경점 표본을 똑같이 유지합니다.
+3. **Jackknife 변수 중요도 분석**은 변수마다 모델을 추가로 학습해 중요도를 잽니다.
+   실행 시간이 길어집니다.
+4. **Permutation importance**는 변수 값을 뒤섞었을 때 모델 성능이 얼마나 떨어지는지 잽니다.
+5. **출력 파일**: 모델(`.pkl`)과 결과 통합문서(`.xlsx`)가 저장될 위치입니다. **...**로
+   바꿀 수 있습니다.
+
+그다음 도크 아래의 **▶ Maxent 실행**을 누릅니다.
 
 ## 피처 유형
 
@@ -81,12 +122,12 @@ threshold 피처는 maxnet과 마찬가지로 자동으로 추가되지 않습�
 | **Add presences to background** | ✓ on | Phillips et al. (2017) 권장: 출현 지점을 배경 표본에 포함하는 것이 통계적으로 더 정확한 정식화. |
 | **Down-weight spatially clustered points** | off | 강한 공간 표본 편향이 있을 때 활성화 (도로변 관찰 등). Phillips et al. (2009)의 거리 가중 편향 보정 구현. |
 
-## 공간 평가
+## 공간 평가 {#spatial-evaluation}
 
 다이얼로그에서 가장 중요한 학술적 결정 — 모델의 예측 성능을 어떻게 측정하는지.
 QMaxent는 5가지 방법을 제공합니다.
 
-![5개 옵션이 표시된 공간 평가 방법 드롭다운](images/ui/dock-2-parameters-cv-dropdown.png)
+![5개 옵션이 표시된 공간 평가 방법 드롭다운](images/steps/ko/p03_params_cv_dropdown.png){ .qm-shot width="680" }
 
 | 방법 | 권장 시점 | 참고문헌 |
 |---|---|---|

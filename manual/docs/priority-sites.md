@@ -7,6 +7,55 @@ have one of two purposes: looking for new populations, or checking the
 model in the field. QMaxent supports both with separate sampling
 designs grounded in the survey-design literature.
 
+## Step by step
+
+### Step 1. Choose the purpose and the settings
+
+![Survey Site Selection tab in High-suitability search mode](images/steps/en/s01_survey_discovery_settings.png){ .qm-shot width="680" }
+
+1. **Survey purpose**: **High-suitability search** looks for new
+   populations in suitable, unsurveyed places. **Gradient-stratified
+   sampling** checks the model along its suitability gradient (Step 2).
+2. **High-suitability search settings**: the **Minimum suitability** and
+   the **Sampling order** (**Random** or **Top-N (highest first)**).
+3. **Sampling strategy**: the number of sites and the minimum distances
+   (in metres) from known presences and between sites.
+4. **▶ Select Survey Sites** runs the selection.
+
+### Step 2. (Validation surveys) Use gradient-stratified sampling
+
+![Gradient-stratified sampling chosen, with its settings](images/steps/en/s02_survey_validation_settings.png){ .qm-shot width="680" }
+
+1. Select **Gradient-stratified sampling**.
+2. **Gradient-stratified sampling settings**: the **Threshold method**
+   sets the lowest suitability included. Cells above it are split into
+   four suitability bands and sites are spread over the bands.
+
+### Step 3. Addresses and the output file
+
+![Reverse geocoding and Output groups](images/steps/en/s03_survey_geocode_output.png){ .qm-shot width="680" }
+
+1. **Reverse geocoding**: **Add administrative address (OpenStreetMap)**
+   writes the address of each site. **Address language** chooses local
+   names or another language. It needs an internet connection.
+2. **Output**: the GeoPackage path and **Auto-add to QGIS project**.
+
+### Step 4. Run and check the sites
+
+![Selection running, with the progress bar and status](images/steps/en/s04_survey_running.png){ .qm-shot width="680" }
+
+1. The progress bar.
+2. The status line, for example the reverse geocoding count.
+
+![Selection finished](images/steps/en/s05_survey_done.png){ .qm-shot width="680" }
+
+1. The status line reports how many sites were selected and where the
+   file was saved.
+
+![QGIS main window with the survey sites on the map](images/steps/en/s06_main_survey_map.png){ .qm-shot width="1440" }
+
+1. The survey sites layer is added to the **Layers** panel.
+
 ## Survey purpose
 
 Pick one:
@@ -30,7 +79,7 @@ sample it differently:
   species is found more often where the model predicts higher
   suitability.
 
-![Survey Site Selection tab in High-suitability search mode after selection](images/ui/dock-5-priority-sites-discovery.png)
+![Survey Site Selection tab in High-suitability search mode](images/steps/en/s01_survey_discovery_settings.png){ .qm-shot width="680" }
 
 ## Mode settings
 
@@ -141,7 +190,7 @@ The training thresholds (MTP, T10, MaxSSS) that Gradient-stratified
 sampling can use are also recorded in the model card
 (`<model>_model_card.json`, see [Saving and reusing models](saving-models.md)).
 
-![Survey Site Selection tab after selection with the sites rendered on the QGIS canvas](images/ui/dock-5-priority-sites-extracted.png)
+![Survey sites on the QGIS canvas](images/steps/en/s06_main_survey_map.png){ .qm-shot width="1440" }
 
 The sites are immediately ready for export to mobile-GIS apps such
 as **QField**, **Mergin Maps**, or **Locus Map** for offline field use.

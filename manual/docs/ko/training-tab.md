@@ -4,7 +4,33 @@
 바가 폴드별 진행을, 그 아래 로그 패널이 모델이 수행 중인 작업을 실시간으로 기록합니다 —
 느린 실행, 거대한 래스터, 수렴 문제를 진단할 때 유용합니다.
 
-![대기 상태의 학습 탭](images/ui/dock-3-training-waiting.png)
+## 단계별 따라하기
+
+### 1단계. 실행하고 진행 상황 보기
+
+도크 아래의 **▶ Maxent 실행**을 누르면 이 탭으로 넘어옵니다.
+
+![모델 학습이 진행 중인 훈련 탭](images/steps/ko/t01_training_running.png){ .qm-shot width="680" }
+
+1. 진행 막대입니다.
+2. 지금 하고 있는 단계입니다. 예: 학습 중인 Jackknife 모델.
+3. 로그 창입니다. 모든 단계가 차례로 기록됩니다.
+
+### 2단계. 요약 읽기
+
+![학습이 끝나고 최종 요약이 표시된 훈련 탭](images/steps/ko/t02_training_done.png){ .qm-shot width="680" }
+
+1. 상태 줄에 실행이 끝났다고 표시됩니다.
+2. 로그 끝에 모델과 평가 결과 요약이 나옵니다(아래 [학습 로그](#training-log) 참고).
+3. 도크 맨 아래 줄에는 출현점과 배경점 수, 학습 AUC, 교차검증 AUC가 계속 표시됩니다.
+
+### 3단계. 로그 보관하기
+
+![로그 지우기, Copy log, Save log as 버튼](images/steps/ko/t03_training_log_buttons.png){ .qm-shot width="680" }
+
+1. **로그 지우기**는 로그 창을 비웁니다.
+2. **Copy log**는 로그 전체를 클립보드에 복사합니다.
+3. **Save log as...**는 로그를 텍스트 파일로 저장합니다. 실행 기록으로 남겨 두기 좋습니다.
 
 ## Run 클릭 시 일어나는 일
 
@@ -36,12 +62,12 @@ flowchart TD
 적합, 각 CV 폴드, Jackknife 패스 — 가 측정 가능한 정도로 바를 진행시키므로 한눈에
 실행이 정상인지 알 수 있습니다.
 
-## 학습 로그
+## 학습 로그 {#training-log}
 
 진행률 바 아래 로그 패널이 모든 단계를 기록합니다. Bradypus 실행이 성공적으로
 끝난 후의 모습:
 
-![100% 완료된 학습 탭과 전체 로그: 116 presence, 10,104 background, train AUC=0.9569, CV AUC=0.7436 ± 0.0750, 변수별 jackknife](images/ui/dock-3-training-completed.png)
+![100% 완료된 학습 탭과 전체 로그](images/steps/ko/t02_training_done.png){ .qm-shot width="680" }
 
 로그를 위에서 아래로 읽으세요 — 실행에서 일어난 일의 가장 완전한 기록입니다.
 스크린샷에서:

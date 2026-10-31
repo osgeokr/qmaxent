@@ -6,7 +6,52 @@ cross-validation method, and where to write outputs. Defaults follow
 established Maxent practice; this chapter explains what each control does
 and when to override the default.
 
-![Parameters tab with default settings](images/ui/dock-2-parameters-defaults.png)
+## Step by step
+
+### Step 1. Check the main settings
+
+![Parameters tab with the Feature Types, Regularization and Spatial evaluation groups highlighted](images/steps/en/p01_params_overview.png){ .qm-shot width="680" }
+
+1. **Feature Types**: keep **Auto (maxnet default rule by sample size)**
+   unless you have a reason to choose the feature classes yourself.
+2. **Regularization**: the **Regularization multiplier** controls how
+   smooth the model is. Larger values give simpler models.
+3. **Spatial evaluation**: the **Method** used to test the model, the
+   number of **Folds**, and **Fix random seed** for repeatable results.
+
+### Step 2. (Optional) Choose the feature classes yourself
+
+![Feature Types group with Manual selection chosen](images/steps/en/p02_params_manual_features.png){ .qm-shot width="680" }
+
+1. Select **Manual selection**.
+2. Tick the feature classes to use: **Linear**, **Quadratic**,
+   **Hinge**, **Product** and **Threshold**.
+
+### Step 3. (Optional) Choose another evaluation method
+
+![Spatial evaluation Method list opened](images/steps/en/p03_params_cv_dropdown.png){ .qm-shot width="680" }
+
+1. Open the **Method** list. **Geographic K-Fold** is the default and
+   the safest choice for most data. The other methods are described in
+   [Spatial cross-validation](#spatial-cross-validation).
+
+### Step 4. Check the importance options and the output files
+
+![Advanced, random seed, importance options and Output Files highlighted](images/steps/en/p04_params_lower.png){ .qm-shot width="680" }
+
+1. **Advanced**: hinge and threshold knots, **Add presences to
+   background** and **Down-weight spatially clustered points**. The
+   defaults suit most data.
+2. **Fix random seed** keeps the folds and the background sample the
+   same from run to run.
+3. **Jackknife variable importance** fits extra models to measure each
+   variable. It makes the run longer.
+4. **Permutation importance** measures how much the model gets worse when
+   each variable is shuffled.
+5. **Output Files**: where the model (`.pkl`) and the results workbook
+   (`.xlsx`) are saved. Click **...** to change the paths.
+
+Then click **▶ Run Maxent** at the bottom of the dock.
 
 ## Feature Types
 
@@ -93,7 +138,7 @@ folds:
 | **Checkerboard** | Strong spatial autocorrelation in presences | [Muscarella et al. 2014](references.md) |
 | **Buffered Leave-One-Out** | Very small datasets (n < 30) | [Hijmans 2012](references.md); [Valavi et al. 2019](references.md) |
 
-![CV-method drop-down expanded](images/ui/dock-2-parameters-cv-dropdown.png)
+![CV-method drop-down expanded](images/steps/en/p03_params_cv_dropdown.png){ .qm-shot width="680" }
 
 The default **Geographic K-Fold (k = 5, fixed seed = 42)** strikes a balance
 recommended by [Roberts et al. 2017](references.md): geographic blocks

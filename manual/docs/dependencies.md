@@ -14,40 +14,50 @@ virtual environment; on Windows it is a plain package folder (see
 
 This is a one-time, ~5-minute setup.
 
-## Opening the Dependencies dialog
+## Step by step
 
-Choose **Plugins → QMaxent → QMaxent Dependencies**.
+### Step 1. Open the QMaxent Dependencies panel
 
-![QMaxent Dependencies dialog before install showing Status: Dependencies not installed](images/ui/dialog-dependencies.png)
+The panel opens by itself right after the plugin is installed. You can
+also open it at any time from the menu.
 
-The dialog reports the current state of the QMaxent package folder,
-the plugin version, and a summary of what will be installed.
+![Plugins menu with QMaxent and QMaxent Dependencies highlighted](images/steps/en/i04_menu_qmaxent_deps.png){ .qm-shot width="610" }
 
-## Environment Status panel
+1. Open the **Plugins** menu.
+2. Point to **QMaxent**.
+3. Click **QMaxent Dependencies**.
 
-The status banner at the top tells you exactly what to do:
+### Step 2. Install the dependencies
 
-| Banner | Meaning |
+![QMaxent Dependencies panel before the installation](images/steps/en/d01_deps_not_installed.png){ .qm-shot width="380" }
+
+1. **Environment Status** reads *Dependencies not installed*.
+2. Click **Install / Update Dependencies**.
+
+The packages are downloaded from [PyPI](https://pypi.org) into
+`~/.qgis_qmaxent` (`%USERPROFILE%\.qgis_qmaxent` on Windows), the path
+shown at the bottom of the panel. The download is about 300 to 500 MB
+(about 590 MB on disk). Allow 3 to 8 minutes on a typical broadband
+connection. A progress bar and the package being installed are shown
+below the button while you wait:
+
+![QMaxent Dependencies panel while the packages are being installed](images/steps/en/d02_deps_installing.png){ .qm-shot width="380" }
+
+### Step 3. Check that the environment is ready
+
+![QMaxent Dependencies panel after the installation, with the green ready status](images/steps/en/d03_deps_ready.png){ .qm-shot width="380" }
+
+1. **Environment Status** turns green and reads
+   *✓ QMaxent environment ready*. You can close the panel and open
+   **QMaxent Analysis**.
+
+## Environment Status messages
+
+| Message | Meaning |
 |---|---|
-| ✗ **Dependencies not installed** | First-time setup needed (the case above) |
+| ✗ **Dependencies not installed** | First-time setup needed |
 | ✓ **QMaxent environment ready** | Everything is installed and ready to model |
-| ✗ **Dependencies need updating** | The package list or the installation method changed with a plugin upgrade; click **Install / Update Dependencies** again |
-
-## Install / Update Dependencies
-
-Click **Install / Update Dependencies**. The plugin downloads the
-packages from [PyPI](https://pypi.org) into the path shown at the bottom
-of the dialog (default: `~/.qgis_qmaxent` on macOS/Linux,
-`%USERPROFILE%\.qgis_qmaxent` on Windows). Total download is approximately
-**300–500 MB** depending on your platform (about 590 MB on disk once
-installed); allow 3–8 minutes on a typical broadband connection.
-
-When the installer finishes, the status banner turns green:
-
-![QMaxent Dependencies dialog after install showing Status: ✓ QMaxent environment ready](images/ui/dialog-dependencies-installed.png)
-
-You can now close the dialog and open **QMaxent Analysis** — the modeling
-workflow is unlocked.
+| ✗ **Dependencies need updating** | The package list or the installation method changed with a plugin upgrade. Click **Install / Update Dependencies** again |
 
 ## What is installed
 

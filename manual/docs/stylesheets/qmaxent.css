@@ -42,3 +42,22 @@
   border-radius: 6px;
   overflow: hidden;
 }
+
+/* Step-by-step screenshots (annotated QGIS captures) */
+.md-typeset img.qm-shot {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0.6em 0 0.4em;
+  border: 1px solid #d8d2c0;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.10);
+  background: #fff;
+}
+.md-typeset img.qm-shot + br { display: none; }
+.md-typeset h3 + p > img.qm-shot { margin-top: 0.3em; }
+/* Numbered instructions right under a screenshot read like the red badges */
+.md-typeset p:has(> img.qm-shot) + ol > li::marker {
+  color: #d32f2f;
+  font-weight: 700;
+}
