@@ -15,6 +15,9 @@
 *.tif   binary
 *.tiff  binary
 
+# Example datasets: keep byte-identical copies of the originals.
+example_data/** -text
+
 # ----------------------------------------------------------------------
 # QGIS plugin release-ZIP exclusions (from v0.1.8 onward).
 #
@@ -53,6 +56,9 @@ requirements-test.txt export-ignore
 # Pages — the user's QGIS install does not need the source tree).
 docs/              export-ignore
 manual/            export-ignore
+
+# Example datasets are fetched on demand, not installed with the plugin.
+example_data/      export-ignore
 
 # Repository setup scripts used once at GitHub configuration time.
 github_setup.ps1   export-ignore
