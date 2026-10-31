@@ -93,3 +93,9 @@ the plugin package small and ensures you always get the upstream-canonical
 version. If you need offline access, run the downloader once on a
 connected machine and copy the `qmaxent_examples` folder onto offline
 workstations.
+
+Both datasets are also available as a single archive attached to the
+QMaxent release:
+[QMaxent_example_data_v0.2.0.zip](https://github.com/osgeokr/qmaxent/releases/download/v0.2.0/QMaxent_example_data_v0.2.0.zip) (14 MB). It contains unchanged
+copies of the original files and a `README.txt` with their sources and
+citations. Unzip it and add the layers to a QGIS project.

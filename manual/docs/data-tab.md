@@ -38,9 +38,17 @@ Tips for preparing this layer:
   raster grid. That said, a projected CRS that matches the rasters avoids a
   mid-run reprojection step.
 - **Duplicates and clustering** are tolerated but distort the model.
-  [Boria et al. 2014](references.md) recommend **spatial thinning** before
-  modeling; consider running QGIS plugin *NNJoin* or the standalone tool
-  *spThin* before using QMaxent.
+  maxent.jar keeps one presence per raster cell by default; QMaxent keeps
+  all records, and the [③ Training tab](training-tab.md) log reports how
+  many share a cell. Reduce the records to one per cell or apply
+  **spatial thinning** before modeling
+  ([Boria et al. 2014](references.md)), for example with the standalone
+  tool *spThin*. Records with identical coordinates can also be removed
+  with `Vector → Geoprocessing Tools → Delete Duplicate Geometries`.
+- **Very large presence sets** (hundreds of thousands of points) are
+  usually dominated by such duplicates and need several GB of memory per
+  model fit (about 4 GB for 100,000 points in our tests). Thin them first;
+  the model rarely changes once each occupied cell is represented once.
 
 ## Environmental rasters
 

@@ -74,3 +74,8 @@ qmaxent_examples/
 항상 업스트림 표준 버전을 받을 수 있게 합니다. 오프라인 환경이 필요하다면, 인터넷이
 연결된 컴퓨터에서 다운로드한 뒤 `qmaxent_examples` 폴더를 오프라인 워크스테이션으로
 복사하세요.
+
+두 데이터셋은 QMaxent 릴리스에 첨부된 압축 파일로도 받을 수 있습니다:
+[QMaxent_example_data_v0.2.0.zip](https://github.com/osgeokr/qmaxent/releases/download/v0.2.0/QMaxent_example_data_v0.2.0.zip) (14 MB). 원본 파일을 그대로 복사했으며,
+출처와 인용 정보를 담은 `README.txt`가 함께 들어 있습니다. 압축을 풀고 레이어를
+QGIS 프로젝트에 추가하면 됩니다.
